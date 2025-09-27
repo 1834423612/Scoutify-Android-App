@@ -4,5 +4,5 @@
 - [Android Studio](https://developer.android.com/studio)
 
 ## Source Code Resources
-- [Compose Samples] (https://github.com/android/compose-samples.git)
+- [Compose Samples](https://github.com/android/compose-samples)
 
