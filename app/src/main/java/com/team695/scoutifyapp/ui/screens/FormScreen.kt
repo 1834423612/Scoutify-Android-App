@@ -7,13 +7,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.text.input.KeyboardType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+//!todo: clicking outside of a text input should remove focus,
+// scrollbar visible?,
+// picture,
+// required/validation, - for text: use Regex("^.+$"), what about radio and checkbox?
+// autofill
 fun FormScreen(onBack: () -> Unit) {
-    var teamName by remember { mutableStateOf("") }
-    var matchNumber by remember { mutableStateOf("") }
-
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -26,67 +34,174 @@ fun FormScreen(onBack: () -> Unit) {
             )
         }
     ) { padding ->
+        val scrollState = rememberScrollState()
         Column(
             modifier = Modifier
                 .padding(padding)
                 .padding(16.dp)
+                //.weight(1f)
+                .verticalScroll(scrollState)
+                //.padding(end = 12.dp)//for scroll bar
         ) {
+            var teamName by remember { mutableStateOf("") }
             OutlinedTextField(
                 value = teamName,
                 onValueChange = { teamName = it },
                 label = { Text("Team Name") },
                 modifier = Modifier.fillMaxWidth()
-            )
+            )//team name
             Spacer(modifier = Modifier.height(12.dp))
 
+            var matchNumber by remember { mutableStateOf("") }
             OutlinedTextField(
                 value = matchNumber,
                 onValueChange = { matchNumber = it },
                 label = { Text("Match Number") },
                 modifier = Modifier.fillMaxWidth()
-            )
+            )// match number
             Spacer(modifier = Modifier.height(12.dp))
 
-            var selectedOption by remember { mutableStateOf("Option 1") }
-            val options = listOf("Option 1", "Option 2")
-
-            Text("test")
+            var selectedOption0 by remember { mutableStateOf("") }
+            val radioOptions0 = listOf("Option 1", "Option 2")
+            Text("radiobutton")
             Column {
-                options.forEach { option ->
-                    //Row(verticalAlignment = Alignment.CenterVertically) {
-                    Row(){
+                radioOptions0.forEach { option ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         RadioButton(
-                            selected = selectedOption == option,
-                            onClick = { selectedOption = option }
+                            selected = selectedOption0 == option,
+                            onClick = { selectedOption0 = option }
                         )
                         Text(option, modifier = Modifier.padding(start = 8.dp))
                     }
                 }
             }
 
+            var selectedOption1 by remember { mutableStateOf("") }
+            val radioOptions1 = listOf("Option 1", "Option 2","Other")
+            var otherText1 by remember { mutableStateOf("") }
+            Text("radiobutton with other")
+            Column {
+                radioOptions1.forEach { option ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        RadioButton(
+                            selected = selectedOption1 == option,
+                            onClick = { selectedOption1 = option }
+                        )
+                        Text(option, modifier = Modifier.padding(start = 8.dp))
+                        if(option=="Other"){
+                            Spacer(modifier = Modifier.height(4.dp))
+                            OutlinedTextField(
+                                        value = otherText1,
+                                onValueChange = { otherText1 = it },
+                                label = { Text("Enter Response") },
+                                        modifier = Modifier.fillMaxWidth().padding(start = 8.dp)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
 
-            var isChecked by remember { mutableStateOf(false) }
+            Text("checkbox with other")
+            val checkboxOptionsLabels0 = listOf("Option 1", "Option 2","Other")
+            var checkboxOptionsBool0 by remember { mutableStateOf(listOf(false,false,false)) }
+            var otherText0 by remember { mutableStateOf("") }
+            Column {
+                checkboxOptionsLabels0.forEachIndexed { index, option ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = checkboxOptionsBool0[index],
+                            onCheckedChange = {
+                                checkboxOptionsBool0 = checkboxOptionsBool0.toMutableList()
+                                    .also { it[index] = !checkboxOptionsBool0[index] }
+                            }
+                        )
+                        Text(option, modifier = Modifier.padding(start = 8.dp))
+                        if(option=="Other"){
+                            Spacer(modifier = Modifier.height(4.dp))
+                            OutlinedTextField(
+                                value = otherText0,
+                                onValueChange = { otherText0 = it },
+                                label = { Text("Enter Response") },
+                                modifier = Modifier.fillMaxWidth().padding(start = 8.dp)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
 
-            Row() {
-                Checkbox(
-                    checked = isChecked,
-                    onCheckedChange = { isChecked = it }
-                )
-                Text("test", modifier = Modifier.padding(start = 8.dp))
+                        }
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Text("checkbox")
+            val checkboxOptionsLabels1 = listOf("Option 1", "Option 2")
+            var checkboxOptionsBool1 by remember { mutableStateOf(listOf(false,false)) }
+            Column {
+                checkboxOptionsLabels1.forEachIndexed { index, option ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = checkboxOptionsBool1[index],
+                            onCheckedChange = {
+                                checkboxOptionsBool1 = checkboxOptionsBool1.toMutableList()
+                                    .also { it[index] = !checkboxOptionsBool1[index] }
+                            }
+                        )
+                        Text(option, modifier = Modifier.padding(start = 8.dp))
+                    }
+                }
             }
 
-//            var notes by remember { mutableStateOf("") }
-//            OutlinedTextField(
-//                value = notes,
-//                onValueChange = { notes = it },
-//                label = { Text("Notes") },
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .height(150.dp), // optional: controls visible height
-//                singleLine = false,
-//                maxLines = 5 // optional: limits number of lines
-//            )
+            Text("Number keyboard")
+            var number0 by remember { mutableStateOf("") }
+            OutlinedTextField(
+                value=number0,
+                onValueChange = { number0 = it },
+                label = { Text("Label") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth()
+            )
 
+            Text("Validation: integer example")
+            val pattern0 = Regex("^\\d+$")
+            var number1 by remember { mutableStateOf("") }
+            var focusStarted0 by remember { mutableStateOf(false) }
+            var focusedLeftYet0 by remember { mutableStateOf(false) }
+            OutlinedTextField(
+                value = number1,
+                onValueChange = { number1 = it },
+                label = {
+                    if (!focusedLeftYet0 || number1.matches(pattern0)) {
+                        print(focusedLeftYet0)
+                        Text("Enter Response")
+                    } else {
+                        Text("Invalid input", color = MaterialTheme.colorScheme.error)
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .onFocusChanged { focusState ->
+                        if(focusState.isFocused) focusStarted0=true//this clause fixes the initial 'onload set focus state' error
+                        else if (!focusState.isFocused&&focusStarted0) {
+                            focusedLeftYet0 = true
+                        }
+                    },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+            )
+
+
+            Text("Additional Comments")
+            var notes by remember { mutableStateOf("") }
+            OutlinedTextField(
+                value = notes,
+                onValueChange = { notes = it },
+                label = { Text("Enter Response") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(150.dp), // optional: controls visible height
+                singleLine = false,
+                maxLines = 5 // optional: limits number of lines
+            )
 
             Spacer(modifier = Modifier.height(20.dp))
 
