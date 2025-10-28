@@ -7,17 +7,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-//import androidx.compose.ui.Alignment
 import androidx.compose.foundation.rememberScrollState
-//import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-//import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.input.KeyboardType
 import com.example.ui.components.RB
 import com.team695.scoutifyapp.ui.components.CB
 import com.team695.scoutifyapp.ui.components.OTF
 import com.team695.scoutifyapp.ui.components.TA
-//import kotlin.String
 
 //
 @OptIn(ExperimentalMaterial3Api::class)
@@ -29,7 +25,7 @@ import com.team695.scoutifyapp.ui.components.TA
 //submit -> do submit backend
 //image upload
 //canvas functionality
-//make components
+//turn required into an array/object (i.e. the focousedLeftYet)
 
 
 // required/validation, - for text: use Regex("^.+$"), radio has an example
@@ -52,7 +48,6 @@ fun FormScreen(onBack: () -> Unit) {
                 .padding(padding)
                 .padding(16.dp)
                 .verticalScroll(scrollState)
-                //.padding(end = 12.dp)//for scroll bar
         ) {
             var teamName by remember { mutableStateOf("") }
             OTF(
@@ -168,42 +163,6 @@ fun FormScreen(onBack: () -> Unit) {
                 label = "RadioButton with Other"
             )
 
-//            Text("required radiobutton")
-//            if (focusedLeftYet1 && selectedOption2=="") {
-//                Text("Required Response", color = MaterialTheme.colorScheme.error)
-//            }
-//            Column(
-//                modifier = Modifier
-//                .fillMaxWidth()
-//                .onFocusChanged { focusState ->
-//                    if(focusState.isFocused) focusStarted1=true//this clause fixes the initial 'onload set focus state' error
-//                    else if (!focusState.isFocused&&focusStarted1) {
-//                        focusedLeftYet1 = true
-//                    }
-//                },
-//                ) {
-//                radioOptions2.forEach { option ->
-//                    Row(verticalAlignment = Alignment.CenterVertically) {
-//                        RadioButton(
-//                            selected = selectedOption2 == option,
-//                            onClick = { selectedOption2 = option }
-//                        )
-//                        Text(option, modifier = Modifier.padding(start = 8.dp))
-//                        if(option=="Other"){
-//                            Spacer(modifier = Modifier.height(4.dp))
-//                            OutlinedTextField(
-//                                value = otherText2,
-//                                onValueChange = { otherText2 = it },
-//                                label = { Text("Enter Response") },
-//                                modifier = Modifier.fillMaxWidth().padding(start = 8.dp)
-//                            )
-//                            Spacer(modifier = Modifier.height(4.dp))
-//                        }
-//                    }
-//                }
-//            }
-
-
             var note by remember { mutableStateOf("") }
             TA(
                 label = "Additional Comments", input = note, onChange = {note=it}
@@ -212,7 +171,7 @@ fun FormScreen(onBack: () -> Unit) {
             fun ColumnScope.onSubmit(): () -> Unit {
                 return{
                     val valid =//put all constraints here
-                        (selectedOption2!=="") && (number1.matches(pattern0) && number1!=="")
+                        (selectedOption3 !=="") && (selectedOption2 !=="") && (number1.matches(pattern0) && number1!=="")
                     if(valid){
                         //! submit logic here
                         //just local storage for now
@@ -220,6 +179,7 @@ fun FormScreen(onBack: () -> Unit) {
                         //make validation messages appear
                         focusedLeftYet0 = true
                         focusedLeftYet1 = true
+                        focusedLeftYet2 = true
                     }
                 }
             }

@@ -9,7 +9,7 @@ import com.team695.scoutifyapp.ui.components.InfoCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(onNavigateToForm: () -> Unit, onNavigateToForm2:()->Unit) {
+fun Form2(onBack: () -> Unit) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(title = { Text("Scoutify App") })
@@ -21,17 +21,14 @@ fun HomeScreen(onNavigateToForm: () -> Unit, onNavigateToForm2:()->Unit) {
                 .padding(16.dp)
         ) {
             InfoCard(
-                title = "Team 695",
-                description = "Welcome to our scouting app!"
+                title = "Test",
+                description = "form2"
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(onClick = onNavigateToForm) {
-                Text("Go to Form")
-            }
-            Button(onClick = onNavigateToForm2) {
-                Text("Go to Form2")
+            Button(onClick = onBack) {
+                Text("Back")
             }
         }
     }
