@@ -9,25 +9,21 @@ import com.team695.scoutifyapp.ui.components.InfoCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Form2(onBack: () -> Unit) {
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(title = { Text("Scoutify App") })
-        }
-    ) { padding ->
+fun MatchForm(back: () -> Unit, home: ()-> Unit) {
+    Scaffold{ padding ->
         Column(
             modifier = Modifier
                 .padding(padding)
                 .padding(16.dp)
         ) {
             InfoCard(
-                title = "Test",
+                title = "Match Scouting",
                 description = "form2"
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(onClick = onBack) {
+            Button(onClick = back) {
                 Text("Back")
             }
         }

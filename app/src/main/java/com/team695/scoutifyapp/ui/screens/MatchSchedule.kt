@@ -5,33 +5,31 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.rememberNavController
 import com.team695.scoutifyapp.ui.components.InfoCard
+import com.team695.scoutifyapp.ui.components.TopBarMenu
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(onNavigateToForm: () -> Unit, onNavigateToForm2:()->Unit) {
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(title = { Text("Scoutify App") })
-        }
-    ) { padding ->
+fun MatchSchedule(navigateToMatchForm: () -> Unit, back:()->Unit) {
+    Scaffold{ padding ->
         Column(
             modifier = Modifier
                 .padding(padding)
                 .padding(16.dp)
         ) {
             InfoCard(
-                title = "Team 695",
+                title = "Match Schedule",
                 description = "Welcome to our scouting app!"
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(onClick = onNavigateToForm) {
-                Text("Go to Form")
+            Button(onClick = navigateToMatchForm) {
+                Text("test")
             }
-            Button(onClick = onNavigateToForm2) {
-                Text("Go to Form2")
+            Button(onClick = back) {
+                Text("Home")
             }
         }
     }

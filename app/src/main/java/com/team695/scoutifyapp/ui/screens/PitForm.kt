@@ -5,8 +5,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.text.input.KeyboardType
@@ -15,7 +13,6 @@ import com.team695.scoutifyapp.ui.components.CB
 import com.team695.scoutifyapp.ui.components.OTF
 import com.team695.scoutifyapp.ui.components.TA
 
-//
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 //!todo: clicking outside of a text input should remove focus,
@@ -25,23 +22,12 @@ import com.team695.scoutifyapp.ui.components.TA
 //submit -> do submit backend
 //image upload
 //canvas functionality
-//turn required into an array/object (i.e. the focousedLeftYet)
+//turn required into an array/object (i.e. the focusedLeftYet)
 
 
 // required/validation, - for text: use Regex("^.+$"), radio has an example
-fun FormScreen(onBack: () -> Unit) {
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("Scouting Form") },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                    }
-                }
-            )
-        }
-    ) { padding ->
+fun PitForm(back: () -> Unit,home:()->Unit) {
+    Scaffold{ padding ->
         val scrollState = rememberScrollState()
         Column(
             modifier = Modifier

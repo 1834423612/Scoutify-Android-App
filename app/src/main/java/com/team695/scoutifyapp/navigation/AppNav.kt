@@ -4,27 +4,41 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.team695.scoutifyapp.ui.screens.Form2
-import com.team695.scoutifyapp.ui.screens.HomeScreen
-import com.team695.scoutifyapp.ui.screens.FormScreen
+import com.team695.scoutifyapp.ui.screens.*
+
 
 @Composable
-fun AppNav() {
-    val navController: NavHostController = rememberNavController()
-
-    NavHost(navController = navController, startDestination = "home") {
-        composable("home") {
-            HomeScreen(
-                onNavigateToForm = { navController.navigate("form") },
-                onNavigateToForm2 = { navController.navigate("form") }
+fun AppNav(navController: NavHostController) {
+    NavHost(navController = navController, startDestination = "Home") {
+        composable("Home") {
+            Home(
+                navigateToPitSchedule = { navController.navigate("PitSchedule") },
+                navigateToMatchSchedule = {navController.navigate("MatchSchedule")}
             )
         }
-        composable("form") {
-            FormScreen(onBack = { navController.popBackStack() })
+        composable("MatchSchedule") {
+            MatchSchedule(
+                navigateToMatchForm = { navController.navigate("MatchForm") },
+                back = {navController.navigate("Home")}
+            )
         }
-        composable("form2") {
-            Form2(onBack = { navController.popBackStack() })
+        composable("PitSchedule") {
+            PitSchedule (
+                navigateToPitForm = { navController.navigate("PitForm") },
+                back = {navController.navigate("Home")}
+            )
+        }
+        composable("PitForm") {
+            PitForm(
+                back = { navController.popBackStack() },
+                home = { navController.navigate("Home")}
+            )
+        }
+        composable("MatchForm") {
+            MatchForm(
+                back = { navController.popBackStack() },
+                home = { navController.navigate("Home")}
+            )
         }
     }
 }
