@@ -12,8 +12,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.navigation.compose.rememberNavController
 import com.team695.scoutifyapp.navigation.AppNav
 import com.team695.scoutifyapp.ui.components.TopBarMenu
@@ -50,8 +52,10 @@ fun MainScreen() {
                 },
                 actions = {
                     TopBarMenu(navController = navController)
-                }
-            )
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color(0xFF6495ED) // Cornflower Blue
+                )            )
         }
     ) { padding ->
         Box(modifier = Modifier.padding(padding)) {

@@ -17,7 +17,7 @@ fun PitSchedule(navigateToPitForm: () -> Unit, back:()->Unit) {
                 .padding(16.dp)
         ) {
             InfoCard(
-                title = "Match Schedule",
+                title = "Pit Scouting",
                 description = "Welcome to our scouting app!"
             )
 
