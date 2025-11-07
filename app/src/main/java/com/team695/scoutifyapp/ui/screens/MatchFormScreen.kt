@@ -10,16 +10,13 @@ import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class) // Add this annotation
 @Composable
-fun PitForm(
-    back: () -> Unit,
-    home: () -> Unit
-) {
+fun MatchFormScreen(onBack: () -> Unit) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Pit Scouting") },
+                title = { Text("New Match") },
                 navigationIcon = {
-                    IconButton(onClick = back) {
+                    IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
                 }
@@ -27,7 +24,9 @@ fun PitForm(
         }
     ) { innerPadding ->
         Column(modifier = Modifier.padding(innerPadding).padding(16.dp)) {
-            Text("Pit scouting form placeholder", style = MaterialTheme.typography.titleMedium)
+            Text("Match form placeholder", style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.height(8.dp))
+            Text("Add fields here to record match data...")
         }
     }
 }

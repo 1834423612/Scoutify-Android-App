@@ -4,40 +4,33 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.team695.scoutifyapp.ui.screens.PitForm
 import com.team695.scoutifyapp.ui.screens.*
-
 
 @Composable
 fun AppNav(navController: NavHostController) {
     NavHost(navController = navController, startDestination = "Home") {
+
         composable("Home") {
-            Home(
-                navigateToPitSchedule = { navController.navigate("PitSchedule") },
-                navigateToMatchSchedule = {navController.navigate("MatchSchedule")}
-            )
+            MainScreen(navController)
         }
-        composable("MatchSchedule") {
-            MatchSchedule(
-                navigateToMatchForm = { navController.navigate("MatchForm") },
-                back = {navController.navigate("Home")}
-            )
+
+        composable("MatchForm") {
+            MatchFormScreen(onBack = { navController.popBackStack() })
         }
-        composable("PitSchedule") {
-            PitSchedule (
-                navigateToPitForm = { navController.navigate("PitForm") },
-                back = {navController.navigate("Home")}
-            )
-        }
+
         composable("PitForm") {
             PitForm(
                 back = { navController.popBackStack() },
-                home = { navController.navigate("Home")}
+                home = { navController.navigate("Home") }
             )
         }
-        composable("MatchForm") {
-            MatchForm(
-                back = { navController.popBackStack() },
-                home = { navController.navigate("Home")}
+
+        composable("MatchDetail/{matchNumber}") { backStackEntry ->
+            val matchNumber = backStackEntry.arguments?.getString("matchNumber") ?: "?"
+            MatchDetailScreen(
+                matchNumber = matchNumber,
+                onBack = { navController.popBackStack() }
             )
         }
     }

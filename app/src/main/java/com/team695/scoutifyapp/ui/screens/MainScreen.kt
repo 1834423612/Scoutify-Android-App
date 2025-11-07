@@ -1,61 +1,41 @@
 package com.team695.scoutifyapp.ui.screens
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.navigation.compose.rememberNavController
-import com.team695.scoutifyapp.navigation.AppNav
-import com.team695.scoutifyapp.ui.components.TopBarMenu
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.team695.scoutifyapp.ui.theme.ScoutifyTheme
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen() {
-    val navController = rememberNavController()
+fun MainScreen(navController: androidx.navigation.NavHostController) {
+    ScoutifyTheme {
+        val sampleMatches = listOf(
+            MatchItem("Q1", "Team 695", 132, "Red"),
+            MatchItem("Q2", "Team 291", 118, "Blue"),
+            MatchItem("Q3", "Team 379", 141, "Red"),
+            MatchItem("Q4", "Team 217", 97, "Blue")
+        )
 
-    val back: () -> Unit = {
-        navController.popBackStack()
-    }
-
-    val home: () -> Unit = {
-        navController.navigate("Home") {
-            launchSingleTop = true
-            popUpTo("Home") { inclusive = true }
-        }
-    }
-
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("Scoutify App") },
-                navigationIcon = {
-                    Row {
-                        IconButton(onClick = back) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                        }
-                        IconButton(onClick = home) {
-                            Icon(Icons.Filled.Home, contentDescription = "Home")
-                        }
-                    }
-                },
-                actions = {
-                    TopBarMenu(navController = navController)
-                }
-            )
-        }
-    ) { padding ->
-        Box(modifier = Modifier.padding(padding)) {
-            AppNav(navController = navController)
-        }
+        Home(
+            matches = sampleMatches,
+            onAddMatch = { navController.navigate("MatchForm") },
+            onSettingsClick = { /* TODO: Setting Page */ },
+            onMatchClick = { matchNumber ->
+                navController.navigate("MatchDetail/$matchNumber")
+            },
+            onPitScoutingClick = {
+                navController.navigate("PitForm")
+            }
+        )
     }
 }
