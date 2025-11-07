@@ -1,8 +1,6 @@
 package com.team695.scoutifyapp.ui.components
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-//import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -13,8 +11,8 @@ import androidx.compose.ui.unit.dp
 fun MatchBox(
     matchNumber: String,
     timestamp: String,
-    redScores: List<Int>,
-    blueScores: List<Int>,
+    redTeams: List<Int>,
+    blueTeams: List<Int>,
 ) {
     Card(
         modifier = Modifier.fillMaxWidth().padding(all = 8.dp),
@@ -35,38 +33,38 @@ fun MatchBox(
 
         Row {
             Text(
-                text = redScores[0].toString(),
+                text = redTeams[0].toString(),
                 color = Color.Red,
                 modifier = Modifier.padding(start = 8.dp)
             )
             Spacer(modifier = Modifier.weight(1f))
 
             Text(
-                text = redScores[1].toString(),
+                text = redTeams[1].toString(),
                 color = Color.Red,
             )
             Spacer(modifier = Modifier.weight(1f))
 
             Text(
-                text = redScores[2].toString(),
+                text = redTeams[2].toString(),
                 color = Color.Red,
             )
             Spacer(modifier = Modifier.weight(1f))
 
             Text(
-                text = blueScores[0].toString(),
+                text = blueTeams[0].toString(),
                 color = Color.Blue,
             )
             Spacer(modifier = Modifier.weight(1f))
 
             Text(
-                text = blueScores[1].toString(),
+                text = blueTeams[1].toString(),
                 color = Color.Blue,
             )
             Spacer(modifier = Modifier.weight(1f))
 
             Text(
-                text = blueScores[2].toString(),
+                text = blueTeams[2].toString(),
                 color = Color.Blue,
                 modifier = Modifier.padding(end = 8.dp)
             )

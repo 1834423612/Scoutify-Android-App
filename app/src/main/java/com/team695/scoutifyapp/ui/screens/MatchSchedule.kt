@@ -8,6 +8,8 @@ import androidx.compose.ui.unit.dp
 import com.team695.scoutifyapp.ui.components.InfoCard
 import com.team695.scoutifyapp.ui.components.MatchBox
 
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MatchSchedule(navigateToMatchForm: () -> Unit, back:()->Unit) {
@@ -34,14 +36,14 @@ fun MatchSchedule(navigateToMatchForm: () -> Unit, back:()->Unit) {
             MatchBox(
                 matchNumber = "Match 21",
                 timestamp = "Oct 18, 12:00",
-                redScores = listOf(48, 9999, 2399),
-                blueScores = listOf(9997, 3193, 4611),
+                redTeams = listOf(48, 9999, 2399),
+                blueTeams = listOf(9997, 3193, 4611),
             )
             MatchBox(
                 matchNumber = "Match 22",
                 timestamp = "Oct 18, 12:00",
-                redScores = listOf(48, 9999, 2399),
-                blueScores = listOf(9997, 3193, 4611),
+                redTeams = listOf(48, 9999, 2399),
+                blueTeams = listOf(9997, 3193, 4611),
             )
         }
     }

@@ -1,5 +1,6 @@
 package com.team695.scoutifyapp.ui.screens
 
+import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -10,8 +11,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.text.input.KeyboardType
 import com.example.ui.components.RB
 import com.team695.scoutifyapp.ui.components.CB
+import com.team695.scoutifyapp.ui.components.ImagePicker
 import com.team695.scoutifyapp.ui.components.OTF
 import com.team695.scoutifyapp.ui.components.TA
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,58 +38,28 @@ fun PitForm(back: () -> Unit,home:()->Unit) {
                 .padding(16.dp)
                 .verticalScroll(scrollState)
         ) {
+            val numberPattern = Regex("^\\d+(\\.\\d+)?$")
+
             var teamName by remember { mutableStateOf("") }
             OTF(
                 value = teamName,
                 onChange = { teamName = it },
-                title = "Enter the Team Name"
+                title = "Enter the Team Number"
             )
 
-            val checkboxOptionsLabels0 = listOf("Option 1", "Option 2", "Other")
-            var checkboxOptionsBool0 by remember { mutableStateOf(listOf(false, false, false)) }
-            var otherText0 by remember { mutableStateOf("") }
-            CB(
-                label = "Choose options",
-                options = checkboxOptionsLabels0,
-                checkedStates = checkboxOptionsBool0,
-                onCheckedChange = { index, isChecked ->
-                    checkboxOptionsBool0 = checkboxOptionsBool0.toMutableList().also { it[index] = isChecked }
-                },
-                otherText = otherText0,
-                onOtherTextChange = { otherText0 = it }
-            )
-
-            val checkLabels = listOf("Option 1", "Option 2", "Other")
-            var checkBools by remember { mutableStateOf(listOf(false, false, false)) }
-            CB(
-                label = "Choose options",
-                options = checkLabels,
-                checkedStates = checkBools,
-                onCheckedChange = { index, isChecked ->
-                    checkBools = checkBools.toMutableList().also { it[index] = isChecked }
-                },
-            )
-
-            var number0 by remember { mutableStateOf("") }
-            OTF(
-                label = "number",
-                title = "Number Keyboard",
-                value=number0,
-                onChange = { number0 = it },
-                keyboardType = KeyboardType.Number
-            )
-
-
-            var number1 by remember { mutableStateOf("") }
-            val pattern0 = Regex("^\\d+$")
-            var focusedLeftYet0 by remember { mutableStateOf(false) }
+            Text("Type of Drive Train")
             var focusStarted0 by remember { mutableStateOf(false) }
-            OTF(
-                title = "Enter a number",
-                value = number1,
-                onChange = { number1 = it },
-                keyboardType = KeyboardType.Number,
-                pattern = pattern0,
+            var focusedLeftYet0 by remember { mutableStateOf(false) }
+            var _drive by remember { mutableStateOf("") }
+            val drive = listOf("Tank Drive (\"skid steer\", plates on both sides of wheels)", "West Coast Drive (wheels mounted off one side of tube)", "Swerve Drive", "Other")
+            var otherDrive by remember { mutableStateOf("") }
+            RB(
+                options = drive,
+                selectedOption = _drive,
+                onOptionSelected = {_drive = it },
+                otherText = otherDrive,
+                onOtherTextChange = { otherDrive = it },
+                label = "Select the type of drive train used in your robot design.",
                 focusedLeftYet = focusedLeftYet0,
                 onFocusUpdate = { started ->
                     if (started) focusStarted0 = true
@@ -94,18 +67,19 @@ fun PitForm(back: () -> Unit,home:()->Unit) {
                 }
             )
 
+            Text("Type of Wheels Used")
             var focusStarted1 by remember { mutableStateOf(false) }
             var focusedLeftYet1 by remember { mutableStateOf(false) }
-            var selectedOption2 by remember { mutableStateOf("") }
-            val radioOptions2 = listOf("Option 1", "Option 2","Other")
-            var otherText2 by remember { mutableStateOf("") }
+            var _wheels by remember { mutableStateOf("") }
+            val wheels = listOf("Traction", "Mecanum (rollers at 45° angle)", "Omni (rollers at 90° angle)", "Other")
+            var otherWheels by remember { mutableStateOf("") }
             RB(
-                options = radioOptions2,
-                selectedOption = selectedOption2,
-                onOptionSelected = {selectedOption2 = it },
-                otherText = otherText2,
-                onOtherTextChange = { otherText2 = it },
-                label = "other Radio+required",
+                options = wheels,
+                selectedOption = _wheels,
+                onOptionSelected = {_wheels = it },
+                otherText = otherWheels,
+                onOtherTextChange = { otherWheels = it },
+                label = "Choose the type of wheels used on your robot.",
                 focusedLeftYet = focusedLeftYet1,
                 onFocusUpdate = { started ->
                     if (started) focusStarted1 = true
@@ -113,15 +87,29 @@ fun PitForm(back: () -> Unit,home:()->Unit) {
                 }
             )
 
+            val intakes = listOf("Ground", "Feeder Station", "Other")
+            var _intakes by remember { mutableStateOf(listOf(false, false, false)) }
+            var otherIntakes by remember { mutableStateOf("") }
+            CB(
+                label = "Intakes:",
+                options = intakes,
+                checkedStates = _intakes,
+                onCheckedChange = { index, isChecked ->
+                    _intakes = _intakes.toMutableList().also { it[index] = isChecked }
+                },
+                otherText = otherIntakes,
+                onOtherTextChange = { otherIntakes = it }
+            )
+
             var focusStarted2 by remember { mutableStateOf(false) }
             var focusedLeftYet2 by remember { mutableStateOf(false) }
-            var selectedOption3 by remember { mutableStateOf("") }
-            val radioOptions3 = listOf("Option 1", "Option 2","Other")
+            var _coralAcquisition by remember { mutableStateOf("") }
+            val coralAcquisition = listOf("None", "Coral Station Only", "Floor Only", "Coral Station and Floor")
             RB(
-                options = radioOptions3,
-                selectedOption = selectedOption3,
-                onOptionSelected = {selectedOption3 = it },
-                label = "required",
+                options = coralAcquisition,
+                selectedOption = _coralAcquisition,
+                onOptionSelected = {_coralAcquisition = it },
+                label = "Coral Acquisition(Scoring Method):",
                 focusedLeftYet = focusedLeftYet2,
                 onFocusUpdate = { started ->
                     if (started) focusStarted2 = true
@@ -129,44 +117,320 @@ fun PitForm(back: () -> Unit,home:()->Unit) {
                 }
             )
 
-            var selectedOption by remember { mutableStateOf("") }
-            val radioOptions = listOf("Option 1", "Option 2")
-            RB(
-                options = radioOptions,
-                selectedOption = selectedOption,
-                onOptionSelected = { selectedOption = it },
-                label = "Radiobutton"
+            val scoringLocations = listOf("L1", "L2", "L3","L4","Algae in Processor","Algae in Net")
+            var _scoringLocations by remember { mutableStateOf(listOf(false, false, false,false,false,false)) }
+            CB(
+                label = "Scoring Locations:",
+                options = scoringLocations,
+                checkedStates = _scoringLocations,
+                onCheckedChange = { index, isChecked ->
+                    _scoringLocations = _scoringLocations.toMutableList().also { it[index] = isChecked }
+                },
             )
 
-            var selectedOption1 by remember { mutableStateOf("") }
-            var otherText1 by remember { mutableStateOf("") }
+            var focusStarted3 by remember { mutableStateOf(false) }
+            var focusedLeftYet3 by remember { mutableStateOf(false) }
+            var _algaeAcquisition by remember { mutableStateOf("") }
+            val algaeAcquisition = listOf("None", "Reef Only", "Floor Only", "Reef and Floor")
             RB(
-                options = listOf("Option 1", "Option 2", "Other"),
-                selectedOption = selectedOption1,
-                onOptionSelected = { selectedOption1 = it },
-                otherText = otherText1,
-                onOtherTextChange = { otherText1 = it },
-                label = "RadioButton with Other"
+                options = algaeAcquisition,
+                selectedOption = _algaeAcquisition,
+                onOptionSelected = {_algaeAcquisition = it },
+                label = "Algae Acquisition(Scoring Method):",
+                focusedLeftYet = focusedLeftYet3,
+                onFocusUpdate = { started ->
+                    if (started) focusStarted3 = true
+                    else if (focusStarted3) focusedLeftYet3 = true
+                }
             )
+
+            var focusStarted4 by remember { mutableStateOf(false) }
+            var focusedLeftYet4 by remember { mutableStateOf(false) }
+            var _algaeScoring by remember { mutableStateOf("") }
+            val algaeScoring = listOf("None", "Processor Only", "Net Only", "Processor and Net")
+            RB(
+                options = algaeScoring,
+                selectedOption = _algaeScoring,
+                onOptionSelected = {_algaeScoring = it },
+                label = "Algae Scoring:",
+                focusedLeftYet = focusedLeftYet4,
+                onFocusUpdate = { started ->
+                    if (started) focusStarted4 = true
+                    else if (focusStarted4) focusedLeftYet4 = true
+                }
+            )
+
+            val climb = listOf("Deep Climb", "Shallow Climb")
+            var _climb by remember { mutableStateOf(listOf(false, false)) }
+            CB(
+                label = "Cage Climbing:",
+                options = climb,
+                checkedStates = _climb,
+                onCheckedChange = { index, isChecked ->
+                    _climb = _climb.toMutableList().also { it[index] = isChecked }
+                },
+            )
+
+            val autoMove = listOf("Yes")
+            var _autoMove by remember { mutableStateOf(listOf(false)) }
+            CB(
+                label = "Robot leaves their Starting Zone during autonomous?",
+                options = autoMove,
+                checkedStates = _autoMove,
+                onCheckedChange = { index, isChecked ->
+                    _autoMove = _autoMove.toMutableList().also { it[index] = isChecked }
+                },
+            )
+
+            Text("Robot Weight (without Bumpers)")
+            var weight by remember { mutableStateOf("") }
+            var focusedLeftYet5 by remember { mutableStateOf(false) }
+            var focusStarted5 by remember { mutableStateOf(false) }
+            OTF(
+                title = "Enter the weight of the robot in pounds.",
+                value = weight,
+                onChange = { it->{weight = it }},
+                keyboardType = KeyboardType.Number,
+                pattern = numberPattern,
+                focusedLeftYet = focusedLeftYet5,
+                onFocusUpdate = { started ->
+                    if (started) focusStarted5 = true
+                    else if (focusStarted5) focusedLeftYet5 = true
+                }
+            )
+
+            Text("Robot Length (without Bumpers)")
+            var length by remember { mutableStateOf("") }
+            var focusedLeftYet6 by remember { mutableStateOf(false) }
+            var focusStarted6 by remember { mutableStateOf(false) }
+            OTF(
+                title = "Enter the length of the robot in inches without bumpers(front to back).",
+                value = length,
+                onChange = { length = it },
+                keyboardType = KeyboardType.Number,
+                pattern = numberPattern,
+                focusedLeftYet = focusedLeftYet6,
+                onFocusUpdate = { started ->
+                    if (started) focusStarted6 = true
+                    else if (focusStarted6) focusedLeftYet6 = true
+                }
+            )
+
+            Text("Robot Width (without Bumpers)")
+            var width by remember { mutableStateOf("") }
+            var focusedLeftYet7 by remember { mutableStateOf(false) }
+            var focusStarted7 by remember { mutableStateOf(false) }
+            OTF(
+                title = "Enter the width of the robot in inches without bumpers(left to right).",
+                value = width,
+                onChange = { width = it },
+                keyboardType = KeyboardType.Number,
+                pattern = numberPattern,
+                focusedLeftYet = focusedLeftYet7,
+                onFocusUpdate = { started ->
+                    if (started) focusStarted7 = true
+                    else if (focusStarted7) focusedLeftYet7 = true
+                }
+            )
+
+            Text("Robot Height")
+            var height by remember { mutableStateOf("") }
+            var focusedLeftYet8 by remember { mutableStateOf(false) }
+            var focusStarted8 by remember { mutableStateOf(false) }
+            OTF(
+                title = "Enter the height of the robot in inches from the floor to the highest point on the robot at the start of the match.",
+                value = height,
+                onChange = { height = it },
+                keyboardType = KeyboardType.Number,
+                pattern = numberPattern,
+                focusedLeftYet = focusedLeftYet8,
+                onFocusUpdate = { started ->
+                    if (started) focusStarted8 = true
+                    else if (focusStarted8) focusedLeftYet8 = true
+                }
+            )
+
+            Text("Robot Height When Fully Extended")
+            var heightMax by remember { mutableStateOf("") }
+            var focusedLeftYet9 by remember { mutableStateOf(false) }
+            var focusStarted9 by remember { mutableStateOf(false) }
+            OTF(
+                title = "Enter the height of the robot in inches from the floor to the highest point on the robot at the start of the match.",
+                value = heightMax,
+                onChange = { heightMax = it },
+                keyboardType = KeyboardType.Number,
+                pattern = numberPattern,
+                focusedLeftYet = focusedLeftYet9,
+                onFocusUpdate = { started ->
+                    if (started) focusStarted9 = true
+                    else if (focusStarted9) focusedLeftYet9 = true
+                }
+            )
+
+            var focusStarted10 by remember { mutableStateOf(false) }
+            var focusedLeftYet10 by remember { mutableStateOf(false) }
+            var _driveTeam by remember { mutableStateOf("") }
+            val driveTeam = listOf("One person driving and operating the robot during a match", "Other")
+            var otherDriveTeam by remember { mutableStateOf("") }
+            RB(
+                options = driveTeam,
+                selectedOption = _driveTeam,
+                onOptionSelected = {_driveTeam = it },
+                otherText = otherDriveTeam,
+                onOtherTextChange = { otherDriveTeam = it },
+                label = "Drive Team Members",
+                focusedLeftYet = focusedLeftYet10,
+                onFocusUpdate = { started ->
+                    if (started) focusStarted10 = true
+                    else if (focusStarted10) focusedLeftYet10 = true
+                }
+            )
+
+            var practice by remember { mutableStateOf("") }
+            OTF(
+                value = practice,
+                onChange = { practice = it },
+                title = "Hours/Weeks of Practice"
+            )
+
+
+//            val checkboxOptionsLabels0 = listOf("Option 1", "Option 2", "Other")
+//            var checkboxOptionsBool0 by remember { mutableStateOf(listOf(false, false, false)) }
+//            var otherText0 by remember { mutableStateOf("") }
+//            CB(
+//                label = "Choose options",
+//                options = checkboxOptionsLabels0,
+//                checkedStates = checkboxOptionsBool0,
+//                onCheckedChange = { index, isChecked ->
+//                    checkboxOptionsBool0 = checkboxOptionsBool0.toMutableList().also { it[index] = isChecked }
+//                },
+//                otherText = otherText0,
+//                onOtherTextChange = { otherText0 = it }
+//            )
+//
+//            val checkLabels = listOf("Option 1", "Option 2", "Other")
+//            var checkBools by remember { mutableStateOf(listOf(false, false, false)) }
+//            CB(
+//                label = "Choose options",
+//                options = checkLabels,
+//                checkedStates = checkBools,
+//                onCheckedChange = { index, isChecked ->
+//                    checkBools = checkBools.toMutableList().also { it[index] = isChecked }
+//                },
+//            )
+//
+//            var number0 by remember { mutableStateOf("") }
+//            OTF(
+//                label = "number",
+//                title = "Number Keyboard",
+//                value=number0,
+//                onChange = { number0 = it },
+//                keyboardType = KeyboardType.Number
+//            )
+//
+//
+//            var number1 by remember { mutableStateOf("") }
+//            val pattern0 = Regex("^\\d+$")
+//            var focusedLeftYet0 by remember { mutableStateOf(false) }
+//            var focusStarted0 by remember { mutableStateOf(false) }
+//            OTF(
+//                title = "Enter a number",
+//                value = number1,
+//                onChange = { number1 = it },
+//                keyboardType = KeyboardType.Number,
+//                pattern = pattern0,
+//                focusedLeftYet = focusedLeftYet0,
+//                onFocusUpdate = { started ->
+//                    if (started) focusStarted0 = true
+//                    else if (focusStarted0) focusedLeftYet0 = true
+//                }
+//            )
+//
+//            var focusStarted1 by remember { mutableStateOf(false) }
+//            var focusedLeftYet1 by remember { mutableStateOf(false) }
+//            var selectedOption2 by remember { mutableStateOf("") }
+//            val radioOptions2 = listOf("Option 1", "Option 2","Other")
+//            var otherText2 by remember { mutableStateOf("") }
+//            RB(
+//                options = radioOptions2,
+//                selectedOption = selectedOption2,
+//                onOptionSelected = {selectedOption2 = it },
+//                otherText = otherText2,
+//                onOtherTextChange = { otherText2 = it },
+//                label = "other Radio+required",
+//                focusedLeftYet = focusedLeftYet1,
+//                onFocusUpdate = { started ->
+//                    if (started) focusStarted1 = true
+//                    else if (focusStarted1) focusedLeftYet1 = true
+//                }
+//            )
+//
+//            var focusStarted2 by remember { mutableStateOf(false) }
+//            var focusedLeftYet2 by remember { mutableStateOf(false) }
+//            var selectedOption3 by remember { mutableStateOf("") }
+//            val radioOptions3 = listOf("Option 1", "Option 2","Other")
+//            RB(
+//                options = radioOptions3,
+//                selectedOption = selectedOption3,
+//                onOptionSelected = {selectedOption3 = it },
+//                label = "required",
+//                focusedLeftYet = focusedLeftYet2,
+//                onFocusUpdate = { started ->
+//                    if (started) focusStarted2 = true
+//                    else if (focusStarted2) focusedLeftYet2 = true
+//                }
+//            )
+//
+//            var selectedOption by remember { mutableStateOf("") }
+//            val radioOptions = listOf("Option 1", "Option 2")
+//            RB(
+//                options = radioOptions,
+//                selectedOption = selectedOption,
+//                onOptionSelected = { selectedOption = it },
+//                label = "Radiobutton"
+//            )
+//
+//            var selectedOption1 by remember { mutableStateOf("") }
+//            var otherText1 by remember { mutableStateOf("") }
+//            RB(
+//                options = listOf("Option 1", "Option 2", "Other"),
+//                selectedOption = selectedOption1,
+//                onOptionSelected = { selectedOption1 = it },
+//                otherText = otherText1,
+//                onOtherTextChange = { otherText1 = it },
+//                label = "RadioButton with Other"
+//            )
 
             var note by remember { mutableStateOf("") }
             TA(
                 label = "Additional Comments", input = note, onChange = {note=it}
             )
 
+            var file0 by remember { mutableStateOf<Uri?>(null) }
+            Text("Full Robot Image")
+            ImagePicker(
+                onImageSelected = { uri -> file0 = uri }
+            )
+
+            var file1 by remember { mutableStateOf<Uri?>(null) }
+            Text("Drive Train Image")
+            ImagePicker(
+                onImageSelected = { uri -> file1 = uri }
+            )
+
             fun ColumnScope.onSubmit(): () -> Unit {
                 return{
-                    val valid =//put all constraints here
-                        (selectedOption3 !=="") && (selectedOption2 !=="") && (number1.matches(pattern0) && number1!=="")
-                    if(valid){
-                        //! submit logic here
-                        //just local storage for now
-                    }else{
-                        //make validation messages appear
-                        focusedLeftYet0 = true
-                        focusedLeftYet1 = true
-                        focusedLeftYet2 = true
-                    }
+//                    val valid =//put all constraints here
+//                        (selectedOption3 !=="") && (selectedOption2 !=="") && (number1.matches(pattern0) && number1!=="")
+//                    if(valid){
+//                        //! submit logic here
+//                        //just local storage for now
+//                    }else{
+//                        //make validation messages appear
+//                        focusedLeftYet0 = true
+//                        focusedLeftYet1 = true
+//                        focusedLeftYet2 = true
+//                    }
                 }
             }
             Button(
@@ -177,221 +441,6 @@ fun PitForm(back: () -> Unit,home:()->Unit) {
             ) {
                 Text("Save")
             }
-
-//            Spacer(modifier = Modifier.height(20.dp))
-//
-//            IconButton(onClick = onBack) {
-//                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-//            }
         }
     }
 }
-
-
-/*
-most recent pit scouting form
-      i: "https://lh7-us.googleusercontent.com/pUWvHrPDa5IfrQcFalk4lO0e4PhD3sLMP0jyLJU8PTWWGfw5r-Wa4qDQNHhbu0byYLzXScP5lfTSUCsvbNI-FlwDY2L7Ra0-TgYqf5Eabw0INSFE3ah4QCqCqHFrsaPKyCOt8m2Yo-H2ie9E7apzh6c8AO147A",
-      w: "50%",
-      question: "Type of drive train",
-      description: "Select the type of drive train used in your robot design.",
-      type: "radio",
-      options: [
-        'Tank Drive ("skid steer", plates on both sides of wheels)',
-        "West Coast Drive (wheels mounted off one side of tube)",
-        "Swerve Drive",
-        "Other",
-      ],
-      optionValues: [
-        'Tank Drive',
-        "West Coast Drive",
-        "Swerve Drive",
-        "Other",
-      ],
-      value: null,
-      required: true,
-      showOtherInput: false,
-      otherValue: "",
-      showDescription: false,
-      originalIndex: 1
-    },
-    {
-      i: "https://lh7-us.googleusercontent.com/PCI7CaG88MiY50L7AM0CVTs9dRd3NQgqW4B2rd64vmjHaNDMEHR0EkWYqv-rzHBnGBC08NzWtr7W97lIk226Q9WVCPuTKuOSZcpb6eyNC5Q3HGmFQwp8005gRcxiS09RjeWUJQJTK-vQGDWd0QAbpSipLSkExw",
-      w: "100%",
-      question: "Type of wheels used",
-      description: "Choose the type of wheels used on your robot.",
-      type: "radio",
-      options: [
-        "Traction",
-        "Mecanum (rollers at 45° angle)",
-        "Omni (rollers at 90° angle)",
-        "Other",
-      ],
-      optionValues: [
-        "Traction",
-        "Mecanum",
-        "Omni",
-        "Other",
-      ],
-      value: null,
-      required: true,
-      showOtherInput: false,
-      otherValue: "",
-      showDescription: false,
-      originalIndex: 2
-    },
-    {
-      question: "Intake Use:",
-      type: "checkbox",
-      options: ["Ground", "Station", "None", "Other"],
-      optionValues: ["Ground", "Station", "None", "Other"],
-      value: [],
-      required: true,
-      showOtherInput: false,
-      otherValue: "",
-      originalIndex: 3
-    },
-    {
-      question: "Coral Acquisition(Scoring Method):",
-      type: "radio",
-      options: ["None", "Coral Station Only", "Floor Only", "Coral Station and Floor"],
-      optionValues: ["None", "Coral Station Only", "Floor Only", "Coral Station and Floor"],
-      value: null,
-      required: true,
-      showOtherInput: false,
-      otherValue: "",
-      originalIndex: 4
-    },
-    {
-      question: "Scoring Locations:",
-      type: "checkbox",
-      options: ["L1", "L2", "L3", "L4", "Algae in Processor", "Algae in Net", "Other"],
-      optionValues: ["L1", "L2", "L3", "L4", "Algae in Processor", "Algae in Net", "Other"],
-      value: [],
-      required: true,
-      showOtherInput: false,
-      otherValue: "",
-      originalIndex: 5
-    },
-    {
-      question: "Algae Acquisition(Scoring Method):",
-      type: "radio",
-      options: ["None", "Reef Only", "Floor Only", "Reef and Floor"],
-      optionValues: ["None", "Reef Only", "Floor Only", "Reef and Floor"],
-      value: null,
-      required: true,
-      showOtherInput: false,
-      otherValue: "",
-      originalIndex: 6
-    },
-    {
-      question: "Algae Scoring:",
-      type: "radio",
-      options: ["None", "Processor Only", "Net Only", "Processor and Net"],
-      optionValues: ["None", "Processor Only", "Net Only", "Processor and Net"],
-      value: null,
-      required: true,
-      showOtherInput: false,
-      otherValue: "",
-      originalIndex: 7
-    },
-    {
-      question: "Cage Climbing:",
-      type: "checkbox",
-      options: ["Deep Climb", "Shallow Climb", "No Climb"],
-      optionValues: ["Deep Climb", "Shallow Climb", "No Climb"],
-      value: [],
-      required: true,
-      originalIndex: 8
-    },
-    {
-      question: "Robot leaves their Starting Zone during autonomous?",
-      type: "radio",
-      options: ["Yes", "No"],
-      optionValues: ["Yes", "No"],
-      value: null,
-      required: true,
-      showOtherInput: false,
-      otherValue: "",
-      originalIndex: 9
-    },
-    {
-      question: "Robot Weight (without Bumpers)",
-      description: "Enter the weight of the robot in pounds.",
-      type: "number",
-      required: true,
-      value: null,
-      originalIndex: 10
-    },
-    {
-      question: "Bumpers Weight",
-      description: "Enter the weight of the bumpers in pounds.",
-      type: "number",
-      required: true,
-      value: null,
-      originalIndex: 11
-    },
-    {
-      question: "Robot Length (without Bumpers)",
-      description: "Enter the length of the robot in inches without bumpers(front to back).",
-      type: "number",
-      required: true,
-      value: null,
-      originalIndex: 12
-    },
-    {
-      question: "Robot Width (without Bumpers)",
-      description: "Enter the width of the robot in inches without bumpers(left to right).",
-      type: "number",
-      required: true,
-      value: null,
-      originalIndex: 13
-    },
-    {
-      question: "Robot Height",
-      description: "Enter the height of the robot in inches from the floor to the highest point on the robot at the start of the match.",
-      type: "number",
-      required: true,
-      value: null,
-      originalIndex: 14
-    },
-    {
-      question: "Height when fully extended",
-      description: "In inches.",
-      type: "number",
-      required: true,
-      value: null,
-      originalIndex: 15
-    },
-    {
-      question: "Drive Team Members",
-      type: "radio",
-      options: [
-        "One person driving and operating the robot during a match",
-        "Other",
-      ],
-      optionValues: [
-        "One person driving and operating the robot during a match",
-        "Other",
-      ],
-      value: null,
-      required: true,
-      showOtherInput: false,
-      otherValue: "",
-      originalIndex: 16
-    },
-    {
-      question: "Hours/Weeks of Practice",
-      type: "text",
-      required: true,
-      value: null,
-      originalIndex: 17
-    },
-    {
-      question: "Additional Comments",
-      type: "textarea",
-      required: false,
-      value: null,
-      originalIndex: 18
-
-
- */
