@@ -28,9 +28,7 @@ fun OTF(
     title: String,
     value: String,
     onChange: (String) -> Unit,
-    pattern: Regex,
-    focusedLeftYet: Boolean,
-    onFocusUpdate: (Boolean) -> Unit,
+    required: Required,
     keyboardType: KeyboardType = KeyboardType.Text
 ) {
     Text(title)
@@ -38,22 +36,26 @@ fun OTF(
         value = value,
         onValueChange = onChange,
         label = {
-            if (!focusedLeftYet || (value.matches(pattern) && value.isNotEmpty())) {
-                Text(label)
-            } else {
-                Text("Invalid input", color = MaterialTheme.colorScheme.error)
-            }
+            //println(required.focusLeftYet)
+            //println(required.valid().not())
+//            if(required.focusLeftYet){//&&required.valid().not(
+//                Text("Invalid input", color = MaterialTheme.colorScheme.error)
+//            } else Text(label)
+            if(required.focusLeftYet.not()||required.valid()) Text(label)
+            else Text("Invalid input", color = MaterialTheme.colorScheme.error)
         },
+        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
         modifier = Modifier
             .fillMaxWidth()
             .onFocusChanged { focusState ->
-                if (focusState.isFocused) {
-                    onFocusUpdate(true) // focus started
-                } else if (!focusState.isFocused && focusedLeftYet.not()) {
-                    onFocusUpdate(false) // focus left
-                }
-            },
-        keyboardOptions = KeyboardOptions(keyboardType = keyboardType)
+                //println("focusState")
+                //println(focusState.isFocused)
+                if (focusState.isFocused.not()&&required.focusStarted) required.focusLeftYet = true
+                required.focusStarted = true
+
+                println( " → ${required.focusStarted}, ${required.focusLeftYet}, ${required.valid()}")
+
+            }
     )
     Spacer(modifier = Modifier.height(12.dp))
 }

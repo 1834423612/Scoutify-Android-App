@@ -7,6 +7,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.unit.dp
+import com.team695.scoutifyapp.ui.components.Required
 
 @Composable
 fun RB(
@@ -81,20 +82,19 @@ fun RB(
     onOptionSelected: (String) -> Unit,
     label: String,
     modifier: Modifier = Modifier,
-    focusedLeftYet: Boolean,
-    onFocusUpdate: (Boolean) -> Unit,
+    required: Required,
 ) {
     Column(modifier = modifier
         .onFocusChanged { focusState ->
             if (focusState.isFocused) {
-                onFocusUpdate(true) // focus started
-            } else if (!focusState.isFocused && focusedLeftYet.not()) {
-                onFocusUpdate(false) // focus left
+                required.focusStarted = true
+            } else if (!focusState.isFocused && required.focusLeftYet.not()) {
+                if (required.focusStarted) required.focusLeftYet = true
             }
         }
     ) {
         Text(label, style = MaterialTheme.typography.titleMedium)
-        if (focusedLeftYet && selectedOption=="") {
+        if (required.focusLeftYet && selectedOption=="") {
             Text("Required Response", color = MaterialTheme.colorScheme.error)
         }
         Spacer(modifier = Modifier.height(8.dp))
@@ -122,21 +122,20 @@ fun RB(
     otherText: String,
     onOtherTextChange: (String) -> Unit,
     label: String,
-    focusedLeftYet: Boolean,
-    onFocusUpdate: (Boolean) -> Unit,
+    required: Required
 ) {
     Column(
         modifier = Modifier
             .onFocusChanged { focusState ->
                 if (focusState.isFocused) {
-                    onFocusUpdate(true) // focus started
-                } else if (!focusState.isFocused && focusedLeftYet.not()) {
-                    onFocusUpdate(false) // focus left
+                    required.focusStarted = true
+                } else if (!focusState.isFocused && required.focusLeftYet.not()) {
+                    if (required.focusStarted) required.focusLeftYet = true
                 }
             }
     ) {
         Text(label, style = MaterialTheme.typography.titleMedium)
-        if (focusedLeftYet && selectedOption=="") {
+        if (required.focusLeftYet && selectedOption=="") {
             Text("Required Response", color = MaterialTheme.colorScheme.error)
         }
         Spacer(modifier = Modifier.height(8.dp))
