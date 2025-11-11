@@ -74,3 +74,25 @@ fun CB(
         Spacer(modifier = Modifier.height(12.dp))
     }
 }
+@Composable
+fun CB(
+    options: List<String>,
+    checkedStates: List<Boolean>,
+    onCheckedChange: (Int, Boolean) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        options.forEachIndexed { index, option ->
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(
+                        checked = checkedStates[index],
+                        onCheckedChange = { onCheckedChange(index, it) }
+                    )
+                    Text(option, modifier = Modifier.padding(start = 8.dp))
+                }
+            }
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+    }
+}
