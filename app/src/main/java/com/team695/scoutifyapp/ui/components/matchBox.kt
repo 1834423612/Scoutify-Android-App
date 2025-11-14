@@ -6,6 +6,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.team695.scoutifyapp.ui.components.icons.LightBulb
+import com.team695.scoutifyapp.ui.components.icons.VideoCamera
 
 @Composable
 fun MatchBox(

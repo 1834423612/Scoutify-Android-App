@@ -6,6 +6,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.team695.scoutifyapp.ui.components.InfoCard
+import com.team695.scoutifyapp.ui.components.Bison
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -20,6 +22,10 @@ fun Home(navigateToPitSchedule: () -> Unit, navigateToMatchSchedule:()->Unit) {
                 title = "Team 695",
                 description = "Welcome to our scouting app!"
             )
+
+
+            Bison()
+
 
             Spacer(modifier = Modifier.height(16.dp))
 

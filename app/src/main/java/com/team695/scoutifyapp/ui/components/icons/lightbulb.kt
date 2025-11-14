@@ -1,6 +1,6 @@
 //https://github.com/tailwindlabs/heroicons/blob/master/LICENSE copyright
 
-package com.team695.scoutifyapp.ui.components
+package com.team695.scoutifyapp.ui.components.icons
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
