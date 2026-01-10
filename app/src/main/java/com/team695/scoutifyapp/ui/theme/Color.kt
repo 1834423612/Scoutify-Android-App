@@ -8,13 +8,14 @@ val BackgroundTertiary = Color(0xFF171920)
 val BackgroundCard = BackgroundTertiary.copy(alpha = 0.8f)
 val BackgroundNav = Color(0xFF252525).copy(alpha = 0.5f)
 
-val Accent = Color(0xFFBDB16C)
+val Accent = Color(0xFFEFDC70)
 val AccentSecondary = Color(0xFF00B2D6)
 val AccentGreen = Color(0xFFA3E635)
 
 val Deselected = Color(0xFFB7B8B9)
 val LightGunmetal = Color(0xFF434343)
 val Gunmetal = Color(0xFF2D3142)
+val DarkishGunmetal = Color(0xFF242832)
 
 val PaneColor = Color(0xFF171920)
 val TextPrimary = Color.White

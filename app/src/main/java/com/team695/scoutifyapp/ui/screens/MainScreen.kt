@@ -7,8 +7,10 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -16,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithCache
@@ -24,10 +27,12 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.fromColorLong
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -68,8 +73,8 @@ fun NavRail() {
         modifier = Modifier
             .fillMaxHeight()
             .width(60.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .border(width=1.dp, color=LightGunmetal, shape = RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(8.dp))
+            .border(width=1.dp, color=LightGunmetal, shape = RoundedCornerShape(8.dp))
     ) {
         ImageBackground(x=350f, y=325f)
         BackgroundGradient()
@@ -103,6 +108,7 @@ fun NavRail() {
                     Image(
                         painter = painterResource(id = R.drawable.account), // placeholder
                         contentDescription = "User Avatar",
+                        colorFilter = ColorFilter.tint(Accent),
                         modifier = Modifier
                             .size(30.dp)
                      )
@@ -178,7 +184,6 @@ fun NavItem(icon: Int, label: String, selected: Boolean = false) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
-            .clip(RoundedCornerShape(20.dp))
             .background( Color.Transparent)
             .padding(vertical = 8.dp, horizontal = 16.dp)
     ) {
@@ -215,11 +220,12 @@ fun MainContent() {
 
 @Composable
 fun TasksCard() {
-    var selectedTab by remember { mutableStateOf(0) }
+    var selectedTab by remember { mutableIntStateOf(0) }
     Box(
         modifier = Modifier
             .fillMaxHeight()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(8.dp))
+            .border(1.dp, LightGunmetal, RoundedCornerShape(8.dp))
 
     ) {
         ImageBackground(x=-350f, y=330f)
@@ -238,13 +244,13 @@ fun TasksCard() {
                 indicator = {},
                 divider = {},
                 modifier = Modifier
-                    .clip(RoundedCornerShape(10.dp))
-                    .border(2.dp, LightGunmetal, RoundedCornerShape(10.dp))
+                    .clip(RoundedCornerShape(8.dp))
+                    .border(2.dp, LightGunmetal, RoundedCornerShape(8.dp))
             ) {
                 Tab(
                     selected = selectedTab == 0,
                     onClick = { selectedTab = 0 },
-                    modifier = if (selectedTab == 0) Modifier.background(SelectedItem) else Modifier.background(
+                    modifier = if (selectedTab == 0) Modifier.background(Gunmetal) else Modifier.background(
                         UnSelectedItem
                     ),
                 ) {
@@ -254,7 +260,14 @@ fun TasksCard() {
                     ) {
                         Text("Incomplete", color = TextPrimary)
                         Spacer(modifier = Modifier.width(4.dp))
-                        Badge(containerColor = BadgeBackground) { Text("9", color = BadgeContent) }
+                        Badge(
+                            containerColor = BadgeBackground,
+                            modifier = Modifier
+                                .graphicsLayer {
+                                    translationX = -10f
+                                    translationY = -10f
+                                }
+                        ) { Text("9", color = BadgeContent) }
                     }
                 }
                 Tab(
@@ -270,9 +283,14 @@ fun TasksCard() {
                     ) {
                         Text("Done", color = TextSecondary)
                         Spacer(modifier = Modifier.width(4.dp))
-                        Badge(containerColor = BadgeBackgroundSecondary) {
-                            Text(text="0", color=LightGunmetal)
-                        }
+                        Badge(
+                            containerColor = BadgeBackgroundSecondary,
+                            modifier = Modifier
+                                .graphicsLayer {
+                                    translationX = -10f
+                                    translationY = -10f
+                                }
+                        ) { Text("0", color = LightGunmetal) }
                     }
                 }
             }
@@ -291,42 +309,98 @@ fun TaskItem(matchNum: Int) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .border(2.dp, LightGunmetal, shape = RoundedCornerShape(8.dp))
-            .background(Color.Black.copy(alpha = 0.3f), shape = RoundedCornerShape(8.dp))
+            .height(45.dp)
+            .border(1.dp, LightGunmetal, shape = RoundedCornerShape(8.dp))
+            .clip(RoundedCornerShape(8.dp))
             .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .fillMaxHeight()
+                .clip(RoundedCornerShape(4.dp))
+                .background(DarkishGunmetal)
+                .width(64.dp)
+        ) {
             Image(
                 painter = painterResource(id = R.drawable.edit),
+                colorFilter = ColorFilter.tint(Deselected),
                 contentDescription = "Edit",
                 modifier = Modifier.size(16.dp)
             )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("Q$matchNum", color = TextPrimary)
+            Spacer(modifier = Modifier.width(4.dp))
+            Text("Q$matchNum", color = Deselected)
         }
-        Text("695", color = TextPrimary)
-        Box(
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
             modifier = Modifier
-                .width(50.dp)
-                .height(20.dp)
-                .border(2.dp, LightGunmetal, RoundedCornerShape(4.dp))
-        )
-        Row(verticalAlignment = Alignment.CenterVertically) {
+                .fillMaxHeight()
+                .clip(RoundedCornerShape(4.dp))
+                .background(DarkishGunmetal)
+                .width(45.dp)
+        ) {
+            Text("695", color = Deselected)
+        }
+        ProgressIndicator()
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .fillMaxHeight()
+                .clip(RoundedCornerShape(4.dp))
+                .background(DarkishGunmetal)
+                .width(85.dp)
+        ) {
             Image(
                 painter = painterResource(id = R.drawable.clock),
                 contentDescription = "Time",
-                modifier = Modifier.size(16.dp)
+                modifier = Modifier
+                    .size(16.dp)
             )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(if (matchNum == 5) "40m" else "02m", color = TextPrimary, fontSize = 12.sp)
+            Spacer(modifier = Modifier.width(10.dp))
+            Text("02m", color = Deselected)
         }
-        Image(
-            painter = painterResource(id = R.drawable.right_arrow),
-            contentDescription = "Go",
-            modifier = Modifier.size(16.dp)
-        )
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .fillMaxHeight()
+                .clip(RoundedCornerShape(4.dp))
+                .background(DarkishGunmetal)
+                .width(30.dp)
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.right_arrow),
+                contentDescription = "Go",
+                colorFilter = ColorFilter.tint(Deselected),
+                modifier = Modifier.size(25.dp)
+            )}
+
+    }
+}
+
+@Composable
+fun ProgressIndicator() {
+    LazyRow(
+        horizontalArrangement = Arrangement.SpaceEvenly,
+        modifier = Modifier
+            .fillMaxHeight()
+            .width(55.dp)
+            .background(DarkishGunmetal, RoundedCornerShape(4.dp))
+    ) {
+
+        items(count=4) { index ->
+            Box(
+                modifier = Modifier
+                    .width(8.dp)
+                    .fillMaxHeight()
+                    .padding(vertical=6.dp)
+                    .border(1.dp, Deselected.copy(0.5f), RoundedCornerShape(4.dp))
+            )
+        }
     }
 }
 
@@ -336,7 +410,9 @@ fun MatchSchedule() {
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFF171920))
-            .clip(RoundedCornerShape(12.dp))
+            .clip(RoundedCornerShape(8.dp))
+            .border(1.dp, LightGunmetal, RoundedCornerShape(8.dp))
+
     ) {
         ImageBackground(x=-1950f, y=335f)
         BackgroundGradient()
@@ -349,23 +425,32 @@ fun MatchSchedule() {
                     .fillMaxWidth()
                     .height(120.dp)
             ) {
+                Badge(
+                    containerColor = BadgeBackground.copy(0.5f),
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .padding(8.dp)
+                ) { Text("i", color = BadgeContent) }
                 Image(
                     painter = painterResource(id = R.drawable.bluffcountry),
                     contentDescription = "Regional background",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxSize()
-                        .clip(RoundedCornerShape(topStart = 12.dp, topEnd = 12.dp))
+                        .alpha(0.3f)
+                        .clip(RoundedCornerShape(8.dp))
                 )
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.SpaceBetween
+                    verticalArrangement = Arrangement.Center
                 ) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 10.dp),
                         horizontalArrangement = Arrangement.Center,
                         verticalAlignment = Alignment.Top
                     ) {
@@ -389,30 +474,60 @@ fun MatchSchedule() {
                         )
                     }
 
-                    TextField(
+                    BasicTextField(
                         value = "",
                         onValueChange = {},
-                        placeholder = { Text("Search Team", color = TextSecondary) },
-                        leadingIcon = {
-                            Icon(
-                                Icons.Default.Search,
-                                contentDescription = "Search",
-                                
-                                tint = TextSecondary
-                            )
-                        },
-                        colors = TextFieldDefaults.colors(
-                            focusedContainerColor = TextFieldBackground,
-                            unfocusedContainerColor = TextFieldBackground,
-                            disabledContainerColor = TextFieldBackground,
-                            cursorColor = TextPrimary,
-                            focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent,
+                        // BasicTextField uses a Brush for the cursor
+                        cursorBrush = SolidColor(TextPrimary),
+                        textStyle = TextStyle(
+                            color = TextPrimary,
+                            fontSize = 14.sp // Adjust font size to fit the smaller height
                         ),
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier
-                            .width(250.dp)
+                        singleLine = true,
+                        decorationBox = { innerTextField ->
+                            Row(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalAlignment = Alignment.CenterVertically,
+                            ) {
+                                // Leading Icon
+                                Icon(
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = "Search",
+                                    tint = TextSecondary,
+                                    modifier = Modifier.padding(start = 8.dp, end = 8.dp)
+                                )
 
+                                // Placeholder and Actual Text
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier
+                                        .padding(start=10.dp)
+                                ) {
+                                    // Show placeholder only when text is empty
+                                    //if (value.isEmpty()) {
+                                        Text(
+                                            text = "Search Team",
+                                            color = TextSecondary,
+                                            fontSize = 14.sp
+                                        )
+                                    //}
+                                    // This invokes the actual input field
+                                    innerTextField()
+                                }
+                            }
+                        },
+                        modifier = Modifier
+                            .width(200.dp)
+                            .height(35.dp) // BasicTextField respects exact heights better
+                            .background(
+                                color = TextFieldBackground,
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .border(
+                                width = 1.dp,
+                                color = LightGunmetal,
+                                shape = RoundedCornerShape(8.dp)
+                            )
                     )
                 }
             }
@@ -444,7 +559,6 @@ fun MatchSchedule() {
                         "9999",
                         "9999",
                         true,
-                        R.drawable.bison
                     )
                 }
                 item {
@@ -483,7 +597,7 @@ fun MatchSchedule() {
                         "1787",
                         "9999",
                         "9999",
-                        true
+                        false
                     )
                 }
                 item {
@@ -509,7 +623,7 @@ fun MatchSchedule() {
                         "9999",
                         "254",
                         "9999",
-                        true
+                        false
                     )
                 }
                 item {
@@ -522,7 +636,7 @@ fun MatchSchedule() {
                         "9999",
                         "254",
                         "9999",
-                        true
+                        false
                     )
                 }
                 item {
@@ -544,19 +658,25 @@ fun MatchSchedule() {
 }
 
 @Composable
-fun TeamNumber(number: String, textColor: Color) {
+fun TeamNumber(number: String) {
     val highlightedTeams = setOf("695", "4211", "1787", "254")
     val isHighlighted = number in highlightedTeams
-    Text(
-        text = number,
-        color = if (isHighlighted) Accent else textColor,
+    Box(
+        contentAlignment = Alignment.Center,
         modifier = Modifier
-            .background(
-                if (isHighlighted) Accent.copy(0.3f) else textColor.copy(0.13f),
-                RoundedCornerShape(4.dp)
-            )
-            .padding(horizontal = 6.dp, vertical = 2.dp)
-    )
+            .background(if (isHighlighted) Accent.copy(0.3f) else DarkishGunmetal,
+                RoundedCornerShape(4.dp))
+            .fillMaxHeight()
+            .width(50.dp)
+            .padding(horizontal = 5.dp)
+
+    ) {
+        Text(
+            text = number,
+            color = if (isHighlighted) Accent else Deselected,
+
+        )
+    }
 }
 
 @Composable
@@ -570,33 +690,27 @@ fun MatchItem(
     blue2: String,
     blue3: String,
     isSpecial: Boolean,
-    specialIcon: Int? = null
 ) {
     val borderColor = if (isSpecial) Accent else Border
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .height(45.dp)
             .border(1.dp, borderColor, shape = RoundedCornerShape(8.dp))
-            .padding(horizontal = 8.dp, vertical = 0.dp),
+            .padding(horizontal = 8.dp, vertical = 7.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if (specialIcon != null) {
-            Image(
-                painterResource(id = specialIcon),
-                contentDescription = "Special Icon",
-                modifier = Modifier.size(40.dp)
-            )
-        }
-        Spacer(modifier = Modifier.width(8.dp))
 
         Row(
             modifier = Modifier
+                .fillMaxHeight()
                 .clip(RoundedCornerShape(8.dp))
-                .background(DarkGreen)
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .background(DarkishGunmetal)
+                .width(135.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
         ) {
-            Text(matchNum, color = TextPrimary)
+            Text(matchNum, color = Deselected, fontSize = 16.sp)
             Spacer(modifier = Modifier.width(8.dp))
             Image(
                 painter = painterResource(id = R.drawable.clock),
@@ -613,46 +727,66 @@ fun MatchItem(
 
         Row(
             modifier = Modifier
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                .padding(horizontal = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            TeamNumber(red1, RedAlliance)
-            TeamNumber(red2, RedAlliance)
-            TeamNumber(red3, RedAlliance)
+            TeamNumber(red1)
+            TeamNumber(red2)
+            TeamNumber(red3)
         }
 
-        Text(" vs ", color = TextSecondary, modifier = Modifier.padding(horizontal = 4.dp))
+        Box(
+            modifier = Modifier
+                .size(8.dp)
+                .graphicsLayer {
+                    translationY = 3f
+                }
+                .background(RedAlliance, shape = CircleShape)
+        )
 
+        Text(" vs ", color = TextSecondary, modifier = Modifier.padding(horizontal = 2.dp))
+        Box(
+            modifier = Modifier
+                .size(8.dp)
+                .graphicsLayer {
+                    translationY = 3f
+                }
+                .background(BlueAlliance, shape = CircleShape)
+        )
         Row(
             modifier = Modifier
-                .padding(horizontal = 8.dp, vertical = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                .padding(horizontal = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            TeamNumber(blue1, BlueAlliance)
-            TeamNumber(blue2, BlueAlliance)
-            TeamNumber(blue3, BlueAlliance)
+            TeamNumber(blue1)
+            TeamNumber(blue2)
+            TeamNumber(blue3)
         }
+
+
 
         Spacer(modifier = Modifier.weight(1f))
 
         Button(
             onClick = { /*TODO*/ },
-            colors = ButtonDefaults.buttonColors(containerColor = Gunmetal),
-            shape = RoundedCornerShape(6.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = DarkishGunmetal),
+            shape = RoundedCornerShape(4.dp),
             contentPadding = PaddingValues(0.dp),
             modifier = Modifier
-                .width(125.dp)
-                .height(28.dp)
+                .fillMaxHeight()
+                .width(135.dp),
+
 
         ) {
 
             Text(
                 "Comment",
-                color = TextPrimary,
-                fontSize = 12.sp,
-            )
+                color = Deselected,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Normal,
+                )
             Spacer(modifier = Modifier.width(8.dp))
             Image(
                 painterResource(id = R.drawable.comment),
@@ -660,7 +794,7 @@ fun MatchItem(
                 contentDescription = "Comment",
                 modifier = Modifier
                     .fillMaxHeight()
-                    .padding(vertical=4.dp)
+                    .padding(vertical=8.dp)
 
 
             )
@@ -714,7 +848,7 @@ fun BackgroundGradient() {
                 .background(Brush.verticalGradient(
                     colors = listOf(
                         PaneColor,
-                        PaneColor.copy(alpha=0.73f)
+                        PaneColor.copy(alpha=0.75f)
                     )
                 ))
 
