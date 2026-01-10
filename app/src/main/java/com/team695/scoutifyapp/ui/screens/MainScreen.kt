@@ -311,6 +311,7 @@ fun TaskItem(matchNum: Int) {
             .fillMaxWidth()
             .height(45.dp)
             .border(1.dp, LightGunmetal, shape = RoundedCornerShape(8.dp))
+            .background(color=DarkGunmetal, shape=RoundedCornerShape(8.dp))
             .clip(RoundedCornerShape(8.dp))
             .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -696,6 +697,7 @@ fun MatchItem(
         modifier = Modifier
             .fillMaxWidth()
             .height(45.dp)
+            .background(DarkGunmetal, shape = RoundedCornerShape(8.dp))
             .border(1.dp, borderColor, shape = RoundedCornerShape(8.dp))
             .padding(horizontal = 8.dp, vertical = 7.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -848,7 +850,7 @@ fun BackgroundGradient() {
                 .background(Brush.verticalGradient(
                     colors = listOf(
                         PaneColor,
-                        PaneColor.copy(alpha=0.75f)
+                        PaneColor.copy(alpha=0.8f)
                     )
                 ))
 

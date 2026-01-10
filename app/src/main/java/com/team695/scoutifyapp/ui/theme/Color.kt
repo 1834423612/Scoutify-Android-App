@@ -16,8 +16,9 @@ val Deselected = Color(0xFFB7B8B9)
 val LightGunmetal = Color(0xFF434343)
 val Gunmetal = Color(0xFF2D3142)
 val DarkishGunmetal = Color(0xFF242832)
+val DarkGunmetal = Color(0xFF16181D)
 
-val PaneColor = Color(0xFF171920)
+val PaneColor = Color(0xFF08090B)
 val TextPrimary = Color.White
 val TextSecondary = Color.Gray
 
