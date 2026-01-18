@@ -23,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.draw.innerShadow
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -30,6 +31,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.fromColorLong
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -37,6 +39,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.sp
 import com.team695.scoutifyapp.R
 import com.team695.scoutifyapp.ui.theme.*
@@ -238,60 +241,78 @@ fun TasksCard() {
         ) {
             Text("Tasks", color = TextPrimary, fontSize = 24.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(16.dp))
-            TabRow(
-                selectedTabIndex = selectedTab,
-                containerColor = BackgroundTertiary,
-                indicator = {},
-                divider = {},
+            Box (
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
-                    .border(2.dp, LightGunmetal, RoundedCornerShape(8.dp))
+                    .border(1.dp, LightGunmetal, RoundedCornerShape(8.dp))
+                    .background(Background)
             ) {
-                Tab(
-                    selected = selectedTab == 0,
-                    onClick = { selectedTab = 0 },
-                    modifier = if (selectedTab == 0) Modifier.background(Gunmetal) else Modifier.background(
-                        UnSelectedItem
-                    ),
+                TabRow(
+                    selectedTabIndex = selectedTab,
+                    containerColor = Color.Transparent,
+                    indicator = {},
+                    divider = {},
+                    modifier = Modifier
+                        .padding(all = 6.dp)
+
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(vertical = 8.dp)
+                    Tab(
+                        selected = selectedTab == 0,
+                        onClick = { selectedTab = 0 },
+                        modifier = if (selectedTab == 0) Modifier.background(
+                            Gunmetal,
+                            shape = RoundedCornerShape(8.dp)
+                        ).innerShadow(
+                            shape = RoundedCornerShape(8.dp),
+                            shadow = Shadow(
+                                radius = 0.7.dp,
+                                spread = 0.dp,
+                                color = Color(0x45FFFFFF),
+                                offset = DpOffset(x = 0.dp, 1.4.dp)
+                            )
+                        ) else Modifier.background(Color.Transparent),
                     ) {
-                        Text("Incomplete", color = TextPrimary)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Badge(
-                            containerColor = BadgeBackground,
-                            modifier = Modifier
-                                .graphicsLayer {
-                                    translationX = -10f
-                                    translationY = -10f
-                                }
-                        ) { Text("9", color = BadgeContent) }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        ) {
+                            Text("Incomplete", color = TextPrimary)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Badge(
+                                containerColor = BadgeBackground,
+                                modifier = Modifier
+                                    .graphicsLayer {
+                                        translationX = -10f
+                                        translationY = -10f
+                                    }
+                            ) { Text("9", color = BadgeContent) }
+                        }
                     }
-                }
-                Tab(
-                    selected = selectedTab == 1,
-                    onClick = { selectedTab = 1 },
-                    modifier = if (selectedTab == 1) Modifier.background(SelectedItem) else Modifier.background(
-                        UnSelectedItem
-                    ),
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(vertical = 8.dp)
+                    Tab(
+                        selected = selectedTab == 1,
+                        onClick = { selectedTab = 1 },
+                        modifier = if (selectedTab == 1) Modifier.background(
+                            Gunmetal,
+                            shape = RoundedCornerShape(8.dp)
+                        ) else Modifier.background(Color.Transparent),
                     ) {
-                        Text("Done", color = TextSecondary)
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Badge(
-                            containerColor = BadgeBackgroundSecondary,
-                            modifier = Modifier
-                                .graphicsLayer {
-                                    translationX = -10f
-                                    translationY = -10f
-                                }
-                        ) { Text("0", color = LightGunmetal) }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(vertical = 8.dp)
+                        ) {
+                            Text("Done", color = TextSecondary)
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Badge(
+                                containerColor = BadgeBackgroundSecondary,
+                                modifier = Modifier
+                                    .graphicsLayer {
+                                        translationX = -10f
+                                        translationY = -10f
+                                    }
+                            ) { Text("0", color = LightGunmetal) }
+                        }
                     }
+
                 }
             }
             Spacer(modifier = Modifier.height(16.dp))
@@ -740,7 +761,7 @@ fun MatchItem(
 
         Box(
             modifier = Modifier
-                .size(8.dp)
+                .size(6.dp)
                 .graphicsLayer {
                     translationY = 3f
                 }
@@ -750,7 +771,7 @@ fun MatchItem(
         Text(" vs ", color = TextSecondary, modifier = Modifier.padding(horizontal = 2.dp))
         Box(
             modifier = Modifier
-                .size(8.dp)
+                .size(6.dp)
                 .graphicsLayer {
                     translationY = 3f
                 }
