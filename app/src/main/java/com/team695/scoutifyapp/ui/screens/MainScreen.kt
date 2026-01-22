@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.sp
 import com.team695.scoutifyapp.R
+import com.team695.scoutifyapp.ui.modifier.buttonHighlight
 import com.team695.scoutifyapp.ui.theme.*
 
 
@@ -262,14 +263,8 @@ fun TasksCard() {
                         modifier = if (selectedTab == 0) Modifier.background(
                             Gunmetal,
                             shape = RoundedCornerShape(8.dp)
-                        ).innerShadow(
-                            shape = RoundedCornerShape(8.dp),
-                            shadow = Shadow(
-                                radius = 0.7.dp,
-                                spread = 0.dp,
-                                color = Color(0x45FFFFFF),
-                                offset = DpOffset(x = 0.dp, 1.4.dp)
-                            )
+                        ).buttonHighlight(
+                            corner = 8.dp
                         ) else Modifier.background(Color.Transparent),
                     ) {
                         Row(
@@ -334,6 +329,9 @@ fun TaskItem(matchNum: Int) {
             .border(1.dp, LightGunmetal, shape = RoundedCornerShape(8.dp))
             .background(color=DarkGunmetal, shape=RoundedCornerShape(8.dp))
             .clip(RoundedCornerShape(8.dp))
+            .buttonHighlight(
+                corner = 4.dp
+            )
             .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
@@ -346,6 +344,9 @@ fun TaskItem(matchNum: Int) {
                 .clip(RoundedCornerShape(4.dp))
                 .background(DarkishGunmetal)
                 .width(64.dp)
+                .buttonHighlight(
+                    corner = 4.dp
+                )
         ) {
             Image(
                 painter = painterResource(id = R.drawable.edit),
@@ -364,6 +365,9 @@ fun TaskItem(matchNum: Int) {
                 .clip(RoundedCornerShape(4.dp))
                 .background(DarkishGunmetal)
                 .width(45.dp)
+                .buttonHighlight(
+                    corner = 4.dp
+                )
         ) {
             Text("695", color = Deselected)
         }
@@ -376,6 +380,9 @@ fun TaskItem(matchNum: Int) {
                 .clip(RoundedCornerShape(4.dp))
                 .background(DarkishGunmetal)
                 .width(85.dp)
+                .buttonHighlight(
+                    corner = 4.dp
+                )
         ) {
             Image(
                 painter = painterResource(id = R.drawable.clock),
@@ -393,6 +400,9 @@ fun TaskItem(matchNum: Int) {
                 .clip(RoundedCornerShape(4.dp))
                 .background(DarkishGunmetal)
                 .width(30.dp)
+                .buttonHighlight(
+                    corner = 4.dp
+                )
         ) {
             Image(
                 painter = painterResource(id = R.drawable.right_arrow),
@@ -412,6 +422,9 @@ fun ProgressIndicator() {
             .fillMaxHeight()
             .width(55.dp)
             .background(DarkishGunmetal, RoundedCornerShape(4.dp))
+            .buttonHighlight(
+                corner = 4.dp
+            )
     ) {
 
         items(count=4) { index ->
@@ -690,7 +703,9 @@ fun TeamNumber(number: String) {
                 RoundedCornerShape(4.dp))
             .fillMaxHeight()
             .width(50.dp)
-            .padding(horizontal = 5.dp)
+            .buttonHighlight(
+                corner = 4.dp
+            )
 
     ) {
         Text(
@@ -720,6 +735,9 @@ fun MatchItem(
             .height(45.dp)
             .background(DarkGunmetal, shape = RoundedCornerShape(8.dp))
             .border(1.dp, borderColor, shape = RoundedCornerShape(8.dp))
+            .buttonHighlight(
+                corner = 8.dp
+            )
             .padding(horizontal = 8.dp, vertical = 7.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -729,6 +747,9 @@ fun MatchItem(
                 .fillMaxHeight()
                 .clip(RoundedCornerShape(8.dp))
                 .background(DarkishGunmetal)
+                .buttonHighlight(
+                    corner = 8.dp
+                )
                 .width(135.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
@@ -799,7 +820,7 @@ fun MatchItem(
             contentPadding = PaddingValues(0.dp),
             modifier = Modifier
                 .fillMaxHeight()
-                .width(135.dp),
+                .width(135.dp)
 
 
         ) {
