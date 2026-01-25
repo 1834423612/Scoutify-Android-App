@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -28,6 +29,10 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -59,10 +64,48 @@ import com.team695.scoutifyapp.ui.theme.TextFieldBackground
 import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.theme.TextSecondary
 
+data class Match(
+    val matchNum: String,
+    val time: String,
+    val red1: String,
+    val red2: String,
+    val red3: String,
+    val blue1: String,
+    val blue2: String,
+    val blue3: String,
+    val isSpecial: Boolean,
+)
+
 @Composable
-fun MatchSchedule() {
+fun MatchSchedule(modifier: Modifier = Modifier) {
+    var searchQuery by remember { mutableStateOf("") }
+
+    val allMatches = remember {
+        listOf(
+            Match("Q1", "9:00AM", "9999", "9999", "9999", "9999", "9999", "9999", false),
+            Match("Q3", "9:14AM", "9999", "695", "9999", "9999", "9999", "9999", true),
+            Match("Q3", "9:14AM", "9999", "9999", "9999", "9999", "9999", "9999", false),
+            Match("Q4", "9:21AM", "9999", "4211", "9999", "9999", "9999", "9999", false),
+            Match("Q5", "9:28AM", "9999", "9999", "9999", "1787", "9999", "9999", false),
+            Match("Q6", "9:35AM", "9999", "9999", "9999", "9999", "9999", "9999", false),
+            Match("Q7", "9:42AM", "9999", "9999", "9999", "9999", "254", "9999", false),
+            Match("Q7", "9:42AM", "9999", "9999", "9999", "9999", "254", "9999", false),
+            Match("Q6", "9:35AM", "9999", "9999", "9999", "9999", "9999", "9999", false),
+        )
+    }
+
+    val filteredMatches = allMatches.filter { match ->
+        searchQuery.isBlank() ||
+                match.red1.contains(searchQuery, ignoreCase = true) ||
+                match.red2.contains(searchQuery, ignoreCase = true) ||
+                match.red3.contains(searchQuery, ignoreCase = true) ||
+                match.blue1.contains(searchQuery, ignoreCase = true) ||
+                match.blue2.contains(searchQuery, ignoreCase = true) ||
+                match.blue3.contains(searchQuery, ignoreCase = true)
+    }
+
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(Color(0xFF171920))
             .clip(RoundedCornerShape(8.dp))
@@ -130,8 +173,8 @@ fun MatchSchedule() {
                     }
 
                     BasicTextField(
-                        value = "",
-                        onValueChange = {},
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
                         // BasicTextField uses a Brush for the cursor
                         cursorBrush = SolidColor(TextPrimary),
                         textStyle = TextStyle(
@@ -159,13 +202,13 @@ fun MatchSchedule() {
                                         .padding(start=10.dp)
                                 ) {
                                     // Show placeholder only when text is empty
-                                    //if (value.isEmpty()) {
+                                    if (searchQuery.isEmpty()) {
                                         Text(
                                             text = "Search Team",
                                             color = TextSecondary,
                                             fontSize = 14.sp
                                         )
-                                    //}
+                                    }
                                     // This invokes the actual input field
                                     innerTextField()
                                 }
@@ -190,121 +233,17 @@ fun MatchSchedule() {
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                item {
+                items(filteredMatches) {
                     MatchItem(
-                        "Q1",
-                        "9:00AM",
-                        "9999",
-                        "9999",
-                        "9999",
-                        "9999",
-                        "9999",
-                        "9999",
-                        false
-                    )
-                }
-                item {
-                    MatchItem(
-                        "Q3",
-                        "9:14AM",
-                        "9999",
-                        "695",
-                        "9999",
-                        "9999",
-                        "9999",
-                        "9999",
-                        true,
-                    )
-                }
-                item {
-                    MatchItem(
-                        "Q3",
-                        "9:14AM",
-                        "9999",
-                        "9999",
-                        "9999",
-                        "9999",
-                        "9999",
-                        "9999",
-                        false
-                    )
-                }
-                item {
-                    MatchItem(
-                        "Q4",
-                        "9:21AM",
-                        "9999",
-                        "4211",
-                        "9999",
-                        "9999",
-                        "9999",
-                        "9999",
-                        false
-                    )
-                }
-                item {
-                    MatchItem(
-                        "Q5",
-                        "9:28AM",
-                        "9999",
-                        "9999",
-                        "9999",
-                        "1787",
-                        "9999",
-                        "9999",
-                        false
-                    )
-                }
-                item {
-                    MatchItem(
-                        "Q6",
-                        "9:35AM",
-                        "9999",
-                        "9999",
-                        "9999",
-                        "9999",
-                        "9999",
-                        "9999",
-                        false
-                    )
-                }
-                item {
-                    MatchItem(
-                        "Q7",
-                        "9:42AM",
-                        "9999",
-                        "9999",
-                        "9999",
-                        "9999",
-                        "254",
-                        "9999",
-                        false
-                    )
-                }
-                item {
-                    MatchItem(
-                        "Q7",
-                        "9:42AM",
-                        "9999",
-                        "9999",
-                        "9999",
-                        "9999",
-                        "254",
-                        "9999",
-                        false
-                    )
-                }
-                item {
-                    MatchItem(
-                        "Q6",
-                        "9:35AM",
-                        "9999",
-                        "9999",
-                        "9999",
-                        "9999",
-                        "9999",
-                        "9999",
-                        false
+                        matchNum = it.matchNum,
+                        time = it.time,
+                        red1 = it.red1,
+                        red2 = it.red2,
+                        red3 = it.red3,
+                        blue1 = it.blue1,
+                        blue2 = it.blue2,
+                        blue3 = it.blue3,
+                        isSpecial = it.isSpecial
                     )
                 }
             }
@@ -464,4 +403,42 @@ fun MatchItem(
             )
         }
     }
+}
+
+@Composable
+fun ImageBackground(x: Float, y: Float, modifier: Modifier = Modifier) {
+    Image(
+        painter = painterResource(id = R.drawable.background),
+        contentDescription = "background image",
+        contentScale = ContentScale.Crop,
+        modifier = modifier
+            .fillMaxSize()
+            .alpha(0.05f)
+            .graphicsLayer {
+                translationX = x
+                translationY = y
+            },
+    )
+}
+
+@Composable
+fun BackgroundGradient(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .graphicsLayer {
+                renderEffect = androidx.compose.ui.graphics.BlurEffect(
+                    radiusX = 100f,
+                    radiusY = 100f,
+                    edgeTreatment = androidx.compose.ui.graphics.TileMode.Decal,
+                )
+            }
+            .background(
+                brush = androidx.compose.ui.graphics.Brush.radialGradient(
+                    colors = listOf(Accent.copy(0.2f), Color.Transparent),
+                    center = androidx.compose.ui.geometry.Offset(1000f, 0f),
+                    radius = 1200f,
+                )
+            )
+    )
 }
