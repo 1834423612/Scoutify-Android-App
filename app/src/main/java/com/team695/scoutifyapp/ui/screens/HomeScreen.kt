@@ -5,7 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.team695.scoutifyapp.ui.components.InfoCard
+import com.team695.scoutifyapp.ui.components.app.structure.InfoCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

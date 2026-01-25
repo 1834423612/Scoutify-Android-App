@@ -1,4 +1,4 @@
-package com.team695.scoutifyapp.ui.components
+package com.team695.scoutifyapp.ui.components.form
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions

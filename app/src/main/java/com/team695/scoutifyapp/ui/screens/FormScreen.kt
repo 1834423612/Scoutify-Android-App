@@ -11,9 +11,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.text.input.KeyboardType
 import com.example.ui.components.RB
-import com.team695.scoutifyapp.ui.components.CB
-import com.team695.scoutifyapp.ui.components.OTF
-import com.team695.scoutifyapp.ui.components.TA
+import com.team695.scoutifyapp.ui.components.form.CB
+import com.team695.scoutifyapp.ui.components.form.OTF
+import com.team695.scoutifyapp.ui.components.form.TA
 
 //
 @OptIn(ExperimentalMaterial3Api::class)
