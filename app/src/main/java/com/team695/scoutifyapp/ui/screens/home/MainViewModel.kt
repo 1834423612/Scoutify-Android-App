@@ -7,16 +7,17 @@ import kotlinx.coroutines.flow.StateFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
+import okhttp3.ResponseBody
 
-class HomeViewModel(private val service: MatchService): ViewModel() {
-    private val _matches = MutableStateFlow<List<Match>>(emptyList())
-    val matches: StateFlow<List<Match>> = _matches
+class MainViewModel(private val service: MatchService): ViewModel() {
+    private val _matches = MutableStateFlow<String>("")
+    val matches: StateFlow<String?> = _matches
 
     fun fetchMatches() {
         viewModelScope.launch {
             try {
                 val matchesRes = service.listMatches()
-                _matches.value = matchesRes
+                _matches.value = matchesRes.string()
             } catch (e: Exception) {
                 println("Error fetching matches: ${e.message}")
             }

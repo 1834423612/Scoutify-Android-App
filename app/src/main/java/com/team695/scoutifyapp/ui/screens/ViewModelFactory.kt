@@ -8,7 +8,7 @@ class ViewModelFactory<T : ViewModel>(
 ): ViewModelProvider.Factory {
 
     override fun <T: ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(ViewModel::class.java)) {
+        if (ViewModel::class.java.isAssignableFrom(modelClass)) {
             @Suppress("UNCHECKED_CAST")
             return createViewModel() as T
         }
