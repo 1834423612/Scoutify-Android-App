@@ -3,6 +3,7 @@ package com.team695.scoutifyapp.ui.components.app.structure
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -49,6 +50,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.team695.scoutifyapp.R
+import com.team695.scoutifyapp.ui.components.app.reusables.Pressable
 import com.team695.scoutifyapp.ui.modifier.buttonHighlight
 import com.team695.scoutifyapp.ui.theme.Accent
 import com.team695.scoutifyapp.ui.theme.BadgeBackground
@@ -372,6 +374,27 @@ fun MatchItem(
 
         Spacer(modifier = Modifier.weight(1f))
 
+        Pressable (
+            onClick = {},
+            corner = 4.dp,
+            text = "Comment",
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(135.dp)
+        ) {
+            Spacer(modifier = Modifier.width(8.dp))
+            Image(
+                painterResource(id = R.drawable.comment),
+                contentScale = ContentScale.Fit,
+                contentDescription = "Comment",
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .padding(vertical=8.dp)
+
+
+            )
+        }
+/*
         Button(
             onClick = { /*TODO*/ },
             colors = ButtonDefaults.buttonColors(containerColor = DarkishGunmetal),
@@ -401,7 +424,7 @@ fun MatchItem(
 
 
             )
-        }
+        } */
     }
 }
 

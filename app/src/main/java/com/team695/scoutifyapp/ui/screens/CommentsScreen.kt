@@ -25,6 +25,7 @@ import com.team695.scoutifyapp.ui.theme.*
 import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.draw.innerShadow
 import androidx.compose.ui.unit.DpOffset
+import com.team695.scoutifyapp.ui.components.app.reusables.Pressable
 
 
 @Composable
@@ -141,27 +142,14 @@ fun CommentsContent() {
 
                 Spacer(modifier = Modifier.weight(.1f))
 
-                Surface(
+                Pressable (
+                    onClick = {},
+                    corner = 4.dp,
+                    text = "Submit",
                     modifier = Modifier
                         .width(150.dp)
                         .height(55.dp)
-                        .clip(RoundedCornerShape(4.dp))
-                        .clickable { /* Submit logic */ },
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(DarkishGunmetal)
-                            .clip(RoundedCornerShape(4.dp))
-                            .buttonHighlight(4.dp),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = "Submit",
-                            color = TextPrimary
-                        )
-                    }
-                }
+                ) {}
 
             }
 
