@@ -19,6 +19,7 @@ import com.team695.scoutifyapp.ui.components.Required
 import com.team695.scoutifyapp.ui.components.TA
 import com.team695.scoutifyapp.ui.components.divider
 import Render
+import com.team695.scoutifyapp.ui.components.slider
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -149,6 +150,10 @@ fun MatchForm(back: () -> Unit, home: ()-> Unit) {
                     groundAlgaeIntake = groundAlgaeIntake.toMutableList().also { it[index] = isChecked }
                 },
             )
+
+
+            var slider by remember { mutableStateOf(0f) }
+            slider( title = "slider test", value = slider, valueRange = 0f..1f, onChange = { slider = it } )
 
             var note by remember { mutableStateOf("") }
             TA(

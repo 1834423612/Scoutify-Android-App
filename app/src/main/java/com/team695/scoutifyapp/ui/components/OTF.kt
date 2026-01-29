@@ -52,9 +52,7 @@ fun OTF(
                 //println(focusState.isFocused)
                 if (focusState.isFocused.not()&&required.focusStarted) required.focusLeftYet = true
                 required.focusStarted = true
-
-                println( " → ${required.focusStarted}, ${required.focusLeftYet}, ${required.valid()}")
-
+                //println( " → ${required.focusStarted}, ${required.focusLeftYet}, ${required.valid()}")
             }
     )
     Spacer(modifier = Modifier.height(12.dp))
