@@ -33,11 +33,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.team695.scoutifyapp.R
+import com.team695.scoutifyapp.ui.components.app.reusables.Pressable
 import com.team695.scoutifyapp.ui.modifier.buttonHighlight
 import com.team695.scoutifyapp.ui.theme.BadgeBackground
 import com.team695.scoutifyapp.ui.theme.BadgeBackgroundSecondary
@@ -222,24 +224,22 @@ fun TaskItem(matchNum: Int) {
             Spacer(modifier = Modifier.width(10.dp))
             Text("02m", color = Deselected)
         }
-        Box(
-            contentAlignment = Alignment.Center,
+
+        Pressable (
+            onClick = {},
+            corner = 4.dp,
+            text = "",
             modifier = Modifier
                 .fillMaxHeight()
-                .clip(RoundedCornerShape(4.dp))
-                .background(DarkishGunmetal)
                 .width(30.dp)
-                .buttonHighlight(
-                    corner = 4.dp
-                )
         ) {
             Image(
                 painter = painterResource(id = R.drawable.right_arrow),
                 contentDescription = "Go",
                 colorFilter = ColorFilter.tint(Deselected),
                 modifier = Modifier.size(25.dp)
-            )}
-
+            )
+        }
     }
 }
 
