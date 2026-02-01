@@ -13,7 +13,7 @@ fun AppNav(navController: NavHostController) {
         composable("Home") {
             Home(
                 navigateToPitSchedule = { navController.navigate("PitSchedule") },
-                navigateToMatchSchedule = {navController.navigate("MatchSchedule")}
+                navigateToMatchSchedule = {navController.navigate("MatchSchedule")},
             )
         }
         composable("MatchSchedule") {
