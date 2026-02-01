@@ -14,30 +14,32 @@ import com.team695.scoutifyapp.data.api.ScoutifyClient
 import com.team695.scoutifyapp.ui.screens.Form2
 import com.team695.scoutifyapp.ui.screens.FormScreen
 import com.team695.scoutifyapp.ui.screens.HomeScreen
-import  com.team695.scoutifyapp.ui.screens.home.MainViewModel
+import  com.team695.scoutifyapp.ui.screens.home.HomeViewModel
 import com.team695.scoutifyapp.ui.theme.ScoutifyTheme
 import com.team695.scoutifyapp.ui.screens.ViewModelFactory
+import com.team695.scoutifyapp.ui.screens.home.LoginViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.util.logging.LoggingPermission
 
 class MainActivity : ComponentActivity() {
 
-    private lateinit var viewModel : MainViewModel
+    private lateinit var viewModel : LoginViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val matchService = ScoutifyClient.matchService
-        val factory = ViewModelFactory{ MainViewModel(matchService) }
+        val loginService = ScoutifyClient.loginService
+        val factory = ViewModelFactory{ LoginViewModel(loginService) }
 
-        viewModel = ViewModelProvider(this, factory).get(MainViewModel::class.java)
+        viewModel = ViewModelProvider(this, factory).get(LoginViewModel::class.java)
 
         lifecycleScope.launch {
-            viewModel.fetchMatches()
+            viewModel.login()
 
-            viewModel.matches.collectLatest {
-                println("FETCHING DATA: ")
-                println("DATA: ${viewModel.matches.value}")
+            viewModel.loginRes.collectLatest {
+                println("TRYING TO LOG IN: ")
+                println("DATA: ${viewModel.loginRes.value}")
             }
         }
 
