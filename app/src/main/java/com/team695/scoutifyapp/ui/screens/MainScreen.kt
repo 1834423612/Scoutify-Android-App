@@ -15,7 +15,7 @@ import com.team695.scoutifyapp.ui.theme.*
 
 
 @Composable
-fun MainScreen() {
+fun MainScreen(onNavigateToPitScouting: () -> Unit = {}) {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Background
@@ -27,7 +27,7 @@ fun MainScreen() {
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             NavRail()
-            MainContent()
+            MainContent(onNavigateToPitScouting = onNavigateToPitScouting)
         }
     }
 }

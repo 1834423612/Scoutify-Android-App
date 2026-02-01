@@ -19,6 +19,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Badge
+import androidx.compose.material3.Button
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
@@ -54,7 +55,7 @@ import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.theme.TextSecondary
 
 @Composable
-fun TasksCard() {
+fun TasksCard(onNavigateToPitScouting: () -> Unit = {}) {
     var selectedTab by remember { mutableIntStateOf(0) }
     Box(
         modifier = Modifier
@@ -71,6 +72,16 @@ fun TasksCard() {
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Test Button
+            Button(
+                onClick = { onNavigateToPitScouting() },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Navigate to Pit Scouting")
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
             Text("Tasks", color = TextPrimary, fontSize = 24.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(16.dp))
             Box (

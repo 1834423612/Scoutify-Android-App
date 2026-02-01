@@ -9,14 +9,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun MainContent(modifier: Modifier = Modifier) {
+fun MainContent(modifier: Modifier = Modifier, onNavigateToPitScouting: () -> Unit = {}) {
     Row(
         modifier = modifier
             .fillMaxSize(),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Box(modifier = Modifier.weight(0.33f)) {
-            TasksCard()
+            TasksCard(onNavigateToPitScouting = onNavigateToPitScouting)
         }
         Box(modifier = Modifier.weight(0.67f)) {
             MatchSchedule()
