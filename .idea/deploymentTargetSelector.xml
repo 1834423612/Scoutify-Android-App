@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2026-01-25T18:09:21.660888132Z">
+        <DropdownSelection timestamp="2026-02-01T18:00:48.815878047Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=/home/dotani/.android/avd/Medium_Tablet.avd" />
+              <DeviceId pluginId="PhysicalDevice" identifier="serial=GCC19D0413340EAC" />
             </handle>
           </Target>
         </DropdownSelection>

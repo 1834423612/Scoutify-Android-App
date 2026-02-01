@@ -16,6 +16,7 @@ val Deselected = Color(0xFFB7B8B9)
 val LightGunmetal = Color(0xFF434343)
 val Gunmetal = Color(0xFF2D3142)
 val DarkishGunmetal = Color(0xFF242832)
+val ProgressGreen = Color(0x962FEDAE)
 val DarkGunmetal = Color(0xFF16181D)
 
 val PaneColor = Color(0xFF08090B)

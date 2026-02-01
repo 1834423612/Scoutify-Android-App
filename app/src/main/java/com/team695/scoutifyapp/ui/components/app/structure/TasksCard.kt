@@ -30,12 +30,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.team695.scoutifyapp.R
@@ -50,6 +53,7 @@ import com.team695.scoutifyapp.ui.theme.DarkishGunmetal
 import com.team695.scoutifyapp.ui.theme.Deselected
 import com.team695.scoutifyapp.ui.theme.Gunmetal
 import com.team695.scoutifyapp.ui.theme.LightGunmetal
+import com.team695.scoutifyapp.ui.theme.ProgressGreen
 import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.theme.TextSecondary
 
@@ -91,12 +95,14 @@ fun TasksCard() {
                     Tab(
                         selected = selectedTab == 0,
                         onClick = { selectedTab = 0 },
-                        modifier = if (selectedTab == 0) Modifier.background(
-                            Gunmetal,
-                            shape = RoundedCornerShape(8.dp)
-                        ).buttonHighlight(
-                            corner = 8.dp
-                        ) else Modifier.background(Color.Transparent),
+                        modifier = if (selectedTab == 0) Modifier
+                            .background(
+                                Gunmetal,
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .buttonHighlight(
+                                corner = 8.dp
+                            ) else Modifier.background(Color.Transparent),
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -151,14 +157,47 @@ fun TasksCard() {
     }
 }
 
+enum class BorderStyle(val brush: Brush) {
+    INCOMPLETE(
+        Brush.linearGradient(
+            colorStops = arrayOf(
+                0f to DarkishGunmetal,
+                0f to DarkishGunmetal,
+            )
+        ),
+    ),
+    PARTIAL(
+        Brush.linearGradient(
+            colorStops = arrayOf(
+                0f to ProgressGreen,
+                1f to DarkishGunmetal,
+            )
+        ),
+    ),
+    COMPLETE(
+        Brush.linearGradient(
+                    colorStops = arrayOf(
+                        0f to ProgressGreen,
+                        1f to ProgressGreen,
+                        )
+                ),
+    )
+}
+
+
 @Composable
-fun TaskItem(matchNum: Int) {
+@Preview
+fun TaskItem(matchNum: Int = 3, taskCompPercentString: String = "PARTIAL") {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(45.dp)
-            .border(1.dp, LightGunmetal, shape = RoundedCornerShape(8.dp))
-            .background(color=DarkGunmetal, shape=RoundedCornerShape(8.dp))
+            .border(
+                2.dp,
+                BorderStyle.valueOf(taskCompPercentString).brush,
+                shape = RoundedCornerShape(8.dp)
+            )
+            .background(color = DarkishGunmetal, shape = RoundedCornerShape(8.dp))
             .clip(RoundedCornerShape(8.dp))
             .buttonHighlight(
                 corner = 4.dp
@@ -261,7 +300,7 @@ fun ProgressIndicator() {
                 modifier = Modifier
                     .width(8.dp)
                     .fillMaxHeight()
-                    .padding(vertical=6.dp)
+                    .padding(vertical = 6.dp)
                     .border(1.dp, Deselected.copy(0.5f), RoundedCornerShape(4.dp))
             )
         }
