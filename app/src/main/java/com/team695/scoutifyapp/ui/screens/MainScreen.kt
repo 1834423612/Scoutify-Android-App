@@ -9,13 +9,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.team695.scoutifyapp.ui.components.app.structure.NavRail
 import com.team695.scoutifyapp.ui.components.app.structure.MainContent
 import com.team695.scoutifyapp.ui.theme.*
 
 
 @Composable
-fun MainScreen(onNavigateToPitScouting: () -> Unit = {}) {
+fun MainScreen() {
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Background
@@ -26,8 +28,16 @@ fun MainScreen(onNavigateToPitScouting: () -> Unit = {}) {
                 .padding(16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            NavRail()
-            MainContent(onNavigateToPitScouting = onNavigateToPitScouting)
+            val navController: NavHostController = rememberNavController()
+
+            NavRail(
+                onNavigateToHome = { navController.navigate("home") },
+                onNavigateToPitScouting = { navController.navigate(route="pitScouting") },
+                onNavigateToUpload = { navController.navigate(route="upload") },
+                onNavigateToSettings = { navController.navigate(route="settings") },
+                navController = navController
+            )
+            MainContent(navController = navController)
         }
     }
 }
