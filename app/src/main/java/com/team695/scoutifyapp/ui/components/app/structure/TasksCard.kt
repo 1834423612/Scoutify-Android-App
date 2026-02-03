@@ -187,7 +187,7 @@ enum class BorderStyle(val brush: Brush) {
 
 @Composable
 @Preview
-fun TaskItem(matchNum: Int = 3, taskCompPercentString: String = "PARTIAL") {
+fun TaskItem(matchNum: Int = 3, taskCompPercentString: String = "COMPLETE") {
     Row(
         modifier = Modifier
             .fillMaxWidth()
