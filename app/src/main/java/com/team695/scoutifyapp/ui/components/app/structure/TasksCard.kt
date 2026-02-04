@@ -58,6 +58,7 @@ import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.theme.TextSecondary
 
 @Composable
+@Preview
 fun TasksCard() {
     var selectedTab by remember { mutableIntStateOf(0) }
     Box(
@@ -186,7 +187,6 @@ enum class BorderStyle(val brush: Brush) {
 
 
 @Composable
-@Preview
 fun TaskItem(matchNum: Int = 3, taskCompPercentString: String = "PARTIAL") {
     Row(
         modifier = Modifier
