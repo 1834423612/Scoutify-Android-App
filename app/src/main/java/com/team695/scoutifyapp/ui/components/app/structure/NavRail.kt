@@ -43,11 +43,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.navigation.NavHost
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
+
 
 
 @Composable
 fun NavRail(
-    onNavigateToHome: () -> Unit = {},
+
+onNavigateToHome: () -> Unit = {},
     onNavigateToPitScouting: () -> Unit = {},
     onNavigateToUpload: () -> Unit = {},
     onNavigateToSettings: () -> Unit = {},
@@ -170,7 +173,7 @@ fun NavRail(
                         NavItem(
                             icon = R.drawable.pits,
                             label = "Pit Scout",
-                            selected =  == "Pit Scout",
+                            selected = selectedItem == "Pit Scout",
                             onClick = {
                                 selectedItem = "Pit Scout"
                                 onNavigateToPitScouting()
