@@ -1,32 +1,23 @@
 package com.team695.scoutifyapp.ui.screens.tasks
 
 import androidx.lifecycle.ViewModel
+import com.team695.scoutifyapp.data.Task
+import com.team695.scoutifyapp.data.TaskType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-class TaskRepository {
+class TaskService {
     fun getTasks(): List<Task> {
         return listOf(
-            Task(1, 2, "695", "02m", 0.5f, false, "PARTIAL"),
-            Task(2, 3, "118", "01m", 0.25f, false, "PARTIAL"),
-            Task(3, 4, "254", "03m", 1.0f, true, "COMPLETE"),
-            Task(4, 5, "148", "02m", 0.0f, false, "INCOMPLETE"),
-            Task(5, 6, "971", "01m", 1.0f, true, "COMPLETE")
+            Task(2, TaskType.SCOUTING, 3, "118", "01m", 0.25f, false, "PARTIAL"),
+            Task(3, TaskType.SCOUTING, 4, "254", "03m", 1.0f, true, "COMPLETE"),
+            Task(4, TaskType.SCOUTING, 5, "148", "02m", 0.0f, false, "INCOMPLETE"),
+            Task(5, TaskType.SCOUTING, 6, "971", "01m", 1.0f, true, "COMPLETE")
         )
     }
 }
-
-data class Task(
-    val id: Int,
-    val matchNum: Int,
-    val teamNum: String,
-    val time: String,
-    val progress: Float, // 0.0 to 1.0
-    val isDone: Boolean = false,
-    val taskCompPercentString: String
-)
 
 data class TasksUiState(
     val selectedTab: Int = 0,
@@ -34,8 +25,8 @@ data class TasksUiState(
     val doneTasks: List<Task> = emptyList()
 )
 
-class TasksViewModel(private val repository: TaskRepository) : ViewModel() {
-    private val _uiState = MutableStateFlow(TasksUiState())
+class TasksViewModel(private val service: TaskService) : ViewModel() {
+    private val _uiState: MutableStateFlow<TasksUiState> = MutableStateFlow(TasksUiState())
     val uiState: StateFlow<TasksUiState> = _uiState.asStateFlow()
 
     init {
@@ -45,7 +36,7 @@ class TasksViewModel(private val repository: TaskRepository) : ViewModel() {
 
     private fun loadTasks() {
         // Mock data for now
-        val tasks = repository.getTasks()
+        val tasks = service.getTasks()
         _uiState.value = TasksUiState(
             incompleteTasks = tasks.filter { !it.isDone },
             doneTasks = tasks.filter { it.isDone }
