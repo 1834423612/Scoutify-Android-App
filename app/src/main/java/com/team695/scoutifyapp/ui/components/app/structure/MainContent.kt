@@ -34,7 +34,7 @@ fun MainContent(
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Box(modifier = Modifier.weight(0.67f)) {
-            AppNav(navController = navController, uiState = uiState, tasksViewModel: TasksViewModel)
+            AppNav(navController = navController, uiState = uiState, tasksViewModel = tasksViewModel)
         }
     }
 }

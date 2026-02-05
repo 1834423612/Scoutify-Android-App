@@ -13,11 +13,12 @@ import com.team695.scoutifyapp.ui.screens.HomeScreen
 import com.team695.scoutifyapp.ui.screens.FormScreen
 import com.team695.scoutifyapp.ui.screens.MainScreen
 import com.team695.scoutifyapp.ui.screens.PitScoutingScreen
-
+import com.team695.scoutifyapp.ui.screens.tasks.TasksUiState
+import com.team695.scoutifyapp.ui.screens.tasks.TasksViewModel
 
 
 @Composable
-fun AppNav(navController: NavHostController) {
+fun AppNav(navController: NavHostController, uiState: TasksUiState, tasksViewModel: TasksViewModel) {
     NavHost(navController = navController, startDestination = "home") {
         composable("home") {
             MatchSchedule(navController = navController)
