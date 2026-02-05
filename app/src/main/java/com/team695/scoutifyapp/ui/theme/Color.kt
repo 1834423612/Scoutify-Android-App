@@ -15,6 +15,8 @@ val BgPrimary = Color(0xFF0a1628)
 val AccentDanger = Color(0xFFef4444)
 val BorderColor = Color(0xFF2a4a6a)
 val BgTertiary = Color(0xFF162a42)
+val BgCard = Color(0xFF1a3148)
+
 
 
 val Accent = Color(0xFFEFDC70)
