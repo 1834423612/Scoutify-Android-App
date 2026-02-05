@@ -10,6 +10,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import com.team695.scoutifyapp.navigation.AppNav
 import com.team695.scoutifyapp.ui.screens.ViewModelFactory
 import com.team695.scoutifyapp.ui.screens.tasks.TaskRepository
 import com.team695.scoutifyapp.ui.screens.tasks.TasksViewModel
@@ -21,7 +23,8 @@ fun MainContent(
         factory = ViewModelFactory {
             TasksViewModel(repository = TaskRepository())
         }
-    )
+    ),
+    navController: NavHostController
 ) {
     val uiState by tasksViewModel.uiState.collectAsState()
 
@@ -30,13 +33,8 @@ fun MainContent(
             .fillMaxSize(),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Box(modifier = Modifier.weight(0.33f)) {
-            TasksCard(
-                uiState = uiState,
-                onTabSelected = { tasksViewModel.selectTab(it) })
-        }
         Box(modifier = Modifier.weight(0.67f)) {
-            MatchSchedule()
+            AppNav(navController = navController, uiState = uiState, tasksViewModel: TasksViewModel)
         }
     }
 }

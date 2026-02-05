@@ -5,26 +5,34 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.team695.scoutifyapp.ui.InputScreen
+import com.team695.scoutifyapp.ui.components.app.structure.MatchSchedule
+import com.team695.scoutifyapp.ui.screens.CommentsScreen
 import com.team695.scoutifyapp.ui.screens.Form2
 import com.team695.scoutifyapp.ui.screens.HomeScreen
 import com.team695.scoutifyapp.ui.screens.FormScreen
+import com.team695.scoutifyapp.ui.screens.MainScreen
+import com.team695.scoutifyapp.ui.screens.PitScoutingScreen
+
+
 
 @Composable
-fun AppNav() {
-    val navController: NavHostController = rememberNavController()
-
+fun AppNav(navController: NavHostController) {
     NavHost(navController = navController, startDestination = "home") {
         composable("home") {
-            HomeScreen(
-                onNavigateToForm = { navController.navigate("form") },
-                onNavigateToForm2 = { navController.navigate("form") }
-            )
+            MatchSchedule(navController = navController)
         }
-        composable("form") {
-            FormScreen(onBack = { navController.popBackStack() })
+        composable(route = "comments") {
+            CommentsScreen()
         }
-        composable("form2") {
-            Form2(onBack = { navController.popBackStack() })
+        composable("pitScouting") {
+            PitScoutingScreen()
+        }
+        composable("upload") {
+            InputScreen(navController = navController)
+        }
+        composable(route = "settings") {
+            FormScreen()
         }
     }
 }

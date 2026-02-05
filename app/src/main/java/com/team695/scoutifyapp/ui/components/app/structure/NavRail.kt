@@ -3,6 +3,7 @@ package com.team695.scoutifyapp.ui.components.app.structure
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,6 +20,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,9 +39,27 @@ import com.team695.scoutifyapp.ui.theme.Deselected
 import com.team695.scoutifyapp.ui.theme.Gunmetal
 import com.team695.scoutifyapp.ui.theme.LightGunmetal
 import com.team695.scoutifyapp.ui.theme.TextPrimary
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.navigation.NavHost
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
+
+
 
 @Composable
-fun NavRail() {
+fun NavRail(
+
+onNavigateToHome: () -> Unit = {},
+    onNavigateToPitScouting: () -> Unit = {},
+    onNavigateToUpload: () -> Unit = {},
+    onNavigateToSettings: () -> Unit = {},
+    navController: NavHostController
+) {
+
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
 
     val roundedShape = RoundedCornerShape(
         topStart = 0.dp,
@@ -142,10 +163,38 @@ fun NavRail() {
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        NavItem(icon = R.drawable.home, label = "Home", selected = true)
-                        NavItem(icon = R.drawable.pits, label = "Pit Scout")
-                        NavItem(icon = R.drawable.upload, label = "Upload")
-                        NavItem(icon = R.drawable.settings, label = "Settings")
+                        NavItem(
+                            icon = R.drawable.home,
+                            label = "Home",
+                            selected = currentRoute == "home",
+                            onClick = {
+                                onNavigateToHome()
+                            }
+                        )
+                        NavItem(
+                            icon = R.drawable.pits,
+                            label = "Pit Scout",
+                            selected = currentRoute == "pitScouting",
+                            onClick = {
+                                onNavigateToPitScouting()
+                            }
+                        )
+                        NavItem(
+                            icon = R.drawable.upload,
+                            label = "Upload",
+                            selected = currentRoute == "upload",
+                            onClick = {
+                                onNavigateToUpload()
+                            }
+                        )
+                        NavItem(
+                            icon = R.drawable.settings,
+                            label = "Settings",
+                            selected = currentRoute == "settings",
+                            onClick = {
+                                onNavigateToSettings()
+                            }
+                        )
                     }
                 }
             }
@@ -154,10 +203,11 @@ fun NavRail() {
 }
 
 @Composable
-fun NavItem(icon: Int, label: String, selected: Boolean = false) {
+fun NavItem(icon: Int, label: String, onClick: () -> Unit = {}, selected: Boolean = false) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
+            .clickable{ onClick() }
             .background( Color.Transparent)
             .padding(vertical = 8.dp, horizontal = 16.dp)
     ) {
@@ -175,3 +225,4 @@ fun NavItem(icon: Int, label: String, selected: Boolean = false) {
         )
     }
 }
+

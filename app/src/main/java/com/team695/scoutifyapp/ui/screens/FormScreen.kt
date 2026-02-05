@@ -29,7 +29,7 @@ import com.team695.scoutifyapp.ui.components.form.TA
 
 
 // required/validation, - for text: use Regex("^.+$"), radio has an example
-fun FormScreen(onBack: () -> Unit) {
+fun FormScreen(onBack: () -> Unit = {}) {
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
