@@ -49,6 +49,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
 import com.team695.scoutifyapp.R
 import com.team695.scoutifyapp.ui.components.app.reusables.Pressable
 import com.team695.scoutifyapp.ui.modifier.buttonHighlight
@@ -79,7 +80,7 @@ data class Match(
 )
 
 @Composable
-fun MatchSchedule(modifier: Modifier = Modifier) {
+fun MatchSchedule(modifier: Modifier = Modifier, navController: NavHostController) {
     var searchQuery by remember { mutableStateOf("") }
 
     val allMatches = remember {
@@ -245,7 +246,8 @@ fun MatchSchedule(modifier: Modifier = Modifier) {
                         blue1 = it.blue1,
                         blue2 = it.blue2,
                         blue3 = it.blue3,
-                        isSpecial = it.isSpecial
+                        isSpecial = it.isSpecial,
+                        navController
                     )
                 }
             }
@@ -288,6 +290,7 @@ fun MatchItem(
     blue2: String,
     blue3: String,
     isSpecial: Boolean,
+    navController: NavHostController
 ) {
     val borderColor = if (isSpecial) Accent else Border
     Row(
@@ -375,7 +378,7 @@ fun MatchItem(
         Spacer(modifier = Modifier.weight(1f))
 
         Pressable (
-            onClick = {},
+            onClick = { navController.navigate("comments") },
             corner = 4.dp,
             text = "Comment",
             modifier = Modifier

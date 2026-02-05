@@ -56,8 +56,10 @@ onNavigateToHome: () -> Unit = {},
     onNavigateToSettings: () -> Unit = {},
     navController: NavHostController
 ) {
-    // Keep track of the currently selected label
-    var selectedItem by remember { mutableStateOf("Home") }
+
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
 
     val roundedShape = RoundedCornerShape(
         topStart = 0.dp,
@@ -164,36 +166,32 @@ onNavigateToHome: () -> Unit = {},
                         NavItem(
                             icon = R.drawable.home,
                             label = "Home",
-                            selected = selectedItem == "Home",
+                            selected = currentRoute == "home",
                             onClick = {
-                                selectedItem = "Home"
                                 onNavigateToHome()
                             }
                         )
                         NavItem(
                             icon = R.drawable.pits,
                             label = "Pit Scout",
-                            selected = selectedItem == "Pit Scout",
+                            selected = currentRoute == "pitScouting",
                             onClick = {
-                                selectedItem = "Pit Scout"
                                 onNavigateToPitScouting()
                             }
                         )
                         NavItem(
                             icon = R.drawable.upload,
                             label = "Upload",
-                            selected = selectedItem == "Upload",
+                            selected = currentRoute == "upload",
                             onClick = {
-                                selectedItem = "Upload"
                                 onNavigateToUpload()
                             }
                         )
                         NavItem(
                             icon = R.drawable.settings,
                             label = "Settings",
-                            selected = selectedItem == "Settings",
+                            selected = currentRoute == "settings",
                             onClick = {
-                                selectedItem = "Settings"
                                 onNavigateToSettings()
                             }
                         )

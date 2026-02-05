@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.team695.scoutifyapp.ui.InputScreen
 import com.team695.scoutifyapp.ui.components.app.structure.MatchSchedule
+import com.team695.scoutifyapp.ui.screens.CommentsScreen
 import com.team695.scoutifyapp.ui.screens.Form2
 import com.team695.scoutifyapp.ui.screens.HomeScreen
 import com.team695.scoutifyapp.ui.screens.FormScreen
@@ -19,7 +20,10 @@ import com.team695.scoutifyapp.ui.screens.PitScoutingScreen
 fun AppNav(navController: NavHostController) {
     NavHost(navController = navController, startDestination = "home") {
         composable("home") {
-            MatchSchedule()
+            MatchSchedule(navController = navController)
+        }
+        composable(route = "comments") {
+            CommentsScreen()
         }
         composable("pitScouting") {
             PitScoutingScreen()

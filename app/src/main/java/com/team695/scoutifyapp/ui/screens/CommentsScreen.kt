@@ -27,7 +27,7 @@ import androidx.compose.ui.draw.innerShadow
 import androidx.compose.ui.unit.DpOffset
 import com.team695.scoutifyapp.ui.components.app.reusables.Pressable
 
-
+@Preview
 @Composable
 fun CommentsScreen() {
     Surface(
@@ -40,7 +40,6 @@ fun CommentsScreen() {
                 .padding(16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            NavRail()
             CommentsContent()
         }
     }
