@@ -21,6 +21,7 @@ val BgCard = Color(0xFF1a3148)
 
 
 val Accent = Color(0xFFEFDC70)
+
 val AccentSecondary = Color(0xFF00B2D6)
 val AccentGreen = Color(0xFFA3E635)
 
@@ -52,3 +53,6 @@ val BadgeBackgroundSecondary = Color.Black
 val TextFieldBackground = Color.Black.copy(alpha = 0.5f)
 
 val CommentButtonBackground = Color(0xFF444444)
+
+val AccentWarning = Color(0xFFEFDC70)//just copied accent
+val TextMuted = Color(0xFFEFDC70)//just copied accent

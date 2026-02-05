@@ -3,6 +3,7 @@ import com.android.build.api.dsl.ApplicationExtension
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlin.android)
 }
 
 configure<ApplicationExtension> {
@@ -65,4 +66,9 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     // Casdoor Login
     implementation(group = "org.casbin", name = "casdoor-android-sdk", version = "0.0.1")
+}
+android {
+    kotlinOptions {
+        jvmTarget = "21"
+    }
 }
