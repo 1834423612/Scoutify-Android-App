@@ -7,5 +7,6 @@ import io.objectbox.annotation.Id
 data class Match(
     @Id var id: Long = 0,
     var teamNumber: Int,
+
 )
 
