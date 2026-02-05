@@ -8,6 +8,13 @@ val BackgroundTertiary = Color(0xFF171920)
 val BackgroundCard = BackgroundTertiary.copy(alpha = 0.8f)
 val BackgroundNav = Color(0xFF252525).copy(alpha = 0.5f)
 
+//for Kevin's pit scouting page
+val AccentPrimary = Color(0xFF4a9eff)
+
+val BgPrimary = Color(0xFF0a1628)
+val AccentDanger = Color(0xFFef4444)
+
+
 val Accent = Color(0xFFEFDC70)
 val AccentSecondary = Color(0xFF00B2D6)
 val AccentGreen = Color(0xFFA3E635)
