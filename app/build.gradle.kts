@@ -1,9 +1,16 @@
 import com.android.build.api.dsl.ApplicationExtension
 
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.kotlin.android)
+//    alias(libs.plugins.android.application)
+//    alias(libs.plugins.compose.compiler)
+//    alias(libs.plugins.kotlin.android)
+//    id("io.objectbox") // ObjectBox plugin
+//    //id("io.objectbox") version "4.0.2" apply false
+    id("com.android.application")
+    kotlin("android")
+    id("io.objectbox") // ObjectBox plugin
+    id("org.jetbrains.kotlin.plugin.compose") // Compose compiler plugin
+
 }
 
 configure<ApplicationExtension> {
@@ -66,6 +73,7 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     // Casdoor Login
     implementation(group = "org.casbin", name = "casdoor-android-sdk", version = "0.0.1")
+    implementation("io.objectbox:objectbox-android:4.0.2")
 }
 android {
     kotlinOptions {

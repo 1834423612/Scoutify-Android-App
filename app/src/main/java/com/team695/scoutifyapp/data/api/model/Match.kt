@@ -1,5 +1,11 @@
 package com.team695.scoutifyapp.data.api.model
 
+import io.objectbox.annotation.Entity
+import io.objectbox.annotation.Id
+
+@Entity
 data class Match(
-    final val matchNumber: Int,
+    @Id var id: Long = 0,
+    var teamNumber: Int,
+    final val matchNumber: Int
 )
