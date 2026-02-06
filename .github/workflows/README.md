@@ -1,84 +1,84 @@
-# GitHub Actions CI/CD 工作流程说明
+# GitHub Actions CI/CD Workflow Documentation
 
-## 工作流程概述
+## Workflow Overview
 
-此工作流程实现了 Android 应用的自动化 CI/CD 流程，满足以下要求：
-- ✅ 仅在 master 分支有提交时触发
-- ✅ 运行代码质量检查（Lint）和测试，确保程序没有运行错误
-- ✅ 自动打包生成 APK 文件
-- ✅ 上传 APK 作为构建产物，保留 30 天
+This workflow implements an automated CI/CD pipeline for the Android application with the following features:
+- ✅ Triggers only on commits to the master branch
+- ✅ Runs code quality checks (Lint) and tests to ensure no runtime errors
+- ✅ Automatically builds and packages APK file
+- ✅ Uploads APK as a build artifact (retained for 30 days)
 
-## 工作流程详情
+## Workflow Details
 
-### 触发条件
+### Trigger Conditions
 ```yaml
 on:
   push:
     branches:
       - master
 ```
-工作流程只在代码推送到 `master` 分支时触发。
+The workflow is triggered only when code is pushed to the `master` branch.
 
-### 构建步骤
+### Build Steps
 
-1. **检出代码** - 从仓库拉取最新代码
-2. **设置 JDK 21** - 配置 Java 开发环境（使用 Temurin 发行版）
-3. **授予 gradlew 执行权限** - 确保 Gradle 包装器可以执行
-4. **运行 Lint 检查** - 检查代码质量和潜在问题
-5. **运行测试** - 执行单元测试，确保代码正确性
-6. **构建 Debug APK** - 编译并打包 Android 应用
-7. **上传 APK** - 将生成的 APK 文件上传为构建产物
+1. **Checkout code** - Pull the latest code from the repository
+2. **Set up JDK 21** - Configure Java development environment (using Temurin distribution)
+3. **Grant execute permission for gradlew** - Ensure the Gradle wrapper can be executed
+4. **Run Lint** - Check code quality and potential issues
+5. **Run Tests** - Execute unit tests to ensure code correctness
+6. **Build Debug APK** - Compile and package the Android application
+7. **Upload APK** - Upload the generated APK file as a build artifact
 
-### 错误处理
+### Error Handling
 
-如果任何步骤失败（Lint 检查、测试或构建），工作流程会停止执行，不会继续打包 APK。这确保只有通过所有检查的代码才会被打包。
+If any step fails (Lint check, tests, or build), the workflow will stop execution and will not proceed to package the APK. This ensures that only code passing all checks is packaged.
 
-### 使用方法
+### Usage
 
-#### 触发工作流程
-将代码推送到 master 分支：
+#### Triggering the Workflow
+Push code to the master branch:
 ```bash
 git push origin master
 ```
 
-#### 下载构建的 APK
-1. 访问 GitHub 仓库的 "Actions" 标签页
-2. 选择相应的工作流程运行
-3. 在 "Artifacts" 部分下载 `app-debug` APK 文件
+#### Downloading the Built APK
+1. Visit the "Actions" tab in the GitHub repository
+2. Select the corresponding workflow run
+3. Download the `app-debug` APK file from the "Artifacts" section
 
-### 配置说明
+### Configuration Details
 
-- **JDK 版本**: 21（与项目配置匹配）
-- **Gradle 缓存**: 启用，加快构建速度
-- **APK 保留期限**: 30 天
-- **构建类型**: Debug APK
+- **JDK Version**: 21 (matches project configuration)
+- **Gradle Cache**: Enabled to speed up builds
+- **APK Retention Period**: 30 days
+- **Build Type**: Debug APK
 
-### 自定义配置
+### Customization
 
-如需修改工作流程，可编辑 `.github/workflows/android-build.yml` 文件：
+To modify the workflow, edit the `.github/workflows/android-build.yml` file:
 
-- 修改触发分支：更改 `branches` 列表
-- 构建 Release APK：将 `assembleDebug` 改为 `assembleRelease`
-- 调整 APK 保留期限：修改 `retention-days` 值
-- 添加其他构建步骤：在 `steps` 中添加新步骤
+- Change trigger branches: Modify the `branches` list
+- Build Release APK: Change `assembleDebug` to `assembleRelease`
+- Adjust APK retention period: Modify the `retention-days` value
+- Add other build steps: Add new steps in the `steps` section
 
-### 依赖项
+### Dependencies
 
-此工作流程使用以下 GitHub Actions：
-- `actions/checkout@v4` - 检出代码
-- `actions/setup-java@v4` - 设置 Java 环境
-- `actions/upload-artifact@v4` - 上传构建产物
+This workflow uses the following GitHub Actions:
+- `actions/checkout@v4` - Checkout code
+- `actions/setup-java@v4` - Set up Java environment
+- `actions/upload-artifact@v4` - Upload build artifacts
 
-### 注意事项
+### Notes
 
-1. 确保项目的 `gradlew` 文件已提交到仓库
-2. 确保 `gradle/wrapper/gradle-wrapper.jar` 已提交
-3. 如果需要签名的 Release APK，需要配置签名密钥
-4. 首次运行可能需要较长时间下载依赖项
+1. Ensure the project's `gradlew` file is committed to the repository
+2. Ensure `gradle/wrapper/gradle-wrapper.jar` is committed
+3. If you need a signed Release APK, configure signing keys
+4. First run may take longer to download dependencies
 
-### 状态徽章
+### Status Badge
 
-可以在 README 中添加工作流程状态徽章：
+You can add a workflow status badge to your README:
 ```markdown
 ![Android CI/CD](https://github.com/1834423612/Scoutify-Android-App/workflows/Android%20CI%2FCD/badge.svg)
 ```
