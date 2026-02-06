@@ -5,7 +5,7 @@
   "entities": [
     {
       "id": "1:4034031024142362992",
-      "lastPropertyId": "2:3529581031882349717",
+      "lastPropertyId": "3:5428964634035923623",
       "name": "Match",
       "properties": [
         {
@@ -17,6 +17,11 @@
         {
           "id": "2:3529581031882349717",
           "name": "teamNumber",
+          "type": 5
+        },
+        {
+          "id": "3:5428964634035923623",
+          "name": "matchNumber",
           "type": 5
         }
       ],
