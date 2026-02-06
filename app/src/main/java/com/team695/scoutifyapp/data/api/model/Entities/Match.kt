@@ -1,4 +1,4 @@
-package com.team695.scoutifyapp.data.api.model
+package com.team695.scoutifyapp.data.api.model.Entities
 
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
