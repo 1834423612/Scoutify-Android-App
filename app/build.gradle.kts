@@ -56,7 +56,6 @@ dependencies {
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.36.0")
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.constraintlayout.compose)
-    implementation(group = "org.casbin", name = "casdoor-android-sdk", version = "0.0.1") // casdoor
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

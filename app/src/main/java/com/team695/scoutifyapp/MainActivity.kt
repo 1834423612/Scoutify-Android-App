@@ -8,5 +8,15 @@ import androidx.compose.material3.Surface
 import com.team695.scoutifyapp.ui.screens.*
 import com.team695.scoutifyapp.ui.theme.ScoutifyTheme
 
-class MainActivity : LoginScreen() {
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            ScoutifyTheme {
+                Surface(color = MaterialTheme.colorScheme.background) {
+                    MainScreen()
+                }
+            }
+        }
+    }
 }
