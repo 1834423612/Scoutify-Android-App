@@ -26,9 +26,66 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "2:2549503635883129983",
+      "lastPropertyId": "2:1893981441353023064",
+      "name": "IncidentReport",
+      "properties": [
+        {
+          "id": "1:663392725710576830",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:1893981441353023064",
+          "name": "teamNumber",
+          "type": 5
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "3:5609090553385052215",
+      "lastPropertyId": "2:4571607026907356659",
+      "name": "PitScout",
+      "properties": [
+        {
+          "id": "1:8307968532624871299",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:4571607026907356659",
+          "name": "teamNumber",
+          "type": 5
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "4:1826071152248448813",
+      "lastPropertyId": "2:907716349292474775",
+      "name": "Task",
+      "properties": [
+        {
+          "id": "1:3881561839734615869",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:907716349292474775",
+          "name": "type",
+          "type": 5
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "1:4034031024142362992",
+  "lastEntityId": "4:1826071152248448813",
   "lastIndexId": "0:0",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",
