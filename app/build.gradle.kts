@@ -38,8 +38,8 @@ configure<ApplicationExtension> {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 
     buildFeatures {
@@ -74,9 +74,4 @@ dependencies {
     // Casdoor Login
     implementation(group = "org.casbin", name = "casdoor-android-sdk", version = "0.0.1")
     implementation("io.objectbox:objectbox-android:4.0.2")
-}
-android {
-    kotlinOptions {
-        jvmTarget = "17"
-    }
 }
