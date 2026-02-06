@@ -44,7 +44,7 @@ import com.team695.scoutifyapp.ui.components.app.reusables.Pressable
 import com.team695.scoutifyapp.ui.modifier.buttonHighlight
 import com.team695.scoutifyapp.ui.screens.ViewModelFactory
 import com.team695.scoutifyapp.ui.screens.tasks.Task
-import com.team695.scoutifyapp.ui.screens.tasks.TaskRepository
+import com.team695.scoutifyapp.ui.screens.tasks.TaskService
 import com.team695.scoutifyapp.ui.screens.tasks.TasksUiState
 import com.team695.scoutifyapp.ui.screens.tasks.TasksViewModel
 import com.team695.scoutifyapp.ui.theme.BadgeBackground

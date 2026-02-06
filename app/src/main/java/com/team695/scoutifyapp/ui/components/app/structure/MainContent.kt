@@ -9,23 +9,23 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.team695.scoutifyapp.navigation.AppNav
 import com.team695.scoutifyapp.ui.screens.ViewModelFactory
 import com.team695.scoutifyapp.ui.screens.tasks.TaskRepository
+import com.team695.scoutifyapp.ui.screens.tasks.TaskService
 import com.team695.scoutifyapp.ui.screens.tasks.TasksViewModel
 
 @Composable
 fun MainContent(
     modifier: Modifier = Modifier,
-    tasksViewModel: TasksViewModel = viewModel(
-        factory = ViewModelFactory {
-            TasksViewModel(repository = TaskRepository())
-        }
-    ),
     navController: NavHostController
 ) {
+    val taskService = TaskService()
+    val factory = ViewModelFactory{ TasksViewModel(taskService) }
+    val viewModel = ViewModelProvider(this, factory).get(TasksViewModel::class.java)
     val uiState by tasksViewModel.uiState.collectAsState()
 
     Row(
