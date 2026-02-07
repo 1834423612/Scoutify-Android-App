@@ -139,9 +139,9 @@ onNavigateToHome: () -> Unit = {},
             ) {
                 Column(
                     modifier = Modifier
-                        .width(140.dp) // or any width you want for your sidebar
+                        .width(140.dp)
                         .graphicsLayer {
-                            translationX = -110f
+                            translationX = -80f
                             translationY = 0f
                         }
                         .clip(
@@ -157,7 +157,7 @@ onNavigateToHome: () -> Unit = {},
                         modifier = Modifier
                             .fillMaxWidth()
                             .graphicsLayer {
-                                translationX = 110f
+                                translationX = 80f
                                 translationY = 0f
                             },
                         horizontalAlignment = Alignment.CenterHorizontally,

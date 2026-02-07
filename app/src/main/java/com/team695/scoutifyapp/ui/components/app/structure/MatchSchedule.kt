@@ -80,7 +80,7 @@ data class Match(
 )
 
 @Composable
-fun MatchSchedule(modifier: Modifier = Modifier, navController: NavHostController) {
+fun MatchSchedule(modifier: Modifier = Modifier, onCommentClicked: () -> Unit) {
     var searchQuery by remember { mutableStateOf("") }
 
     val allMatches = remember {
@@ -247,7 +247,7 @@ fun MatchSchedule(modifier: Modifier = Modifier, navController: NavHostControlle
                         blue2 = it.blue2,
                         blue3 = it.blue3,
                         isSpecial = it.isSpecial,
-                        navController
+                        onCommentClicked = onCommentClicked
                     )
                 }
             }
@@ -290,7 +290,7 @@ fun MatchItem(
     blue2: String,
     blue3: String,
     isSpecial: Boolean,
-    navController: NavHostController
+    onCommentClicked: () -> Unit
 ) {
     val borderColor = if (isSpecial) Accent else Border
     Row(
@@ -378,7 +378,7 @@ fun MatchItem(
         Spacer(modifier = Modifier.weight(1f))
 
         Pressable (
-            onClick = { navController.navigate("comments") },
+            onClick = {onCommentClicked()},
             corner = 4.dp,
             text = "Comment",
             modifier = Modifier
@@ -429,42 +429,4 @@ fun MatchItem(
             )
         } */
     }
-}
-
-@Composable
-fun ImageBackground(x: Float, y: Float, modifier: Modifier = Modifier) {
-    Image(
-        painter = painterResource(id = R.drawable.background),
-        contentDescription = "background image",
-        contentScale = ContentScale.Crop,
-        modifier = modifier
-            .fillMaxSize()
-            .alpha(0.05f)
-            .graphicsLayer {
-                translationX = x
-                translationY = y
-            },
-    )
-}
-
-@Composable
-fun BackgroundGradient(modifier: Modifier = Modifier) {
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .graphicsLayer {
-                renderEffect = androidx.compose.ui.graphics.BlurEffect(
-                    radiusX = 100f,
-                    radiusY = 100f,
-                    edgeTreatment = androidx.compose.ui.graphics.TileMode.Decal,
-                )
-            }
-            .background(
-                brush = androidx.compose.ui.graphics.Brush.radialGradient(
-                    colors = listOf(Accent.copy(0.2f), Color.Transparent),
-                    center = androidx.compose.ui.geometry.Offset(1000f, 0f),
-                    radius = 1200f,
-                )
-            )
-    )
 }
