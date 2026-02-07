@@ -1,6 +1,5 @@
-package com.team695.scoutifyapp.data.api.model.Entities
+package com.team695.scoutifyapp.data.objectBox.Entities
 
-import io.objectbox.annotation.Backlink
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 import io.objectbox.relation.ToMany
