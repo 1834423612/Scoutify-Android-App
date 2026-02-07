@@ -1,4 +1,4 @@
-package com.team695.scoutifyapp.ui.screens
+package com.team695.scoutifyapp
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,7 +17,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.team695.scoutifyapp.navigation.AppNav
 import com.team695.scoutifyapp.ui.components.app.structure.NavRail
-import com.team695.scoutifyapp.ui.components.app.structure.MainContent
+import com.team695.scoutifyapp.ui.screens.ViewModelFactory
 import com.team695.scoutifyapp.ui.screens.tasks.TaskService
 import com.team695.scoutifyapp.ui.screens.tasks.TasksViewModel
 import com.team695.scoutifyapp.ui.theme.*

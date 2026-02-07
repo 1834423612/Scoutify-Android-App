@@ -1,11 +1,12 @@
 package com.team695.scoutifyapp.data.api.model
 
 import android.content.Context
-import com.team695.scoutifyapp.data.api.model.Entities.MyObjectBox
+// import com.team695.scoutifyapp.data.api.model.Entities.MyObjectBox
 import io.objectbox.BoxStore
 import io.objectbox.DebugFlags
 import io.objectbox.android.AndroidObjectBrowser
 
+/*
 object ObjectBox {
     lateinit var store: BoxStore
         private set
@@ -22,3 +23,5 @@ object ObjectBox {
         println("ObjectBrowser started? $started")
     }
 }
+
+ */
