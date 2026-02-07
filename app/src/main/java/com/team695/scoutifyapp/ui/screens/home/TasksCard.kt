@@ -46,7 +46,7 @@ import com.team695.scoutifyapp.ui.reusables.Pressable
 import com.team695.scoutifyapp.ui.reusables.BackgroundGradient
 import com.team695.scoutifyapp.ui.reusables.ImageBackground
 import com.team695.scoutifyapp.ui.modifier.buttonHighlight
-import com.team695.scoutifyapp.ui.screens.tasks.TasksViewModel
+import com.team695.scoutifyapp.ui.viewModels.TasksViewModel
 import com.team695.scoutifyapp.ui.theme.BadgeBackground
 import com.team695.scoutifyapp.ui.theme.BadgeBackgroundSecondary
 import com.team695.scoutifyapp.ui.theme.BadgeContent

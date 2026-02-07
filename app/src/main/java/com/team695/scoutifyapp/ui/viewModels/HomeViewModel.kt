@@ -1,10 +1,10 @@
-package com.team695.scoutifyapp.ui.screens.home
+package com.team695.scoutifyapp.ui.viewModels
 
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.team695.scoutifyapp.data.api.service.MatchService
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.launch
 
 class HomeViewModel(private val service: MatchService): ViewModel() {

@@ -18,8 +18,8 @@ import androidx.navigation.compose.rememberNavController
 import com.team695.scoutifyapp.navigation.AppNav
 import com.team695.scoutifyapp.ui.components.app.structure.NavRail
 import com.team695.scoutifyapp.ui.screens.ViewModelFactory
-import com.team695.scoutifyapp.ui.screens.tasks.TaskService
-import com.team695.scoutifyapp.ui.screens.tasks.TasksViewModel
+import com.team695.scoutifyapp.ui.viewModels.TaskService
+import com.team695.scoutifyapp.ui.viewModels.TasksViewModel
 import com.team695.scoutifyapp.ui.theme.*
 
 @Composable

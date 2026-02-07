@@ -8,11 +8,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.team695.scoutifyapp.ui.viewModels.TasksViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    navController: NavHostController
+    navController: NavHostController,
+    viewModel: TasksViewModel
 ) {
     Row(
         modifier = Modifier

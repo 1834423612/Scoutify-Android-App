@@ -1,4 +1,4 @@
-package com.team695.scoutifyapp.ui.screens.login
+package com.team695.scoutifyapp.ui.viewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
