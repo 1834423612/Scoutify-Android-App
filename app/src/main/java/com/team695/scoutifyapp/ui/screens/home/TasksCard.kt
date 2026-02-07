@@ -1,4 +1,4 @@
-package com.team695.scoutifyapp.ui.components.app.structure
+package com.team695.scoutifyapp.ui.screens.home
 
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.LocalActivity
@@ -35,7 +35,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -43,9 +42,10 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.team695.scoutifyapp.R
 import com.team695.scoutifyapp.data.Task
-import com.team695.scoutifyapp.ui.components.app.reusables.Pressable
+import com.team695.scoutifyapp.ui.reusables.Pressable
+import com.team695.scoutifyapp.ui.reusables.BackgroundGradient
+import com.team695.scoutifyapp.ui.reusables.ImageBackground
 import com.team695.scoutifyapp.ui.modifier.buttonHighlight
-import com.team695.scoutifyapp.ui.screens.tasks.TasksUiState
 import com.team695.scoutifyapp.ui.screens.tasks.TasksViewModel
 import com.team695.scoutifyapp.ui.theme.BadgeBackground
 import com.team695.scoutifyapp.ui.theme.BadgeBackgroundSecondary
@@ -65,8 +65,7 @@ fun TasksCard(
 ) {
 
     //get the tasksViewModel from the activity
-    val activity = LocalActivity.current as? ComponentActivity
-        ?: error("No ComponentActivity found")
+    val activity = LocalActivity.current as? ComponentActivity ?: error("No ComponentActivity found")
 
     val viewModel: TasksViewModel = viewModel(
         viewModelStoreOwner = activity

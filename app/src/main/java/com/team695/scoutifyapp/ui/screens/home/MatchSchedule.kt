@@ -1,13 +1,11 @@
-package com.team695.scoutifyapp.ui.components.app.structure
+package com.team695.scoutifyapp.ui.screens.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -25,8 +23,6 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Badge
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -49,9 +45,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
 import com.team695.scoutifyapp.R
-import com.team695.scoutifyapp.ui.components.app.reusables.Pressable
+import com.team695.scoutifyapp.ui.reusables.Pressable
+import com.team695.scoutifyapp.ui.reusables.BackgroundGradient
+import com.team695.scoutifyapp.ui.reusables.ImageBackground
 import com.team695.scoutifyapp.ui.modifier.buttonHighlight
 import com.team695.scoutifyapp.ui.theme.Accent
 import com.team695.scoutifyapp.ui.theme.BadgeBackground
@@ -81,7 +78,7 @@ data class Match(
 
 @Composable
 fun MatchSchedule(modifier: Modifier = Modifier, onCommentClicked: () -> Unit) {
-    var searchQuery by remember { mutableStateOf("") }
+    var searchQuery: String by remember { mutableStateOf("") }
 
     val allMatches = remember {
         listOf(
