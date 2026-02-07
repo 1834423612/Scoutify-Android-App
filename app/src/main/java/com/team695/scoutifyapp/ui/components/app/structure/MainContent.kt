@@ -13,8 +13,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.team695.scoutifyapp.navigation.AppNav
 import com.team695.scoutifyapp.ui.screens.ViewModelFactory
-import com.team695.scoutifyapp.ui.screens.tasks.TaskService
-import com.team695.scoutifyapp.ui.screens.tasks.TasksViewModel
+import com.team695.scoutifyapp.ui.viewModels.TaskService
+import com.team695.scoutifyapp.ui.viewModels.TasksViewModel
 
 @Composable
 fun MainContent(

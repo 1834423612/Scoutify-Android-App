@@ -1,4 +1,4 @@
-package com.team695.scoutifyapp.ui.screens.tasks
+package com.team695.scoutifyapp.ui.viewModels
 
 import androidx.lifecycle.ViewModel
 import com.team695.scoutifyapp.data.Task
