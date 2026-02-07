@@ -2,7 +2,6 @@ package com.team695.scoutifyapp.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,15 +16,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.team695.scoutifyapp.ui.components.app.structure.BackgroundGradient
-import com.team695.scoutifyapp.ui.components.app.structure.ImageBackground
-import com.team695.scoutifyapp.ui.components.app.structure.NavRail
+import com.team695.scoutifyapp.ui.reusables.BackgroundGradient
+import com.team695.scoutifyapp.ui.reusables.ImageBackground
 import com.team695.scoutifyapp.ui.modifier.buttonHighlight
 import com.team695.scoutifyapp.ui.theme.*
-import androidx.compose.ui.graphics.shadow.Shadow
-import androidx.compose.ui.draw.innerShadow
-import androidx.compose.ui.unit.DpOffset
-import com.team695.scoutifyapp.ui.components.app.reusables.Pressable
+import com.team695.scoutifyapp.ui.reusables.Pressable
 
 @Preview
 @Composable

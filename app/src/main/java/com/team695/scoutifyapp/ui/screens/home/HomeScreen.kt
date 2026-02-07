@@ -1,14 +1,13 @@
-package com.team695.scoutifyapp.ui.screens
+package com.team695.scoutifyapp.ui.screens.home
 
+import com.team695.scoutifyapp.ui.screens.home.MatchSchedule
+import com.team695.scoutifyapp.ui.screens.home.TasksCard
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.team695.scoutifyapp.ui.components.app.structure.MatchSchedule
-import com.team695.scoutifyapp.ui.components.app.structure.TasksCard
-import com.team695.scoutifyapp.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

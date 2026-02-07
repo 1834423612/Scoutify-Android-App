@@ -1,4 +1,4 @@
-package com.team695.scoutifyapp.ui.components.app.reusables
+package com.team695.scoutifyapp.ui.reusables
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

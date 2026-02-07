@@ -4,7 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.team695.scoutifyapp.navigation.AppNav
-import com.team695.scoutifyapp.ui.screens.MainScreen
+import com.team695.scoutifyapp.Root
+import com.team695.scoutifyapp.ui.screens.Root
 import com.team695.scoutifyapp.ui.theme.ScoutifyTheme
 
 class MainActivity : ComponentActivity() {
@@ -12,7 +13,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             ScoutifyTheme {
-                MainScreen()
+                Root()
             }
         }
     }

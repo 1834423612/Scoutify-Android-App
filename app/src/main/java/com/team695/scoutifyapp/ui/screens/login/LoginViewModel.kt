@@ -1,4 +1,4 @@
-package com.team695.scoutifyapp.ui.screens.home
+package com.team695.scoutifyapp.ui.screens.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -15,7 +15,11 @@ class LoginViewModel(private val service: LoginService): ViewModel() {
     fun login() {
         viewModelScope.launch {
             try {
-                val body: LoginBody = LoginBody(695, "alex", "87e31e75d0229aeac6909b2c12dd5feb43380238b011f985ee9e58bf8e4d40ee")
+                val body: LoginBody = LoginBody(
+                    695,
+                    "alex",
+                    "87e31e75d0229aeac6909b2c12dd5feb43380238b011f985ee9e58bf8e4d40ee"
+                )
                 val res = service.login(body)
                 _loginRes.value = res.string()
             } catch (e: Exception) {
