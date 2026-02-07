@@ -5,7 +5,7 @@
   "entities": [
     {
       "id": "1:4034031024142362992",
-      "lastPropertyId": "17:5278969403055989913",
+      "lastPropertyId": "22:8926994796703389748",
       "name": "Match",
       "properties": [
         {
@@ -62,7 +62,7 @@
         {
           "id": "11:5769108104555501040",
           "name": "shooting",
-          "type": 9
+          "type": 5
         },
         {
           "id": "12:503050386610958705",
@@ -93,6 +93,31 @@
           "id": "17:5278969403055989913",
           "name": "comments",
           "type": 9
+        },
+        {
+          "id": "18:736071517003624620",
+          "name": "startingPosition",
+          "type": 7
+        },
+        {
+          "id": "19:6171494606600598692",
+          "name": "autonClimbAttempted",
+          "type": 1
+        },
+        {
+          "id": "20:862739966525888777",
+          "name": "endgameClimbAttempted",
+          "type": 1
+        },
+        {
+          "id": "21:4492529771613625295",
+          "name": "minorFoul",
+          "type": 1
+        },
+        {
+          "id": "22:8926994796703389748",
+          "name": "majorFoul",
+          "type": 1
         }
       ],
       "relations": [
@@ -102,25 +127,6 @@
           "targetId": "5:5170023784404211519"
         }
       ]
-    },
-    {
-      "id": "2:2549503635883129983",
-      "lastPropertyId": "2:1893981441353023064",
-      "name": "IncidentReport",
-      "properties": [
-        {
-          "id": "1:663392725710576830",
-          "name": "id",
-          "type": 6,
-          "flags": 1
-        },
-        {
-          "id": "2:1893981441353023064",
-          "name": "teamNumber",
-          "type": 5
-        }
-      ],
-      "relations": []
     },
     {
       "id": "3:5609090553385052215",
@@ -191,17 +197,41 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "6:3576723258428146140",
+      "lastPropertyId": "2:2012310418840536522",
+      "name": "CheckIn",
+      "properties": [
+        {
+          "id": "1:2845439878081189668",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:2012310418840536522",
+          "name": "teamNumber",
+          "type": 5
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "5:5170023784404211519",
+  "lastEntityId": "6:3576723258428146140",
   "lastIndexId": "1:3993232858883917540",
   "lastRelationId": "1:3593035574585707481",
   "lastSequenceId": "0:0",
   "modelVersion": 5,
   "modelVersionParserMinimum": 5,
-  "retiredEntityUids": [],
+  "retiredEntityUids": [
+    2549503635883129983
+  ],
   "retiredIndexUids": [],
-  "retiredPropertyUids": [],
+  "retiredPropertyUids": [
+    663392725710576830,
+    1893981441353023064
+  ],
   "retiredRelationUids": [],
   "version": 1
 }
