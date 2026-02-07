@@ -1,4 +1,4 @@
-package com.team695.scoutifyapp.data.api.model.Entities
+package com.team695.scoutifyapp.data.objectBox.Entities
 
 import io.objectbox.annotation.Convert
 import io.objectbox.annotation.Entity

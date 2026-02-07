@@ -1,10 +1,10 @@
-package com.team695.scoutifyapp.data.api.model.Entities
+package com.team695.scoutifyapp.data.objectBox.Entities
 
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 
 @Entity
-data class CheckIn(
+data class PitScout(
     @Id var id: Long = 0,
     var teamNumber: Int,
 )
