@@ -1,5 +1,5 @@
 package com.team695.scoutifyapp.data.api.model
-
+/*
 import android.content.Context
 // import com.team695.scoutifyapp.data.api.model.Entities.MyObjectBox
 import io.objectbox.BoxStore

@@ -1,5 +1,5 @@
 package com.team695.scoutifyapp.data.objectBox.Entities
-
+/*
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
 import io.objectbox.relation.ToMany
@@ -38,4 +38,4 @@ data class Match(
     lateinit var actions: ToMany<Action>// Backlink to all actions belonging to this match
 }
 
-
+ */
