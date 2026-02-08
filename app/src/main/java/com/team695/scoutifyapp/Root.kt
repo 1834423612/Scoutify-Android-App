@@ -12,6 +12,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
@@ -34,21 +35,22 @@ fun Root() {
         modifier = Modifier.fillMaxSize(),
         color = Background
     ) {
-
+        if (LocalInspectionMode.current) {
+            Box(modifier = Modifier.fillMaxSize()) {}
+            return@Surface
+        }
         // creators are the lambdas that make the viewmodel instance
-        val viewModelCreators: Map<String, () -> ViewModel> = mapOf(
-            "home" to {
-                TasksViewModel(TaskService())
-            },
-        )
         val owner = LocalViewModelStoreOwner.current
             ?: throw IllegalStateException("Root must be attached to a ViewModelStoreOwner")
 
-        val viewModelMap: MutableMap<String, ViewModel> = mutableMapOf()
-
-        // goes through all the pages and uses a viewModelProvider to return the viewmodel
-        for (vmId in viewModelCreators.keys) {
-            viewModelMap[vmId] = remember(owner,vmId) {
+        val viewModelMap: Map<String, ViewModel> = remember(owner) {
+            val viewModelCreators: Map<String, () -> ViewModel> = mapOf(
+                "home" to {
+                    TasksViewModel(TaskService())
+                },
+            )
+            // goes through all the pages and uses a viewModelProvider to return the viewmodel
+            viewModelCreators.mapValues { (vmId, _) ->
                 val factory = ViewModelFactory<ViewModel>(vmId, viewModelCreators)
                 ViewModelProvider(owner, factory).get(ViewModel::class.java)
             }
