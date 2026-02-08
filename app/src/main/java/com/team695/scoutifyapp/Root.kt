@@ -9,9 +9,11 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -28,7 +30,20 @@ fun Root() {
         modifier = Modifier.fillMaxSize(),
         color = Background
     ) {
-        val taskService = TaskService()
+
+        val viewModelIdList: List<String> = listOf("home")
+
+        for (VMid: String in viewModelIdList) {
+            val service:
+        }
+
+        val viewModel: TasksViewModel = remember(it) {
+            val taskService: TaskService = TaskService()
+            val factory: ViewModelFactory<TasksViewModel> = ViewModelFactory{ TasksViewModel(taskService) }
+
+            ViewModelProvider(it, factory).get(TasksViewModel::class.java)
+        }
+
         val factory = ViewModelFactory { TasksViewModel(taskService) }
         val tasksViewModel: TasksViewModel = viewModel(factory = factory)
         val uiState by tasksViewModel.uiState.collectAsState()

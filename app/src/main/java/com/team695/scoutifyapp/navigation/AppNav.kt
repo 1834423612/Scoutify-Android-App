@@ -2,6 +2,7 @@ package com.team695.scoutifyapp.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -17,18 +18,11 @@ import com.team695.scoutifyapp.ui.viewModels.TasksViewModel
 
 
 @Composable
-fun AppNav(navController: NavHostController) {
+fun AppNav(navController: NavHostController, viewModelMap: Map<String, ViewModel>) {
     NavHost(navController = navController, startDestination = "home") {
         composable("home") {
 
-            val viewModel: TasksViewModel = remember(it) {
-                val taskService: TaskService = TaskService()
-                val factory: ViewModelFactory<TasksViewModel> = ViewModelFactory{ TasksViewModel(taskService) }
-
-                ViewModelProvider(it, factory).get(TasksViewModel::class.java)
-            }
-
-            HomeScreen(navController = navController, viewModel = viewModel)
+            HomeScreen(navController = navController, viewModel = viewModelMap["home"])
         }
         composable(route = "comments") {
             CommentsScreen()

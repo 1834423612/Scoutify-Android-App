@@ -7,7 +7,6 @@ plugins {
 //    id("io.objectbox") // ObjectBox plugin
 //    //id("io.objectbox") version "4.0.2" apply false
     id("com.android.application")
-    kotlin("android")
     id("io.objectbox") // ObjectBox plugin
     id("org.jetbrains.kotlin.plugin.compose") // Compose compiler plugin
 

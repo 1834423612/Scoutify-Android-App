@@ -7,6 +7,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
 import androidx.navigation.NavHostController
 import com.team695.scoutifyapp.ui.viewModels.TasksViewModel
 
@@ -14,7 +15,7 @@ import com.team695.scoutifyapp.ui.viewModels.TasksViewModel
 @Composable
 fun HomeScreen(
     navController: NavHostController,
-    viewModel: TasksViewModel
+    viewModel: ViewModel?
 ) {
     Row(
         modifier = Modifier
