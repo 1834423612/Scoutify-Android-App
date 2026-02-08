@@ -1,0 +1,39 @@
+-- 1. Define the Table
+-- Removed "AS Boolean". Now it will generate as a 'Long' in Kotlin.
+CREATE TABLE taskEntity (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    isCompleted INTEGER NOT NULL DEFAULT 0
+);
+
+-- 2. Select All
+selectAllTasks:
+SELECT *
+FROM taskEntity;
+
+-- 3. Insert (Use 0 or 1)
+insertTask:
+INSERT INTO taskEntity(title, isCompleted)
+VALUES (?, ?);
+
+-- 4. Toggle/Update
+-- We pass the new 0 or 1 integer directly
+updateCompletion:
+UPDATE taskEntity
+SET isCompleted = ?
+WHERE id = ?;
+
+-- 5. Delete
+deleteTaskById:
+DELETE FROM taskEntity
+WHERE id = ?;
+
+-- 6. Dummy Data
+seedData:
+INSERT INTO taskEntity (title, isCompleted)
+VALUES
+('Scout Match 42', 0),
+('Fix Bumper Fabric', 1),
+('Charge Battery A', 0),
+('Upload Pit Data', 0),
+('Buy Energy Drinks', 1);
