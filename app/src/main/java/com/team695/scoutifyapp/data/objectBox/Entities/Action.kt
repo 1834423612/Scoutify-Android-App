@@ -1,5 +1,5 @@
 package com.team695.scoutifyapp.data.objectBox.Entities
-
+/*
 import io.objectbox.annotation.Convert
 import io.objectbox.annotation.Entity
 import io.objectbox.annotation.Id
@@ -31,3 +31,5 @@ class ActionTypeConverter : PropertyConverter<ActionType, Int> {
         return ActionType.entries[databaseValue]
     }
 }
+
+ */
