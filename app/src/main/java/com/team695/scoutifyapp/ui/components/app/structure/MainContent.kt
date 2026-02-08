@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.team695.scoutifyapp.navigation.AppNav
-import com.team695.scoutifyapp.ui.screens.ViewModelFactory
+import com.team695.scoutifyapp.ui.viewModels.ViewModelFactory
 import com.team695.scoutifyapp.ui.viewModels.TaskService
 import com.team695.scoutifyapp.ui.viewModels.TasksViewModel
 

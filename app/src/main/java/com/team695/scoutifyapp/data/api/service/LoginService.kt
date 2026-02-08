@@ -5,7 +5,7 @@ import okhttp3.ResponseBody
 import retrofit2.http.Body
 import retrofit2.http.POST
 
-interface LoginService {
+interface LoginService: ServiceInterface {
     @POST("login")
     suspend fun login(@Body body: LoginBody): ResponseBody
 }
