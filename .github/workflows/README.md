@@ -22,7 +22,7 @@ The workflow is triggered only when code is pushed to the `master` branch.
 ### Build Steps
 
 1. **Checkout code** - Pull the latest code from the repository
-2. **Set up JDK 17** - Configure Java development environment (using Temurin distribution)
+2. **Set up JDK 21** - Configure Java development environment (using Temurin distribution)
 3. **Grant execute permission for gradlew** - Ensure the Gradle wrapper can be executed
 4. **Run Lint** - Check code quality and potential issues
 5. **Run Tests** - Execute unit tests to ensure code correctness
@@ -48,7 +48,7 @@ git push origin master
 
 ### Configuration Details
 
-- **JDK Version**: 17 (matches project configuration)
+- **JDK Version**: 21 (matches project configuration)
 - **Gradle Cache**: Enabled to speed up builds
 - **APK Retention Period**: 30 days
 - **Build Type**: Debug APK
