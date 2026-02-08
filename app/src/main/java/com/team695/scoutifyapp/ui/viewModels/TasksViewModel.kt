@@ -3,13 +3,12 @@ package com.team695.scoutifyapp.ui.viewModels
 import androidx.lifecycle.ViewModel
 import com.team695.scoutifyapp.data.Task
 import com.team695.scoutifyapp.data.TaskType
-import com.team695.scoutifyapp.data.api.service.ServiceInterface
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 
-class TaskService: ServiceInterface {
+class TaskService {
     fun getTasks(): List<Task> {
         return listOf(
             Task(2, TaskType.SCOUTING, 3, "118", "01m", 0.25f, false, "PARTIAL"),
@@ -26,7 +25,7 @@ data class TasksUiState(
     val doneTasks: List<Task> = emptyList()
 )
 
-class TasksViewModel(private val service: TaskService) : ViewModel() {
+class TasksViewModel(private val service: TaskService = TaskService()) : ViewModel() {
     private val _uiState: MutableStateFlow<TasksUiState> = MutableStateFlow(TasksUiState())
     val uiState: StateFlow<TasksUiState> = _uiState.asStateFlow()
 
