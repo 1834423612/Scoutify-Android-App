@@ -3,13 +3,13 @@ import com.android.build.api.dsl.ApplicationExtension
 plugins {
 //    alias(libs.plugins.android.application)
 //    alias(libs.plugins.compose.compiler)
-//    alias(libs.plugins.kotlin.android)
+    id("org.jetbrains.kotlin.android")
 //    id("io.objectbox") // ObjectBox plugin
 //    //id("io.objectbox") version "4.0.2" apply false
     id("com.android.application")
-    id("io.objectbox") // ObjectBox plugin
+    //id("io.objectbox") // ObjectBox plugin
     id("org.jetbrains.kotlin.plugin.compose") // Compose compiler plugin
-
+    alias(libs.plugins.sqldelight) // Apply the plugin
 }
 
 configure<ApplicationExtension> {
@@ -46,6 +46,14 @@ configure<ApplicationExtension> {
     }
 }
 
+sqldelight {
+    databases {
+        create("AppDatabase") {
+            packageName.set("com.team695.scoutifyapp.db")
+        }
+    }
+}
+
 dependencies {
 
     implementation(libs.androidx.core.ktx)
@@ -73,4 +81,7 @@ dependencies {
     // Casdoor Login
     implementation(group = "org.casbin", name = "casdoor-android-sdk", version = "0.0.1")
     implementation("io.objectbox:objectbox-android:4.0.2")
+    // SQL Delight
+    implementation(libs.sqldelight.android)
+    implementation(libs.sqldelight.coroutines)
 }
