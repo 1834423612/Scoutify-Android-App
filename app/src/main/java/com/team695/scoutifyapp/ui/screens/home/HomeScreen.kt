@@ -15,7 +15,7 @@ import com.team695.scoutifyapp.ui.viewModels.TasksViewModel
 @Composable
 fun HomeScreen(
     navController: NavHostController,
-    viewModel: ViewModel?
+    viewModel: ViewModel
 ) {
     Row(
         modifier = Modifier
