@@ -10,11 +10,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.team695.scoutifyapp.data.api.service.MatchService
 import com.team695.scoutifyapp.ui.InputScreen
 import com.team695.scoutifyapp.ui.screens.CommentsScreen
 import com.team695.scoutifyapp.ui.screens.home.HomeScreen
 import com.team695.scoutifyapp.ui.screens.FormScreen
 import com.team695.scoutifyapp.ui.screens.PitScoutingScreen
+import com.team695.scoutifyapp.ui.viewModels.HomeViewModel
 import com.team695.scoutifyapp.ui.viewModels.ViewModelFactory
 import com.team695.scoutifyapp.ui.viewModels.TaskService
 import com.team695.scoutifyapp.ui.viewModels.TasksViewModel
@@ -23,7 +25,8 @@ import com.team695.scoutifyapp.ui.viewModels.TasksViewModel
 @Composable
 fun AppNav(
     navController: NavHostController,
-    taskService: TaskService
+    taskService: TaskService,
+    matchService: MatchService,
 ) {
     val owner: ViewModelStoreOwner = LocalViewModelStoreOwner.current
         ?: throw IllegalStateException("Root must be attached to a ViewModelStoreOwner")
@@ -31,9 +34,9 @@ fun AppNav(
     NavHost(navController = navController, startDestination = "home") {
         composable("home") {
 
-            val homeViewModel: TasksViewModel = viewModel(
+            val homeViewModel: HomeViewModel = viewModel(
                 viewModelStoreOwner = owner,
-                factory = ViewModelFactory<TasksViewModel> { TasksViewModel(taskService) }
+                factory = ViewModelFactory { HomeViewModel(matchService, taskService) }
             )
 
             HomeScreen(navController = navController, homeViewModel = homeViewModel)

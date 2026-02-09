@@ -24,6 +24,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
+import com.team695.scoutifyapp.data.api.ScoutifyClient
+import com.team695.scoutifyapp.data.api.service.MatchService
 import com.team695.scoutifyapp.navigation.AppNav
 import com.team695.scoutifyapp.ui.components.app.structure.NavRail
 import com.team695.scoutifyapp.ui.viewModels.ViewModelFactory
@@ -34,7 +36,8 @@ import com.team695.scoutifyapp.db.AppDatabase
 
 @Composable
 fun Root(
-    taskService: TaskService
+    taskService: TaskService,
+    matchService: MatchService
 ) {
     val context = LocalContext.current
 
@@ -99,7 +102,8 @@ fun Root(
                 Box(modifier = Modifier.weight(0.67f)) {
                     AppNav(
                         navController = navController,
-                        taskService = taskService
+                        taskService = taskService,
+                        matchService = matchService
                     )
                 }
             }
@@ -110,8 +114,12 @@ fun Root(
 @Preview(showBackground = true, widthDp = 1280, heightDp = 800)
 @Composable
 fun RootPreview() {
-    val taskService: TaskService = TaskService()
+    val taskService = TaskService()
+    val matchService = ScoutifyClient.matchService
     ScoutifyTheme {
-        Root(taskService = taskService)
+        Root(
+            taskService = taskService,
+            matchService = matchService
+        )
     }
 }
