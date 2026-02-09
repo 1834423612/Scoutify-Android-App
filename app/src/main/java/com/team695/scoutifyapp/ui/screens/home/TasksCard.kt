@@ -46,7 +46,6 @@ import com.team695.scoutifyapp.ui.reusables.Pressable
 import com.team695.scoutifyapp.ui.reusables.BackgroundGradient
 import com.team695.scoutifyapp.ui.reusables.ImageBackground
 import com.team695.scoutifyapp.ui.modifier.buttonHighlight
-import com.team695.scoutifyapp.ui.viewModels.TasksViewModel
 import com.team695.scoutifyapp.ui.theme.BadgeBackground
 import com.team695.scoutifyapp.ui.theme.BadgeBackgroundSecondary
 import com.team695.scoutifyapp.ui.theme.BadgeContent
@@ -58,6 +57,7 @@ import com.team695.scoutifyapp.ui.theme.LightGunmetal
 import com.team695.scoutifyapp.ui.theme.ProgressGreen
 import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.theme.TextSecondary
+import com.team695.scoutifyapp.ui.viewModels.HomeViewModel
 
 @Composable
 fun TasksCard(
@@ -65,9 +65,10 @@ fun TasksCard(
 ) {
 
     //get the tasksViewModel from the activity
-    val activity = LocalActivity.current as? ComponentActivity ?: error("No ComponentActivity found")
+    val activity = LocalActivity.current as? ComponentActivity
+        ?: error("No ComponentActivity found")
 
-    val viewModel: TasksViewModel = viewModel(
+    val viewModel: HomeViewModel = viewModel(
         viewModelStoreOwner = activity
     )
 
@@ -154,7 +155,7 @@ fun TasksCard(
                                         translationX = -10f
                                         translationY = -10f
                                     }
-                            ) { Text(uiState.doneTasks.size.toString(), color = LightGunmetal) }
+                            ) { Text(uiState.completeTasks.size.toString(), color = LightGunmetal) }
                         }
                     }
 
@@ -162,7 +163,7 @@ fun TasksCard(
             }
             Spacer(modifier = Modifier.height(16.dp))
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                val tasks = if (uiState.selectedTab == 0) uiState.incompleteTasks else uiState.doneTasks
+                val tasks = if (uiState.selectedTab == 0) uiState.incompleteTasks else uiState.completeTasks
                 items(tasks) { task ->
                     TaskItem(task = task)
                 }

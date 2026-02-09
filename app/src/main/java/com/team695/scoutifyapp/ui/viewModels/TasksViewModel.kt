@@ -26,7 +26,7 @@ data class TasksUiState(
 )
 
 class TasksViewModel(private val service: TaskService = TaskService()) : ViewModel() {
-    private val _uiState: MutableStateFlow<TasksUiState> = MutableStateFlow(TasksUiState())
+    private val _uiState = MutableStateFlow<TasksUiState>(TasksUiState())
     val uiState: StateFlow<TasksUiState> = _uiState.asStateFlow()
 
     init {
