@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
                 Root(
                     taskService = taskService,
                     matchService = matchService
-                )
+                    )
             }
         }
     }
