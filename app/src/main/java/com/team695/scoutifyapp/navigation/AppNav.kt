@@ -37,6 +37,7 @@ fun AppNav(
             )
 
             HomeScreen(navController = navController, homeViewModel = homeViewModel)
+
         }
         composable(route = "comments") {
             CommentsScreen()
