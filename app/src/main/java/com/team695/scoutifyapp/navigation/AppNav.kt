@@ -22,7 +22,10 @@ fun AppNav(navController: NavHostController, viewModelMap: Map<String, ViewModel
     NavHost(navController = navController, startDestination = "home") {
         composable("home") {
 
-            HomeScreen(navController = navController, viewModel = viewModelMap["home"]!!)
+            HomeScreen(navController = navController, viewModels = mapOf(
+                "home" to viewModelMap["home"]!!,
+                "account" to viewModelMap["account"]!!,
+            ))
         }
         composable(route = "comments") {
             CommentsScreen()
