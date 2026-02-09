@@ -26,6 +26,7 @@ class HomeViewModel(
 
     init {
         loadTasks()
+        fetchMatches()
     }
 
     fun fetchMatches() {
@@ -41,17 +42,19 @@ class HomeViewModel(
 
     private fun loadTasks() {
         // Mock data for now
-        try {
-            val tasks = taskService.getTasks()
-            _uiState.update { currentState ->
-                currentState.copy(
-                    incompleteTasks = tasks.filter { !it.isDone },
-                    completeTasks = tasks.filter { it.isDone },
-                )
-            }
-        } catch(e: Exception) {
-            println("Error fetching tasks: ${e.message}")
+        viewModelScope.launch {
+            try {
+                val tasks = taskService.getTasks()
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        incompleteTasks = tasks.filter { !it.isDone },
+                        completeTasks = tasks.filter { it.isDone },
+                    )
+                }
+            } catch (e: Exception) {
+                println("Error fetching tasks: ${e.message}")
 
+            }
         }
 
     }
