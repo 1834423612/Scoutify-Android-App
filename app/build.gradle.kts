@@ -80,7 +80,6 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     // Casdoor Login
     implementation(group = "org.casbin", name = "casdoor-android-sdk", version = "0.0.1")
-    implementation("io.objectbox:objectbox-android:4.0.2")
     // SQL Delight
     implementation(libs.sqldelight.android)
     implementation(libs.sqldelight.coroutines)

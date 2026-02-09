@@ -14,7 +14,7 @@ import androidx.navigation.NavHostController
 @Composable
 fun HomeScreen(
     navController: NavHostController,
-    viewModels: Map<String, ViewModel>
+    homeViewModel: TasksViewModel
 ) {
     Row(
         modifier = Modifier

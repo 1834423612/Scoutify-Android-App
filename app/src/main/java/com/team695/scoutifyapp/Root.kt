@@ -33,7 +33,9 @@ import com.team695.scoutifyapp.ui.theme.*
 import com.team695.scoutifyapp.db.AppDatabase
 
 @Composable
-fun Root() {
+fun Root(
+    taskService: TaskService
+) {
     val context = LocalContext.current
 
 
@@ -72,28 +74,6 @@ fun Root() {
         modifier = Modifier.fillMaxSize(),
         color = Background
     ) {
-        if (LocalInspectionMode.current) {
-            Box(modifier = Modifier.fillMaxSize()) {}
-            return@Surface
-        }
-        // creators are the lambdas that make the viewmodel instance
-        val owner = LocalViewModelStoreOwner.current
-            ?: throw IllegalStateException("Root must be attached to a ViewModelStoreOwner")
-
-        val viewModelMap: Map<String, ViewModel> = remember(owner) {
-            val viewModelCreators: Map<String, () -> ViewModel> = mapOf(
-                "home" to {
-                    println("got here!!!!!!!!!!!!!!!!!!")
-                    TasksViewModel(TaskService())
-                },
-            )
-            // goes through all the pages and uses a viewModelProvider to return the viewmodel
-            viewModelCreators.mapValues { (vmId, _) ->
-                val factory = ViewModelFactory<ViewModel>(vmId, viewModelCreators)
-                ViewModelProvider(owner, factory).get(ViewModel::class.java)
-            }
-        }
-
         val navController: NavHostController = rememberNavController()
 
         Row(
@@ -117,7 +97,10 @@ fun Root() {
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Box(modifier = Modifier.weight(0.67f)) {
-                    AppNav(navController = navController, viewModelMap = viewModelMap)
+                    AppNav(
+                        navController = navController,
+                        taskService = taskService
+                    )
                 }
             }
         }
@@ -127,7 +110,8 @@ fun Root() {
 @Preview(showBackground = true, widthDp = 1280, heightDp = 800)
 @Composable
 fun RootPreview() {
+    val taskService: TaskService = TaskService()
     ScoutifyTheme {
-        Root()
+        Root(taskService = taskService)
     }
 }
