@@ -74,13 +74,6 @@ fun Root(
         modifier = Modifier.fillMaxSize(),
         color = Background
     ) {
-        if (LocalInspectionMode.current) {
-            Box(modifier = Modifier.fillMaxSize()) {}
-            return@Surface
-        }
-        // creators are the lambdas that make the viewmodel instance
-
-
         val navController: NavHostController = rememberNavController()
 
         Row(
