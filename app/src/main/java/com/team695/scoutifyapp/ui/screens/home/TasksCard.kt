@@ -22,11 +22,10 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Badge
+import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,6 +38,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.team695.scoutifyapp.R
 import com.team695.scoutifyapp.data.Task
@@ -50,6 +50,7 @@ import com.team695.scoutifyapp.ui.theme.BadgeBackground
 import com.team695.scoutifyapp.ui.theme.BadgeBackgroundSecondary
 import com.team695.scoutifyapp.ui.theme.BadgeContent
 import com.team695.scoutifyapp.ui.theme.Background
+import com.team695.scoutifyapp.ui.theme.DarkGunmetal
 import com.team695.scoutifyapp.ui.theme.DarkishGunmetal
 import com.team695.scoutifyapp.ui.theme.Deselected
 import com.team695.scoutifyapp.ui.theme.Gunmetal
@@ -61,18 +62,12 @@ import com.team695.scoutifyapp.ui.viewModels.HomeViewModel
 
 @Composable
 fun TasksCard(
-    onTabSelected: (Int) -> Unit
+    onTabSelected: (Int) -> Unit,
+    homeViewModel: HomeViewModel
 ) {
 
-    //get the tasksViewModel from the activity
-    val activity = LocalActivity.current as? ComponentActivity
-        ?: error("No ComponentActivity found")
-
-    val viewModel: HomeViewModel = viewModel(
-        viewModelStoreOwner = activity
-    )
-
-    val uiState by viewModel.uiState.collectAsState()
+    val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
+    val tabs = arrayOf("Incomplete", "Complete")
 
     Box(
         modifier = Modifier
@@ -97,7 +92,7 @@ fun TasksCard(
                     .border(1.dp, LightGunmetal, RoundedCornerShape(8.dp))
                     .background(Background)
             ) {
-                TabRow(
+                PrimaryTabRow(
                     selectedTabIndex = uiState.selectedTab,
                     containerColor = Color.Transparent,
                     indicator = {},
@@ -106,58 +101,37 @@ fun TasksCard(
                         .padding(all = 6.dp)
 
                 ) {
-                    Tab(
-                        selected = uiState.selectedTab == 0,
-                        onClick = {onTabSelected(0)},
-                        modifier = if (uiState.selectedTab == 0) Modifier
-                            .background(
-                                Gunmetal,
-                                shape = RoundedCornerShape(8.dp)
-                            )
-                            .buttonHighlight(
-                                corner = 8.dp
-                            ) else Modifier.background(Color.Transparent),
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(vertical = 8.dp)
+                    tabs.forEachIndexed { index, tabTitle ->
+                        Tab(
+                            selected = uiState.selectedTab == index,
+                            onClick = {homeViewModel.selectTab(index = index)},
+                            modifier = if (uiState.selectedTab == index) Modifier
+                                .background(
+                                    Gunmetal,
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .buttonHighlight(
+                                    corner = 8.dp
+                                ) else Modifier.background(Color.Transparent),
                         ) {
-                            Text("Incomplete", color = TextPrimary)
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Badge(
-                                containerColor = BadgeBackground,
-                                modifier = Modifier
-                                    .graphicsLayer {
-                                        translationX = -10f
-                                        translationY = -10f
-                                    }
-                            ) { Text(uiState.incompleteTasks.size.toString(), color = BadgeContent) }
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(vertical = 8.dp)
+                            ) {
+                                Text(text=tabTitle, color = TextPrimary)
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Badge(
+                                    containerColor = BadgeBackground,
+                                    modifier = Modifier
+                                        .graphicsLayer {
+                                            translationX = -10f
+                                            translationY = -10f
+                                        }
+                                ) { Text(text=if(index==0) uiState.incompleteTasks.size.toString() else uiState.completeTasks.size.toString() , color = BadgeContent) }
+                            }
                         }
                     }
-                    Tab(
-                        selected = uiState.selectedTab == 1,
-                        onClick = {onTabSelected(1)},
-                        modifier = if (uiState.selectedTab == 1) Modifier.background(
-                            Gunmetal,
-                            shape = RoundedCornerShape(8.dp)
-                        ) else Modifier.background(Color.Transparent),
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(vertical = 8.dp)
-                        ) {
-                            Text("Done", color = TextSecondary)
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Badge(
-                                containerColor = BadgeBackgroundSecondary,
-                                modifier = Modifier
-                                    .graphicsLayer {
-                                        translationX = -10f
-                                        translationY = -10f
-                                    }
-                            ) { Text(uiState.completeTasks.size.toString(), color = LightGunmetal) }
-                        }
-                    }
+
 
                 }
             }
@@ -172,30 +146,44 @@ fun TasksCard(
     }
 }
 
-enum class BorderStyle(val brush: Brush) {
-    INCOMPLETE(
-        Brush.linearGradient(
-            colorStops = arrayOf(
-                0f to DarkishGunmetal,
-                0f to DarkishGunmetal,
-            )
-        ),
-    ),
-    PARTIAL(
-        Brush.linearGradient(
-            colorStops = arrayOf(
-                0f to ProgressGreen,
-                1f to DarkishGunmetal,
-            )
-        ),
-    ),
-    COMPLETE(
-        Brush.linearGradient(
-                    colorStops = arrayOf(
-                        0f to ProgressGreen,
-                        1f to ProgressGreen,
-                        )
-                ),
+fun Modifier.taskBorder(
+    progress: Float
+): Modifier {
+    if(progress == 1f) {
+        return this.then(
+            other = Modifier
+                .border(
+                    width = 2f.dp,
+                    color = ProgressGreen,
+                    shape = RoundedCornerShape(8.dp))
+        )
+    }
+    else if (progress == 0f) {
+        return this.then(
+            other = Modifier
+                .border(
+                    width = 2f.dp,
+                    color = DarkishGunmetal,
+                    shape = RoundedCornerShape(8.dp))
+        )
+    }
+    return this.then(
+        other = Modifier
+            .border(
+                width = 2f.dp,
+                brush = borderGradient(progress),
+                shape = RoundedCornerShape(8.dp))
+    )
+}
+
+fun borderGradient(progress: Float): Brush {
+    return Brush.linearGradient(
+        colorStops = arrayOf(
+            0f to ProgressGreen,
+            (progress-0.1f) to ProgressGreen,
+            (progress+0.1f) to DarkGunmetal,
+            1f to DarkishGunmetal,
+        )
     )
 }
 
@@ -206,17 +194,13 @@ fun TaskItem(task: Task) {
         modifier = Modifier
             .fillMaxWidth()
             .height(45.dp)
-            .border(
-                2.dp,
-                BorderStyle.valueOf(task.taskCompPercentString).brush,
-                shape = RoundedCornerShape(8.dp)
-            )
-            .background(color = DarkishGunmetal, shape = RoundedCornerShape(8.dp))
+            .taskBorder(progress=task.progress)
+            .background(color = DarkGunmetal, shape = RoundedCornerShape(8.dp))
             .clip(RoundedCornerShape(8.dp))
             .buttonHighlight(
                 corner = 4.dp
             )
-            .padding(horizontal = 12.dp, vertical = 8.dp),
+            .padding(horizontal = 8.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -227,11 +211,11 @@ fun TaskItem(task: Task) {
                 .fillMaxHeight()
                 .clip(RoundedCornerShape(4.dp))
                 .background(DarkishGunmetal)
-                .width(64.dp)
+                .width(80.dp)
                 .buttonHighlight(
                     corner = 4.dp
                 )
-        ) {
+            ) {
             Image(
                 painter = painterResource(id = R.drawable.edit),
                 colorFilter = ColorFilter.tint(Deselected),
@@ -248,14 +232,13 @@ fun TaskItem(task: Task) {
                 .fillMaxHeight()
                 .clip(RoundedCornerShape(4.dp))
                 .background(DarkishGunmetal)
-                .width(45.dp)
+                .width(60.dp)
                 .buttonHighlight(
                     corner = 4.dp
                 )
         ) {
             Text(task.teamNum, color = Deselected)
         }
-        ProgressIndicator(progress = task.progress)
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
@@ -263,7 +246,7 @@ fun TaskItem(task: Task) {
                 .fillMaxHeight()
                 .clip(RoundedCornerShape(4.dp))
                 .background(DarkishGunmetal)
-                .width(85.dp)
+                .width(110.dp)
                 .buttonHighlight(
                     corner = 4.dp
                 )
@@ -291,32 +274,6 @@ fun TaskItem(task: Task) {
                 contentDescription = "Go",
                 colorFilter = ColorFilter.tint(Deselected),
                 modifier = Modifier.size(25.dp)
-            )
-        }
-    }
-}
-
-@Composable
-fun ProgressIndicator(progress: Float) {
-    LazyRow(
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        modifier = Modifier
-            .fillMaxHeight()
-            .width(55.dp)
-            .background(DarkishGunmetal, RoundedCornerShape(4.dp))
-            .buttonHighlight(
-                corner = 4.dp
-            )
-    ) {
-
-        items(count=4) { index ->
-            val color = if (index < 4 * progress) ProgressGreen else Deselected.copy(0.5f)
-            Box(
-                modifier = Modifier
-                    .width(8.dp)
-                    .fillMaxHeight()
-                    .padding(vertical = 6.dp)
-                    .border(1.dp, color, RoundedCornerShape(4.dp))
             )
         }
     }

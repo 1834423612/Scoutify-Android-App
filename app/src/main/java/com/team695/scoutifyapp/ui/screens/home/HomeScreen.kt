@@ -22,10 +22,10 @@ fun HomeScreen(
             .fillMaxSize(),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Box(modifier = Modifier.weight(0.33f)) {
-            TasksCard(onTabSelected = {x: Int -> x} ) //placeholder for onTabSelected
+        Box(modifier = Modifier.weight(0.3f)) {
+            TasksCard(onTabSelected = {x: Int -> x}, homeViewModel = homeViewModel) //placeholder for onTabSelected
         }
-        Box(modifier = Modifier.weight(0.67f)) {
+        Box(modifier = Modifier.weight(0.7f)) {
             MatchSchedule(onCommentClicked = {navController.navigate("comments")})
         }
     }

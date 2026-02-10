@@ -1,9 +1,6 @@
 package com.team695.scoutifyapp.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -18,8 +15,7 @@ import com.team695.scoutifyapp.ui.screens.FormScreen
 import com.team695.scoutifyapp.ui.screens.PitScoutingScreen
 import com.team695.scoutifyapp.ui.viewModels.HomeViewModel
 import com.team695.scoutifyapp.ui.viewModels.ViewModelFactory
-import com.team695.scoutifyapp.ui.viewModels.TaskService
-import com.team695.scoutifyapp.ui.viewModels.TasksViewModel
+import com.team695.scoutifyapp.data.api.service.TaskService
 
 
 @Composable

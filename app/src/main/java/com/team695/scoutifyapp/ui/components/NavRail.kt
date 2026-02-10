@@ -1,4 +1,4 @@
-package com.team695.scoutifyapp.ui.components.app.structure
+package com.team695.scoutifyapp.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
