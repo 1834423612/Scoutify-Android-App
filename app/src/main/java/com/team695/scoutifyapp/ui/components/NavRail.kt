@@ -71,7 +71,7 @@ onNavigateToHome: () -> Unit = {},
             .clip(RoundedCornerShape(8.dp))
             .border(width=1.dp, color=LightGunmetal, shape = RoundedCornerShape(8.dp))
     ) {
-        ImageBackground(x = 350f, y = 325f)
+        ImageBackground(x = 80f, y = 325f)
         BackgroundGradient()
 
         Column(

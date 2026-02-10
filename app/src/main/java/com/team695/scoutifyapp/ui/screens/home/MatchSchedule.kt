@@ -107,12 +107,12 @@ fun MatchSchedule(modifier: Modifier = Modifier, onCommentClicked: () -> Unit) {
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFF171920))
+            .background(Color(0xFF000000))
             .clip(RoundedCornerShape(8.dp))
             .border(1.dp, LightGunmetal, RoundedCornerShape(8.dp))
 
     ) {
-        ImageBackground(x = -1950f, y = 335f)
+        ImageBackground(x = -1350f, y = 355f)
         BackgroundGradient()
         Column(
             modifier = Modifier
