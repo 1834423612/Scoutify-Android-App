@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.team695.scoutifyapp.data.api.ScoutifyClient
 import com.team695.scoutifyapp.data.api.service.MatchService
+import com.team695.scoutifyapp.ui.screens.login.LoginScreen
 import com.team695.scoutifyapp.ui.theme.ScoutifyTheme
 import com.team695.scoutifyapp.ui.viewModels.TaskService
 
@@ -17,10 +18,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             ScoutifyTheme {
-                Root(
-                    taskService = taskService,
-                    matchService = matchService
-                    )
+                LoginScreen()
             }
         }
     }
