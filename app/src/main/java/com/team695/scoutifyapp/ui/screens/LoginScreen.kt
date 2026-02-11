@@ -16,7 +16,7 @@ open class LoginScreen : ComponentActivity() {
         setContent {
             ScoutifyTheme {
                 Surface(color = MaterialTheme.colorScheme.background) {
-                    MainScreen()
+                    LoginScreen()
                 }
             }
         }
