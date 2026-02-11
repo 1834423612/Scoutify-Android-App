@@ -1,7 +1,5 @@
 package com.team695.scoutifyapp.ui.screens.home
 
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Badge
@@ -39,15 +36,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.team695.scoutifyapp.R
-import com.team695.scoutifyapp.data.Task
+import com.team695.scoutifyapp.data.api.model.Task
 import com.team695.scoutifyapp.ui.reusables.Pressable
 import com.team695.scoutifyapp.ui.reusables.BackgroundGradient
 import com.team695.scoutifyapp.ui.reusables.ImageBackground
 import com.team695.scoutifyapp.ui.modifier.buttonHighlight
 import com.team695.scoutifyapp.ui.theme.BadgeBackground
-import com.team695.scoutifyapp.ui.theme.BadgeBackgroundSecondary
 import com.team695.scoutifyapp.ui.theme.BadgeContent
 import com.team695.scoutifyapp.ui.theme.Background
 import com.team695.scoutifyapp.ui.theme.DarkGunmetal
@@ -57,12 +52,12 @@ import com.team695.scoutifyapp.ui.theme.Gunmetal
 import com.team695.scoutifyapp.ui.theme.LightGunmetal
 import com.team695.scoutifyapp.ui.theme.ProgressGreen
 import com.team695.scoutifyapp.ui.theme.TextPrimary
-import com.team695.scoutifyapp.ui.theme.TextSecondary
+import com.team695.scoutifyapp.ui.theme.mediumCornerRadius
+import com.team695.scoutifyapp.ui.theme.smallCornerRadius
 import com.team695.scoutifyapp.ui.viewModels.HomeViewModel
 
 @Composable
 fun TasksCard(
-    onTabSelected: (Int) -> Unit,
     homeViewModel: HomeViewModel
 ) {
 
@@ -73,7 +68,7 @@ fun TasksCard(
         modifier = Modifier
             .fillMaxHeight()
             .clip(RoundedCornerShape(8.dp))
-            .border(1.dp, LightGunmetal, RoundedCornerShape(8.dp))
+            .border(1.dp, LightGunmetal, RoundedCornerShape(smallCornerRadius))
 
     ) {
         ImageBackground(x = -350f, y = 330f)
@@ -89,7 +84,7 @@ fun TasksCard(
             Box (
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
-                    .border(1.dp, LightGunmetal, RoundedCornerShape(8.dp))
+                    .border(1.dp, LightGunmetal, RoundedCornerShape(smallCornerRadius))
                     .background(Background)
             ) {
                 PrimaryTabRow(
@@ -108,10 +103,10 @@ fun TasksCard(
                             modifier = if (uiState.selectedTab == index) Modifier
                                 .background(
                                     Gunmetal,
-                                    shape = RoundedCornerShape(8.dp)
+                                    shape = RoundedCornerShape(smallCornerRadius)
                                 )
                                 .buttonHighlight(
-                                    corner = 8.dp
+                                    corner = smallCornerRadius
                                 ) else Modifier.background(Color.Transparent),
                         ) {
                             Row(
@@ -155,7 +150,7 @@ fun Modifier.taskBorder(
                 .border(
                     width = 2f.dp,
                     color = ProgressGreen,
-                    shape = RoundedCornerShape(8.dp))
+                    shape = RoundedCornerShape(mediumCornerRadius))
         )
     }
     else if (progress == 0f) {
@@ -164,7 +159,7 @@ fun Modifier.taskBorder(
                 .border(
                     width = 2f.dp,
                     color = DarkishGunmetal,
-                    shape = RoundedCornerShape(8.dp))
+                    shape = RoundedCornerShape(mediumCornerRadius))
         )
     }
     return this.then(
@@ -172,7 +167,7 @@ fun Modifier.taskBorder(
             .border(
                 width = 2f.dp,
                 brush = borderGradient(progress),
-                shape = RoundedCornerShape(8.dp))
+                shape = RoundedCornerShape(mediumCornerRadius))
     )
 }
 
@@ -195,10 +190,10 @@ fun TaskItem(task: Task) {
             .fillMaxWidth()
             .height(45.dp)
             .taskBorder(progress=task.progress)
-            .background(color = DarkGunmetal, shape = RoundedCornerShape(8.dp))
-            .clip(RoundedCornerShape(8.dp))
+            .background(color = DarkGunmetal, shape = RoundedCornerShape(mediumCornerRadius))
+            .clip(RoundedCornerShape(mediumCornerRadius))
             .buttonHighlight(
-                corner = 4.dp
+                corner = smallCornerRadius
             )
             .padding(horizontal = 8.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -209,11 +204,11 @@ fun TaskItem(task: Task) {
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxHeight()
-                .clip(RoundedCornerShape(4.dp))
+                .clip(RoundedCornerShape(smallCornerRadius))
                 .background(DarkishGunmetal)
                 .width(80.dp)
                 .buttonHighlight(
-                    corner = 4.dp
+                    corner = smallCornerRadius
                 )
             ) {
             Image(
@@ -230,11 +225,11 @@ fun TaskItem(task: Task) {
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxHeight()
-                .clip(RoundedCornerShape(4.dp))
+                .clip(RoundedCornerShape(smallCornerRadius))
                 .background(DarkishGunmetal)
                 .width(60.dp)
                 .buttonHighlight(
-                    corner = 4.dp
+                    corner = smallCornerRadius
                 )
         ) {
             Text(task.teamNum, color = Deselected)
@@ -244,11 +239,11 @@ fun TaskItem(task: Task) {
             horizontalArrangement = Arrangement.Center,
             modifier = Modifier
                 .fillMaxHeight()
-                .clip(RoundedCornerShape(4.dp))
+                .clip(RoundedCornerShape(smallCornerRadius))
                 .background(DarkishGunmetal)
                 .width(110.dp)
                 .buttonHighlight(
-                    corner = 4.dp
+                    corner = smallCornerRadius
                 )
         ) {
             Image(
@@ -263,7 +258,7 @@ fun TaskItem(task: Task) {
 
         Pressable (
             onClick = {},
-            corner = 4.dp,
+            corner = smallCornerRadius,
             text = "",
             modifier = Modifier
                 .fillMaxHeight()

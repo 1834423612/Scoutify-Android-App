@@ -1,9 +1,4 @@
-package com.team695.scoutifyapp.data
-
-enum class TaskType {
-    SCOUTING,
-    PIT,
-}
+package com.team695.scoutifyapp.data.api.model
 
 data class Task(
     val id: Int,

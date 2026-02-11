@@ -1,7 +1,7 @@
 package com.team695.scoutifyapp.data.api.service
 
-import com.team695.scoutifyapp.data.Task
-import com.team695.scoutifyapp.data.TaskType
+import com.team695.scoutifyapp.data.api.model.Task
+import com.team695.scoutifyapp.data.api.model.TaskType
 
 class TaskService {
     fun getTasks(): List<Task> {

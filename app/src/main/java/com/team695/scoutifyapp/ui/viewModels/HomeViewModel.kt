@@ -2,7 +2,7 @@ package com.team695.scoutifyapp.ui.viewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.team695.scoutifyapp.data.Task
+import com.team695.scoutifyapp.data.api.model.Task
 import com.team695.scoutifyapp.data.api.model.Match
 import com.team695.scoutifyapp.data.api.service.MatchService
 import com.team695.scoutifyapp.data.api.service.TaskService
@@ -54,6 +54,16 @@ class HomeViewModel(
                 }
             } catch (e: Exception) {
                 println("Error fetching tasks: ${e.message}")
+            }
+            try {
+                val matches = matchService.listMatches()
+                _uiState.update { currentState ->
+                    currentState.copy(
+                        matchList = matches
+                    )
+                }
+            } catch (e: Exception) {
+                println("Error fetching match listing: ${e.message}")
 
             }
         }
