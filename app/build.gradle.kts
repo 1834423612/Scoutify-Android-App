@@ -95,3 +95,5 @@ dependencies {
     implementation(libs.sqldelight.android)
     implementation(libs.sqldelight.coroutines)
 }
+
+android.buildFeatures.buildConfig = true

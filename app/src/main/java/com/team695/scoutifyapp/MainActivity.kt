@@ -7,6 +7,7 @@ import com.team695.scoutifyapp.data.api.ScoutifyClient
 import com.team695.scoutifyapp.data.api.service.MatchService
 import com.team695.scoutifyapp.ui.theme.ScoutifyTheme
 import com.team695.scoutifyapp.data.api.service.TaskService
+import com.team695.scoutifyapp.ui.screens.login.LoginScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,7 +21,7 @@ class MainActivity : ComponentActivity() {
                 Root(
                     taskService = taskService,
                     matchService = matchService
-                    )
+                )
             }
         }
     }
