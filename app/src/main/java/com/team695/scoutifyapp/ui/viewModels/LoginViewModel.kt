@@ -5,6 +5,7 @@ import androidx.compose.runtime.currentRecomposeScope
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.team695.scoutifyapp.BuildConfig
+import com.team695.scoutifyapp.data.api.ScoutifyClient
 import com.team695.scoutifyapp.data.api.model.LoginBody
 import com.team695.scoutifyapp.data.api.service.LoginService
 import com.team695.scoutifyapp.data.api.service.TokenResponse
@@ -80,6 +81,8 @@ class LoginViewModel(private val service: LoginService): ViewModel() {
                     acToken = tokenRes.accessToken
                 )
             }
+
+            ScoutifyClient.tokenManager.saveToken(tokenRes.accessToken)
 
         } catch (e: Exception) {
             _loginState.update {

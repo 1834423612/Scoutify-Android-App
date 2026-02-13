@@ -109,27 +109,6 @@ fun LoginScreen() {
         }
     }
 }
-
-// --- HELPER FUNCTIONS ---
-
-suspend fun manualGetUserInfo(endpoint: String, accessToken: String): JSONObject {
-    return withContext(Dispatchers.IO) {
-        // We use the OIDC standard endpoint '/api/userinfo' which usually returns the cleanest JSON
-        val url = URL("$endpoint/api/userinfo")
-        val conn = url.openConnection() as HttpURLConnection
-        conn.requestMethod = "GET"
-        conn.setRequestProperty("Authorization", "Bearer $accessToken")
-
-        val responseCode = conn.responseCode
-        if (responseCode == 200) {
-            val response = conn.inputStream.bufferedReader().use { it.readText() }
-            Log.d(TAG, "👤 User Info JSON: $response") // Log the raw JSON to see what we got
-            return@withContext JSONObject(response)
-        } else {
-            throw Exception("Failed to fetch user info: HTTP $responseCode")
-        }
-    }
-}
 @Composable
 fun CasdoorWebView(
     url: String,
