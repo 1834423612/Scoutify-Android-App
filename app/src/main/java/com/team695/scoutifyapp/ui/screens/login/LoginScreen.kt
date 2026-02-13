@@ -38,11 +38,11 @@ private const val TAG = "CasdoorLogin"
 @Composable
 fun LoginScreen() {
     // --- CONFIGURATION ---
-    val endpoint = "https://sso.team695.com"
-    val clientID = "272cff7697ae540807e4"
-    val clientSecret = "b134d448a828a80685c4fd5d0b661cc41f1a841f"
-    val redirectUri = "casdoor://callback"
-    val appName = "695_android_test"
+    val endpoint = ""
+    val clientID = ""
+    val clientSecret = ""
+    val redirectUri = ""
+    val appName = ""
 
     // --- STATE ---
     var isLogin by rememberSaveable { mutableStateOf(false) }

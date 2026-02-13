@@ -1,4 +1,5 @@
 import com.android.build.api.dsl.ApplicationExtension
+import java.util.Properties
 
 plugins {
 //    alias(libs.plugins.android.application)
@@ -10,6 +11,14 @@ plugins {
     //id("io.objectbox") // ObjectBox plugin
     id("org.jetbrains.kotlin.plugin.compose") // Compose compiler plugin
     alias(libs.plugins.sqldelight) // Apply the plugin
+}
+
+// ENV CONFIG
+
+val localProperties = Properties()
+val secretsPropertiesFile = rootProject.file("app/secrets.properties")
+if (secretsPropertiesFile.exists()) {
+    localProperties.load(secretsPropertiesFile.inputStream())
 }
 
 configure<ApplicationExtension> {
@@ -24,6 +33,13 @@ configure<ApplicationExtension> {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "CASDOOR_ENDPOINT", "\"${localProperties["casdoor_endpoint"]}\"")
+        buildConfigField("String", "CASDOOR_CLIENT_ID", "\"${localProperties["casdoor_client_id"]}\"")
+        buildConfigField("String", "CASDOOR_CLIENT_SECRET", "\"${localProperties["casdoor_client_secret"]}\"")
+        buildConfigField("String", "CASDOOR_REDIRECT_URI", "\"${localProperties["casdoor_redirect_uri"]}\"")
+        buildConfigField("String", "CASDOOR_APP_NAME", "\"${localProperties["casdoor_app_name"]}\"")
+
         proguardFiles()
     }
 
@@ -43,6 +59,7 @@ configure<ApplicationExtension> {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
