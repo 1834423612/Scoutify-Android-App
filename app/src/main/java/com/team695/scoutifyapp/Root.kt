@@ -15,7 +15,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
+import com.team695.scoutifyapp.data.api.CasdoorClient
 import com.team695.scoutifyapp.data.api.ScoutifyClient
+import com.team695.scoutifyapp.data.api.service.LoginService
 import com.team695.scoutifyapp.data.api.service.MatchService
 import com.team695.scoutifyapp.navigation.AppNav
 import com.team695.scoutifyapp.ui.components.NavRail
@@ -24,11 +26,13 @@ import com.team695.scoutifyapp.data.api.service.TaskService
 import com.team695.scoutifyapp.db.AppDatabase
 import com.team695.scoutifyapp.ui.theme.Background
 import com.team695.scoutifyapp.ui.theme.ScoutifyTheme
+import kotlin.math.log
 
 @Composable
 fun Root(
     taskService: TaskService,
-    matchService: MatchService
+    matchService: MatchService,
+    loginService: LoginService
 ) {
     val context = LocalContext.current
 
@@ -114,7 +118,8 @@ fun Root(
                     AppNav(
                         navController = navController,
                         taskService = taskService,
-                        matchService = matchService
+                        matchService = matchService,
+                        loginService = loginService,
                     )
                 }
             }
@@ -127,10 +132,13 @@ fun Root(
 fun RootPreview() {
     val taskService = TaskService()
     val matchService = ScoutifyClient.matchService
+    val loginService = CasdoorClient.loginService
+
     ScoutifyTheme {
         Root(
             taskService = taskService,
-            matchService = matchService
+            matchService = matchService,
+            loginService = loginService,
         )
     }
 }

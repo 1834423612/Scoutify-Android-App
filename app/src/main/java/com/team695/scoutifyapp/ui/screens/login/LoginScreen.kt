@@ -15,6 +15,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -28,12 +29,15 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.viewModelFactory
+import androidx.navigation.NavController
 import com.team695.scoutifyapp.data.api.CasdoorClient
 import com.team695.scoutifyapp.data.api.service.LoginService
 import com.team695.scoutifyapp.ui.viewModels.LoginViewModel
 import com.team695.scoutifyapp.ui.viewModels.ViewModelFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
@@ -45,12 +49,10 @@ import java.security.SecureRandom
 private const val TAG = "CasdoorLogin"
 
 @Composable
-fun LoginScreen() {
-    // --- CONFIGURATION ---
-    val loginService: LoginService = CasdoorClient.loginService
-    val loginViewModel: LoginViewModel = viewModel(
-        factory = ViewModelFactory { LoginViewModel(loginService)}
-    )
+fun LoginScreen(
+    navController: NavController,
+    loginViewModel: LoginViewModel,
+) {
 
     val loginState by loginViewModel.loginState.collectAsState()
     var username by remember { mutableStateOf("") }
@@ -90,6 +92,11 @@ fun LoginScreen() {
             if (loginState.acToken != null) {
                 Text(text = "Welcome, $username!")
                 Text(text = "Logged in successfully", color = Color.Green)
+                // call coroutine here
+                LaunchedEffect(Unit) {
+                    delay(500)
+                    navController.navigate("home")
+                }
             }
 
 
