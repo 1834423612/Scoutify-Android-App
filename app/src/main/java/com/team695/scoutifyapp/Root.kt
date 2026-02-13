@@ -46,6 +46,26 @@ fun Root() {
         )
         val db = AppDatabase(driver)
         val queries = db.taskQueries
+        val queries2=db.pitscoutQueries
+        println("--- SQL TEST PitScout START ---")
+
+        println(queries2)
+        println("Inserting 'Test pitsout'...")
+        queries2.insertPitscout("ohcl","0001","{name:'test'}","","Clarence","","","")
+//        val pitscouts=queries2.selectAllPitscout().executeAsList()
+//
+//        println("Found ${queries2.size} tasks:")
+//        queries2.forEach { task ->
+//            println(" -> ID: ${task.id} | Title: ${task.title} | Completed: ${task.isCompleted}")
+//        }
+        val pitscouts = queries2.selectAllPitscout().executeAsList()
+
+        println("Found ${pitscouts.size} pitscout rows:")
+        pitscouts.forEach { row ->
+            println(" -> ID: ${row.id} | Event: ${row.event_id} | Form: ${row.form_id}")
+        }
+
+
 
         // 2. CLEAR previous test data (Optional, so you don't see duplicates every run)
         // You might need to add a "deleteAll: DELETE FROM taskEntity;" query to Task.sq first

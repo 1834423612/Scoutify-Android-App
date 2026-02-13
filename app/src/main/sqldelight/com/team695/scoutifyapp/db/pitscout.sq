@@ -1,0 +1,32 @@
+CREATE TABLE pitscout (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    event_id TEXT NOT NULL,
+    form_id TEXT NOT NULL,
+
+    data TEXT,
+    upload TEXT,
+    user_data TEXT,
+
+    user_agent TEXT,
+    ip TEXT,
+    language TEXT,
+
+    timestamp TEXT DEFAULT CURRENT_TIMESTAMP
+);
+
+selectAllPitscout:
+SELECT *
+FROM pitscout;
+
+insertPitscout:
+INSERT INTO pitscout (
+    event_id,
+    form_id,
+    data,
+    upload,
+    user_data,
+    user_agent,
+    ip,
+    language
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
