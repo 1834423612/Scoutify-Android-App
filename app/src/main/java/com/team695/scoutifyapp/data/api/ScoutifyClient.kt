@@ -18,8 +18,4 @@ object ScoutifyClient {
     val matchService: MatchService by lazy {
         retrofit.create(MatchService::class.java)
     }
-
-    val loginService: LoginService by lazy {
-        retrofit.create(LoginService::class.java)
-    }
 }
