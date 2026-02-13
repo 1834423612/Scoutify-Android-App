@@ -15,14 +15,23 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.team695.scoutifyapp.data.api.CasdoorClient
+import com.team695.scoutifyapp.data.api.service.LoginService
+import com.team695.scoutifyapp.ui.viewModels.LoginViewModel
+import com.team695.scoutifyapp.ui.viewModels.ViewModelFactory
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -38,71 +47,39 @@ private const val TAG = "CasdoorLogin"
 @Composable
 fun LoginScreen() {
     // --- CONFIGURATION ---
-    val endpoint = ""
-    val clientID = ""
-    val clientSecret = ""
-    val redirectUri = ""
-    val appName = ""
+    val loginService: LoginService = CasdoorClient.loginService
+    val loginViewModel: LoginViewModel = viewModel(
+        factory = ViewModelFactory { LoginViewModel(loginService)}
+    )
 
-    // --- STATE ---
-    var isLogin by rememberSaveable { mutableStateOf(false) }
-    var acToken by rememberSaveable { mutableStateOf("") }
-    var loginUrl by rememberSaveable { mutableStateOf<String?>(null) }
-    var userName by rememberSaveable { mutableStateOf("") }
-    var userAvatar by rememberSaveable { mutableStateOf("") }
-    var isLoading by rememberSaveable { mutableStateOf(false) }
-    var errorMessage by rememberSaveable { mutableStateOf("") }
+    val loginState by loginViewModel.loginState.collectAsState()
+    var username by remember { mutableStateOf("") }
 
-    // PKCE State
-    var codeVerifier by rememberSaveable { mutableStateOf("") }
-
-    if (loginUrl != null) {
+    if (loginState.loginUrl != null) {
         CasdoorWebView(
-            url = loginUrl!!,
+            url = loginState.loginUrl!!,
             onCodeReceived = { code ->
-                isLoading = true
-                errorMessage = ""
-                userName = "Fetching Profile..."
                 Log.d(TAG, "🚀 Auth Code Received: $code")
 
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
                         // 1. MANUAL TOKEN EXCHANGE
-                        val token = manualTokenExchange(
-                            endpoint = endpoint,
-                            code = code,
-                            verifier = codeVerifier,
-                            clientId = clientID,
-                            clientSecret = clientSecret
-                        )
-                        Log.d(TAG, "✅ Token Received: $token")
-                        acToken = token
+                        loginViewModel.tokenExchange(code)
+                        Log.d(TAG, "✅ Token Received: ${loginState.acToken}")
 
                         // 2. MANUAL USER INFO FETCH (The Fix)
-                        val userInfo = manualGetUserInfo(endpoint, token)
+                        val userInfo = loginViewModel.getUserInfo()
 
                         withContext(Dispatchers.Main) {
-                            userName = userInfo.optString("name", "Unknown")
-                            if (userName.isEmpty()) userName = userInfo.optString("preferred_username", "User")
-
-                            userAvatar = userInfo.optString("picture", "")
-
-                            isLogin = true
-                            isLoading = false
-                            loginUrl = null
-                            Log.d(TAG, "✅ Login Complete. User: $userName")
+                            username = userInfo.name!!
+                            Log.d(TAG, "✅ Login Complete. User: $username")
                         }
                     } catch (e: Exception) {
                         Log.e(TAG, "❌ Login Error", e)
-                        withContext(Dispatchers.Main) {
-                            isLoading = false
-                            errorMessage = "Error: ${e.message}"
-                            loginUrl = null
-                        }
                     }
                 }
             },
-            onNavigationBack = { loginUrl = null }
+            onNavigationBack = { }
         )
     } else {
         Column(
@@ -110,46 +87,25 @@ fun LoginScreen() {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (isLogin) {
-                Text(text = "Welcome, $userName!")
+            if (loginState.acToken != null) {
+                Text(text = "Welcome, $username!")
                 Text(text = "Logged in successfully", color = Color.Green)
             }
-            if (errorMessage.isNotEmpty()) {
-                Text(text = errorMessage, color = Color.Red)
-            }
 
-            if (isLoading) {
-                CircularProgressIndicator()
-            } else {
-                Button(onClick = {
-                    if (!isLogin) {
-                        // 1. Generate PKCE
-                        val verifier = generateCodeVerifier()
-                        codeVerifier = verifier
-                        val challenge = generateCodeChallenge(verifier)
 
-                        // 2. Build URL
-                        val authUrl = "$endpoint/login/oauth/authorize?" +
-                                "client_id=$clientID" +
-                                "&response_type=code" +
-                                "&scope=profile email openid" + // Added 'email' and 'openid' for better data
-                                "&state=$appName" +
-                                "&code_challenge_method=S256" +
-                                "&code_challenge=$challenge" +
-                                "&redirect_uri=$redirectUri"
-
-                        Log.d(TAG, "🆕 Login URL: $authUrl")
-                        loginUrl = authUrl
-                    } else {
-                        // Logout
-                        isLogin = false
-                        userName = ""
-                        acToken = ""
-                    }
-                }) {
-                    Text(text = if (isLogin) "Logout" else "Login with Casdoor")
+            Button(onClick = {
+                if (loginState.verifier == null) {
+                    // 1. Generate PKCE
+                    loginViewModel.generateLoginURL()
+                } else {
+                    // Logout
+                    loginViewModel.logout()
+                    username = ""
                 }
+            }) {
+                Text(text = if (loginState.acToken != null) "Logout" else "Login with Casdoor")
             }
+
         }
     }
 }
@@ -174,62 +130,6 @@ suspend fun manualGetUserInfo(endpoint: String, accessToken: String): JSONObject
         }
     }
 }
-
-suspend fun manualTokenExchange(
-    endpoint: String,
-    code: String,
-    verifier: String,
-    clientId: String,
-    clientSecret: String
-): String {
-    return withContext(Dispatchers.IO) {
-        val url = URL("$endpoint/api/login/oauth/access_token")
-        val conn = url.openConnection() as HttpURLConnection
-        conn.requestMethod = "POST"
-        conn.doOutput = true
-        conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
-        conn.setRequestProperty("Accept", "application/json")
-
-        val postData = "grant_type=authorization_code" +
-                "&client_id=$clientId" +
-                "&client_secret=$clientSecret" +
-                "&code=$code" +
-                "&code_verifier=$verifier"
-
-        conn.outputStream.use { it.write(postData.toByteArray()) }
-
-        val responseCode = conn.responseCode
-        if (responseCode == 200) {
-            val response = conn.inputStream.bufferedReader().use { it.readText() }
-            val json = JSONObject(response)
-            if (json.has("access_token")) {
-                return@withContext json.getString("access_token")
-            } else {
-                throw Exception("No access_token in response: $response")
-            }
-        } else {
-            val errorStream = conn.errorStream?.bufferedReader()?.use { it.readText() }
-            throw Exception("Server Error $responseCode: $errorStream")
-        }
-    }
-}
-
-// ... (Keep generateCodeVerifier, generateCodeChallenge, and CasdoorWebView the same as before)
-fun generateCodeVerifier(): String {
-    val sr = SecureRandom()
-    val code = ByteArray(32)
-    sr.nextBytes(code)
-    return Base64.encodeToString(code, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
-}
-
-fun generateCodeChallenge(verifier: String): String {
-    val bytes = verifier.toByteArray(Charsets.US_ASCII)
-    val md = MessageDigest.getInstance("SHA-256")
-    md.update(bytes, 0, bytes.size)
-    val digest = md.digest()
-    return Base64.encodeToString(digest, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
-}
-
 @Composable
 fun CasdoorWebView(
     url: String,
