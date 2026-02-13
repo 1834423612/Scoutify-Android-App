@@ -26,7 +26,6 @@ class CryptoManager {
         outputStream.use {
             it.write(encryptCipher.iv.size)
             it.write(encryptCipher.iv)
-            it.write(encryptedBytes.size)
             it.write(encryptedBytes)
         }
         return encryptedBytes
@@ -38,9 +37,7 @@ class CryptoManager {
             val iv = ByteArray(ivSize)
             it.read(iv)
 
-            val encryptedSize = it.read()
-            val encryptedBytes = ByteArray(encryptedSize)
-            it.read(encryptedBytes)
+            val encryptedBytes = it.readBytes()
 
             decryptCipher.run {
                 init(Cipher.DECRYPT_MODE, getKey(), GCMParameterSpec(128, iv))

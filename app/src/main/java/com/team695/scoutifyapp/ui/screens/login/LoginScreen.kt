@@ -31,6 +31,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
 import com.team695.scoutifyapp.data.api.CasdoorClient
+import com.team695.scoutifyapp.data.api.ScoutifyClient
 import com.team695.scoutifyapp.data.api.service.LoginService
 import com.team695.scoutifyapp.ui.viewModels.LoginViewModel
 import com.team695.scoutifyapp.ui.viewModels.ViewModelFactory
@@ -95,6 +96,7 @@ fun LoginScreen(
                 // call coroutine here
                 LaunchedEffect(Unit) {
                     delay(500)
+                    println("TOKEN: ${ScoutifyClient.tokenManager.getToken()}")
                     navController.navigate("home")
                 }
             }
