@@ -26,7 +26,7 @@ import com.team695.scoutifyapp.ui.theme.*
 
 @Composable
 fun PitScoutingScreen(
-    onNavigate: (String) -> Unit
+    onNavigate: (String) -> Unit = {}
 ) {
     var selectedTask by remember { mutableStateOf(1) }
     var selectedTab by remember { mutableStateOf("1") }

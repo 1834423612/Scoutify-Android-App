@@ -1,73 +1,58 @@
 package com.team695.scoutifyapp.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelStoreOwner
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.team695.scoutifyapp.ui.screens.Form2
-import com.team695.scoutifyapp.ui.screens.HomeScreen
+import com.team695.scoutifyapp.data.api.service.MatchService
+import com.team695.scoutifyapp.ui.InputScreen
+import com.team695.scoutifyapp.ui.screens.CommentsScreen
+import com.team695.scoutifyapp.ui.screens.home.HomeScreen
 import com.team695.scoutifyapp.ui.screens.FormScreen
-import com.team695.scoutifyapp.ui.screens.MainScreen
 import com.team695.scoutifyapp.ui.screens.PitScoutingScreen
+import com.team695.scoutifyapp.ui.viewModels.HomeViewModel
+import com.team695.scoutifyapp.ui.viewModels.ViewModelFactory
+import com.team695.scoutifyapp.ui.viewModels.TaskService
+import com.team695.scoutifyapp.ui.viewModels.TasksViewModel
+
 
 @Composable
-fun AppNav() {
-    val navController: NavHostController = rememberNavController()
+fun AppNav(
+    navController: NavHostController,
+    taskService: TaskService,
+    matchService: MatchService,
+) {
+    val owner: ViewModelStoreOwner = LocalViewModelStoreOwner.current
+        ?: throw IllegalStateException("Root must be attached to a ViewModelStoreOwner")
 
-    NavHost(navController = navController, startDestination = "main") {
-        composable("main") {
-            MainScreen(
-                onNavigateToPitScouting = { navController.navigate("pit_scouting") }
-            )
-        }
+    NavHost(navController = navController, startDestination = "home") {
         composable("home") {
-            HomeScreen(
-                onNavigateToForm = { navController.navigate("form") },
-                onNavigateToForm2 = { navController.navigate("form2") },
-                onNavigateToPitScouting = { navController.navigate("pit_scouting") },
-                onNavigate = { destination ->
-                    when (destination) {
-                        "home" -> {} // 已经在首页
-                        "pit_scouting" -> navController.navigate("pit_scouting")
-                        "form" -> navController.navigate("form")
-                        "form2" -> navController.navigate("form2")
-                        else -> {
-                            if (destination.isNotEmpty()) {
-                                navController.navigate(destination)
-                            }
-                        }
-                    }
-                }
+
+            val homeViewModel: HomeViewModel = viewModel(
+                viewModelStoreOwner = owner,
+                factory = ViewModelFactory { HomeViewModel(matchService, taskService) }
             )
+
+            HomeScreen(navController = navController, homeViewModel = homeViewModel)
+
         }
-        composable("form") {
-            FormScreen(onBack = { navController.popBackStack() })
+        composable(route = "comments") {
+            CommentsScreen()
         }
-        composable("form2") {
-            Form2(onBack = { navController.popBackStack() })
+        composable("pitScouting") {
+            PitScoutingScreen()
         }
-        composable("pit_scouting") {
-            PitScoutingScreen(
-                onNavigate = { destination ->
-                    when (destination) {
-                        "home" -> navController.navigate("home") {
-                            popUpTo("home") { inclusive = false }
-                        }
-                        "pit_scouting" -> {
-                            // 已经在当前页面，不需要操作
-                        }
-                        "form" -> navController.navigate("form")
-                        "form2" -> navController.navigate("form2")
-                        else -> {
-                            // 尝试导航到其他页面
-                            if (destination.isNotEmpty()) {
-                                navController.navigate(destination)
-                            }
-                        }
-                    }
-                }
-            )
+        composable("upload") {
+            InputScreen(navController = navController)
+        }
+        composable(route = "settings") {
+            FormScreen()
         }
     }
 }

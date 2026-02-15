@@ -1,5 +1,7 @@
-package com.team695.scoutifyapp.ui.components.app.structure
+package com.team695.scoutifyapp.ui.screens.home
 
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -17,46 +19,61 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Badge
-import androidx.compose.material3.Button
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.team695.scoutifyapp.R
-import com.team695.scoutifyapp.ui.components.app.reusables.Pressable
+import com.team695.scoutifyapp.data.Task
+import com.team695.scoutifyapp.ui.reusables.Pressable
+import com.team695.scoutifyapp.ui.reusables.BackgroundGradient
+import com.team695.scoutifyapp.ui.reusables.ImageBackground
 import com.team695.scoutifyapp.ui.modifier.buttonHighlight
 import com.team695.scoutifyapp.ui.theme.BadgeBackground
 import com.team695.scoutifyapp.ui.theme.BadgeBackgroundSecondary
 import com.team695.scoutifyapp.ui.theme.BadgeContent
 import com.team695.scoutifyapp.ui.theme.Background
-import com.team695.scoutifyapp.ui.theme.DarkGunmetal
 import com.team695.scoutifyapp.ui.theme.DarkishGunmetal
 import com.team695.scoutifyapp.ui.theme.Deselected
 import com.team695.scoutifyapp.ui.theme.Gunmetal
 import com.team695.scoutifyapp.ui.theme.LightGunmetal
+import com.team695.scoutifyapp.ui.theme.ProgressGreen
 import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.theme.TextSecondary
+import com.team695.scoutifyapp.ui.viewModels.HomeViewModel
 
 @Composable
-fun TasksCard(onNavigateToPitScouting: () -> Unit = {}) {
-    var selectedTab by remember { mutableIntStateOf(0) }
+fun TasksCard(
+    onTabSelected: (Int) -> Unit
+) {
+
+    //get the tasksViewModel from the activity
+    val activity = LocalActivity.current as? ComponentActivity
+        ?: error("No ComponentActivity found")
+
+    val viewModel: HomeViewModel = viewModel(
+        viewModelStoreOwner = activity
+    )
+
+    val uiState by viewModel.uiState.collectAsState()
+
     Box(
         modifier = Modifier
             .fillMaxHeight()
@@ -72,16 +89,6 @@ fun TasksCard(onNavigateToPitScouting: () -> Unit = {}) {
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Test Button
-            Button(
-                onClick = { onNavigateToPitScouting() },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Navigate to Pit Scouting")
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
             Text("Tasks", color = TextPrimary, fontSize = 24.sp, fontWeight = FontWeight.Bold)
             Spacer(modifier = Modifier.height(16.dp))
             Box (
@@ -91,7 +98,7 @@ fun TasksCard(onNavigateToPitScouting: () -> Unit = {}) {
                     .background(Background)
             ) {
                 TabRow(
-                    selectedTabIndex = selectedTab,
+                    selectedTabIndex = uiState.selectedTab,
                     containerColor = Color.Transparent,
                     indicator = {},
                     divider = {},
@@ -100,14 +107,16 @@ fun TasksCard(onNavigateToPitScouting: () -> Unit = {}) {
 
                 ) {
                     Tab(
-                        selected = selectedTab == 0,
-                        onClick = { selectedTab = 0 },
-                        modifier = if (selectedTab == 0) Modifier.background(
-                            Gunmetal,
-                            shape = RoundedCornerShape(8.dp)
-                        ).buttonHighlight(
-                            corner = 8.dp
-                        ) else Modifier.background(Color.Transparent),
+                        selected = uiState.selectedTab == 0,
+                        onClick = {onTabSelected(0)},
+                        modifier = if (uiState.selectedTab == 0) Modifier
+                            .background(
+                                Gunmetal,
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .buttonHighlight(
+                                corner = 8.dp
+                            ) else Modifier.background(Color.Transparent),
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
@@ -122,13 +131,13 @@ fun TasksCard(onNavigateToPitScouting: () -> Unit = {}) {
                                         translationX = -10f
                                         translationY = -10f
                                     }
-                            ) { Text("9", color = BadgeContent) }
+                            ) { Text(uiState.incompleteTasks.size.toString(), color = BadgeContent) }
                         }
                     }
                     Tab(
-                        selected = selectedTab == 1,
-                        onClick = { selectedTab = 1 },
-                        modifier = if (selectedTab == 1) Modifier.background(
+                        selected = uiState.selectedTab == 1,
+                        onClick = {onTabSelected(1)},
+                        modifier = if (uiState.selectedTab == 1) Modifier.background(
                             Gunmetal,
                             shape = RoundedCornerShape(8.dp)
                         ) else Modifier.background(Color.Transparent),
@@ -146,7 +155,7 @@ fun TasksCard(onNavigateToPitScouting: () -> Unit = {}) {
                                         translationX = -10f
                                         translationY = -10f
                                     }
-                            ) { Text("0", color = LightGunmetal) }
+                            ) { Text(uiState.completeTasks.size.toString(), color = LightGunmetal) }
                         }
                     }
 
@@ -154,22 +163,55 @@ fun TasksCard(onNavigateToPitScouting: () -> Unit = {}) {
             }
             Spacer(modifier = Modifier.height(16.dp))
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                items(4) { index ->
-                    TaskItem(matchNum = index + 2)
+                val tasks = if (uiState.selectedTab == 0) uiState.incompleteTasks else uiState.completeTasks
+                items(tasks) { task ->
+                    TaskItem(task = task)
                 }
             }
         }
     }
 }
 
+enum class BorderStyle(val brush: Brush) {
+    INCOMPLETE(
+        Brush.linearGradient(
+            colorStops = arrayOf(
+                0f to DarkishGunmetal,
+                0f to DarkishGunmetal,
+            )
+        ),
+    ),
+    PARTIAL(
+        Brush.linearGradient(
+            colorStops = arrayOf(
+                0f to ProgressGreen,
+                1f to DarkishGunmetal,
+            )
+        ),
+    ),
+    COMPLETE(
+        Brush.linearGradient(
+                    colorStops = arrayOf(
+                        0f to ProgressGreen,
+                        1f to ProgressGreen,
+                        )
+                ),
+    )
+}
+
+
 @Composable
-fun TaskItem(matchNum: Int) {
+fun TaskItem(task: Task) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(45.dp)
-            .border(1.dp, LightGunmetal, shape = RoundedCornerShape(8.dp))
-            .background(color=DarkGunmetal, shape=RoundedCornerShape(8.dp))
+            .border(
+                2.dp,
+                BorderStyle.valueOf(task.taskCompPercentString).brush,
+                shape = RoundedCornerShape(8.dp)
+            )
+            .background(color = DarkishGunmetal, shape = RoundedCornerShape(8.dp))
             .clip(RoundedCornerShape(8.dp))
             .buttonHighlight(
                 corner = 4.dp
@@ -197,7 +239,7 @@ fun TaskItem(matchNum: Int) {
                 modifier = Modifier.size(16.dp)
             )
             Spacer(modifier = Modifier.width(4.dp))
-            Text("Q$matchNum", color = Deselected)
+            Text("Q${task.matchNum}", color = Deselected)
         }
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -211,9 +253,9 @@ fun TaskItem(matchNum: Int) {
                     corner = 4.dp
                 )
         ) {
-            Text("695", color = Deselected)
+            Text(task.teamNum, color = Deselected)
         }
-        ProgressIndicator()
+        ProgressIndicator(progress = task.progress)
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
@@ -233,7 +275,7 @@ fun TaskItem(matchNum: Int) {
                     .size(16.dp)
             )
             Spacer(modifier = Modifier.width(10.dp))
-            Text("02m", color = Deselected)
+            Text(task.time, color = Deselected)
         }
 
         Pressable (
@@ -255,7 +297,7 @@ fun TaskItem(matchNum: Int) {
 }
 
 @Composable
-fun ProgressIndicator() {
+fun ProgressIndicator(progress: Float) {
     LazyRow(
         horizontalArrangement = Arrangement.SpaceEvenly,
         modifier = Modifier
@@ -268,12 +310,13 @@ fun ProgressIndicator() {
     ) {
 
         items(count=4) { index ->
+            val color = if (index < 4 * progress) ProgressGreen else Deselected.copy(0.5f)
             Box(
                 modifier = Modifier
                     .width(8.dp)
                     .fillMaxHeight()
-                    .padding(vertical=6.dp)
-                    .border(1.dp, Deselected.copy(0.5f), RoundedCornerShape(4.dp))
+                    .padding(vertical = 6.dp)
+                    .border(1.dp, color, RoundedCornerShape(4.dp))
             )
         }
     }

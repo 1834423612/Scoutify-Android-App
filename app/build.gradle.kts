@@ -1,10 +1,18 @@
+import com.android.build.api.dsl.ApplicationExtension
+
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
+//    alias(libs.plugins.android.application)
+//    alias(libs.plugins.compose.compiler)
+    id("org.jetbrains.kotlin.android")
+//    id("io.objectbox") // ObjectBox plugin
+//    //id("io.objectbox") version "4.0.2" apply false
+    id("com.android.application")
+    //id("io.objectbox") // ObjectBox plugin
+    id("org.jetbrains.kotlin.plugin.compose") // Compose compiler plugin
+    alias(libs.plugins.sqldelight) // Apply the plugin
 }
 
-android {
+configure<ApplicationExtension> {
     namespace = "com.team695.scoutifyapp"
     compileSdk = 36
 
@@ -32,11 +40,17 @@ android {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-    kotlinOptions {
-        jvmTarget = "21"
-    }
+
     buildFeatures {
         compose = true
+    }
+}
+
+sqldelight {
+    databases {
+        create("AppDatabase") {
+            packageName.set("com.team695.scoutifyapp.db")
+        }
     }
 }
 
@@ -50,6 +64,11 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation("androidx.compose.material:material-icons-extended:1.7.8")
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
     implementation("androidx.navigation:navigation-compose:2.9.5")
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.36.0") // 控制状态栏颜色
     testImplementation(libs.junit)
@@ -59,4 +78,9 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+    // Casdoor Login
+    implementation(group = "org.casbin", name = "casdoor-android-sdk", version = "0.0.1")
+    // SQL Delight
+    implementation(libs.sqldelight.android)
+    implementation(libs.sqldelight.coroutines)
 }
