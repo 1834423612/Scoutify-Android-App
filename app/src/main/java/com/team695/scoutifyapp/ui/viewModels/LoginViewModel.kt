@@ -28,9 +28,6 @@ data class LoginStatus(
     val error: String? = null,
     val acToken: String? = null,
     val loginUrl: String? = null,
-    val isLoading: Boolean = false,
-    val userInfo: UserInfoResponse? = null,
-    val navigationReady: Boolean = false
 )
 
 fun generateCodeVerifier(): String {
@@ -75,15 +72,14 @@ class LoginViewModel(private val service: LoginService): ViewModel() {
                 "&redirect_uri=${BuildConfig.CASDOOR_REDIRECT_URI}"
 
         _loginState.value = LoginStatus(
-                verifier = verifier,
-                loginUrl = loginUrl
-            )
+            verifier = verifier,
+            loginUrl = loginUrl
+        )
 
         return loginUrl
     }
 
     suspend fun tokenExchange(code: String) {
-        _loginState.update { it.copy(isLoading = true, error = null) }
         try {
             val tokenRes: TokenResponse = service.getAccessToken(
                 clientSecret = BuildConfig.CASDOOR_CLIENT_SECRET,
@@ -94,8 +90,7 @@ class LoginViewModel(private val service: LoginService): ViewModel() {
 
             _loginState.update {
                 it.copy(
-                    acToken = tokenRes.accessToken,
-                    isLoading = false
+                    acToken = tokenRes.accessToken
                 )
             }
 
@@ -104,62 +99,30 @@ class LoginViewModel(private val service: LoginService): ViewModel() {
         } catch (e: Exception) {
             _loginState.update {
                 it.copy(
-                    error = "Login failed. Please try again.",
-                    isLoading = false
+                    error = e.message
                 )
             }
 
             println("Error in casdoor token exchange: ${e.message}")
-            e.printStackTrace()
         }
     }
 
-    /**
-     * Fetches user information from the authentication service.
-     *
-     * @return UserInfoResponse if successful, null if there's an error.
-     *         When null is returned, the error state will be updated with a user-friendly message.
-     *         Callers should check the loginState.error for details.
-     */
-    suspend fun getUserInfo(): UserInfoResponse? {
-        if (loginState.value.acToken == null) {
-            _loginState.update {
-                it.copy(
-                    error = "No access token available",
-                    isLoading = false
-                )
-            }
-            return null
-        }
-
-        _loginState.update { it.copy(isLoading = true, error = null) }
-        try {
+    suspend fun getUserInfo(): UserInfoResponse {
+        if (loginState.value.acToken != null) {
             val userInfo: UserInfoResponse = service.getUserInfo(
                 authHeader = "Bearer ${_loginState.value.acToken}"
             )
 
             _loginState.update {
                 it.copy(
-                    loginUrl = null,
-                    userInfo = userInfo,
-                    navigationReady = true,
-                    isLoading = false
+                    loginUrl = null
                 )
             }
 
             return userInfo
-        } catch (e: Exception) {
-            _loginState.update {
-                it.copy(
-                    error = "Unable to retrieve account information. Please try again.",
-                    isLoading = false
-                )
-            }
-            println("Error fetching user info: ${e.message}")
-            e.printStackTrace()
-            return null
+        } else {
+            _loginState.value = LoginStatus()
         }
-    }
 
         return UserInfoResponse()
     }
@@ -167,17 +130,5 @@ class LoginViewModel(private val service: LoginService): ViewModel() {
     suspend fun logout() {
         ScoutifyClient.tokenManager.saveToken("")
         _loginState.value = LoginStatus()
-    }
-
-    fun clearError() {
-        _loginState.update { it.copy(error = null) }
-    }
-
-    fun setNavigationError(errorMessage: String) {
-        _loginState.update { it.copy(error = errorMessage, navigationReady = false) }
-    }
-
-    fun resetNavigation() {
-        _loginState.update { it.copy(navigationReady = false) }
     }
 }
