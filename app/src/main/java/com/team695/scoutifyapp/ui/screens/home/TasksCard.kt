@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.team695.scoutifyapp.R
 import com.team695.scoutifyapp.data.api.model.Task
+import com.team695.scoutifyapp.ui.components.progressBorder
 import com.team695.scoutifyapp.ui.reusables.Pressable
 import com.team695.scoutifyapp.ui.reusables.BackgroundGradient
 import com.team695.scoutifyapp.ui.reusables.ImageBackground
@@ -142,36 +143,6 @@ fun TasksCard(
     }
 }
 
-fun Modifier.taskBorder(
-    progress: Float
-): Modifier {
-    if (progress == 1f) {
-        return this.then(
-            other = Modifier
-                .border(
-                    width = 2f.dp,
-                    color = ProgressGreen,
-                    shape = RoundedCornerShape(mediumCornerRadius))
-        )
-    }
-    else if (progress == 0f) {
-        return this.then(
-            other = Modifier
-                .border(
-                    width = 2f.dp,
-                    color = DarkishGunmetal,
-                    shape = RoundedCornerShape(mediumCornerRadius))
-        )
-    }
-    return this.then(
-        other = Modifier
-            .border(
-                width = 2f.dp,
-                brush = borderGradient(progress),
-                shape = RoundedCornerShape(mediumCornerRadius))
-    )
-}
-
 fun borderGradient(progress: Float): Brush {
     val before = (progress - 0.1f).coerceIn(0f, 1f)
     val after = (progress + 0.1f).coerceIn(0f, 1f)
@@ -193,7 +164,7 @@ fun TaskItem(task: Task, onPress: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .height(45.dp)
-            .taskBorder(progress=task.progress)
+            .progressBorder(progress=task.progress)
             .background(color = DarkGunmetal, shape = RoundedCornerShape(mediumCornerRadius))
             .clip(RoundedCornerShape(mediumCornerRadius))
             .buttonHighlight(
@@ -214,7 +185,7 @@ fun TaskItem(task: Task, onPress: () -> Unit) {
                 .buttonHighlight(
                     corner = smallCornerRadius
                 )
-            ) {
+        ) {
             Image(
                 painter = painterResource(id = R.drawable.edit),
                 colorFilter = ColorFilter.tint(Deselected),
