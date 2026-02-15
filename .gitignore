@@ -15,3 +15,5 @@ secrets.properties
 .cxx
 local.properties
 *.salive
+*.log
+/.kotlin
