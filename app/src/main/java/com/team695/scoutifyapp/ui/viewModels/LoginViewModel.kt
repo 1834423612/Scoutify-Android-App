@@ -106,49 +106,44 @@ class LoginViewModel(private val service: LoginService): ViewModel() {
         }
     }
 
-    suspend fun getUserInfo(): UserInfoResponse {
-        if (loginState.value.acToken != null) {
-            _loginState.update { it.copy(isLoading = true, error = null) }
-            try {
-                val userInfo: UserInfoResponse = service.getUserInfo(
-                    authHeader = "Bearer ${_loginState.value.acToken}"
-                )
-
-                _loginState.update {
-                    it.copy(
-                        loginUrl = null,
-                        userInfo = userInfo,
-                        navigationReady = true,
-                        isLoading = false
-                    )
-                }
-
-                return userInfo
-            } catch (e: Exception) {
-                _loginState.update {
-                    it.copy(
-                        error = "Unable to retrieve account information. Please try again.",
-                        isLoading = false
-                    )
-                }
-                println("Error fetching user info: ${e.message}")
-                e.printStackTrace()
-            }
-        } else {
+    suspend fun getUserInfo(): UserInfoResponse? {
+        if (loginState.value.acToken == null) {
             _loginState.update {
                 it.copy(
                     error = "No access token available",
                     isLoading = false
                 )
             }
+            return null
         }
 
-        return UserInfoResponse(
-            "FAILED_USER",
-            "FAILED_USER",
-            "FAILED_USER",
-            "FAILED_USER"
-        )
+        _loginState.update { it.copy(isLoading = true, error = null) }
+        try {
+            val userInfo: UserInfoResponse = service.getUserInfo(
+                authHeader = "Bearer ${_loginState.value.acToken}"
+            )
+
+            _loginState.update {
+                it.copy(
+                    loginUrl = null,
+                    userInfo = userInfo,
+                    navigationReady = true,
+                    isLoading = false
+                )
+            }
+
+            return userInfo
+        } catch (e: Exception) {
+            _loginState.update {
+                it.copy(
+                    error = "Unable to retrieve account information. Please try again.",
+                    isLoading = false
+                )
+            }
+            println("Error fetching user info: ${e.message}")
+            e.printStackTrace()
+            return null
+        }
     }
 
     fun logout() {

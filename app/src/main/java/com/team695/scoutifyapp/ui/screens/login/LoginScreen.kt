@@ -13,14 +13,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -68,7 +64,6 @@ fun LoginScreen(
 
     val loginState by loginViewModel.loginState.collectAsState()
     var username by remember { mutableStateOf("") }
-    val snackbarHostState = remember { SnackbarHostState() }
 
     // Show error dialog when there's an error
     if (loginState.error != null) {
@@ -101,18 +96,17 @@ fun LoginScreen(
     }
 
     // Fetch user info when token is available but user info hasn't been fetched yet
-    LaunchedEffect(loginState.acToken, loginState.userInfo, loginState.error) {
+    LaunchedEffect(loginState.acToken, loginState.userInfo) {
         if (loginState.acToken != null && 
             loginState.userInfo == null && 
             !loginState.isLoading && 
             loginState.error == null) {
-            try {
-                val userInfo = loginViewModel.getUserInfo()
+            val userInfo = loginViewModel.getUserInfo()
+            if (userInfo != null) {
                 username = userInfo.name ?: "Unknown User"
                 Log.d(TAG, "✅ Login Complete. User: $username")
-            } catch (e: Exception) {
-                Log.e(TAG, "❌ Failed to get user info", e)
             }
+            // Error handling is done by the ViewModel, which sets the error state
         }
     }
 
