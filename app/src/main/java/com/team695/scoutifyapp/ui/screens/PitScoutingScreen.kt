@@ -475,7 +475,6 @@ fun RobotImagesSection() {
 }
 
 @Composable
-@Suppress("UNUSED_VALUE")
 fun AdditionalCommentsSection() {
     var comments by remember { mutableStateOf("") }
 
