@@ -103,7 +103,7 @@ fun LoginScreen(
             loginState.error == null) {
             val userInfo = loginViewModel.getUserInfo()
             if (userInfo != null) {
-                username = userInfo.name ?: "Unknown User"
+                username = loginViewModel.getDisplayName()
                 Log.d(TAG, "✅ Login Complete. User: $username")
             }
             // Error handling is done by the ViewModel, which sets the error state
@@ -126,7 +126,7 @@ fun LoginScreen(
                         val userInfo = loginViewModel.getUserInfo()
 
                         withContext(Dispatchers.Main) {
-                            username = userInfo.name ?: "Unknown User"
+                            username = loginViewModel.getDisplayName()
                             Log.d(TAG, "✅ Login Complete. User: $username")
                         }
                     } catch (e: Exception) {
@@ -147,7 +147,11 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(text = "Logging in...", style = MaterialTheme.typography.bodyMedium)
             } else if (loginState.acToken != null) {
-                val displayName = loginState.userInfo?.name ?: username.ifEmpty { "User" }
+                val displayName = if (loginState.userInfo != null) {
+                    loginViewModel.getDisplayName()
+                } else {
+                    username.ifEmpty { "User" }
+                }
                 Text(text = "Welcome, $displayName!", style = MaterialTheme.typography.headlineMedium)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(text = "Logged in successfully", color = Color.Green)
