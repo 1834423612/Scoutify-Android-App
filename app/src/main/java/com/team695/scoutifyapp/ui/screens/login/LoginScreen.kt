@@ -75,7 +75,7 @@ fun LoginScreen(
         AlertDialog(
             onDismissRequest = { loginViewModel.clearError() },
             title = { Text("Login Error") },
-            text = { Text(loginState.error ?: "An unknown error occurred") },
+            text = { Text(loginState.error!!) },
             confirmButton = {
                 TextButton(onClick = { loginViewModel.clearError() }) {
                     Text("OK")
@@ -101,8 +101,11 @@ fun LoginScreen(
     }
 
     // Fetch user info when token is available but user info hasn't been fetched yet
-    LaunchedEffect(loginState.acToken, loginState.userInfo) {
-        if (loginState.acToken != null && loginState.userInfo == null && !loginState.isLoading) {
+    LaunchedEffect(loginState.acToken, loginState.userInfo, loginState.error) {
+        if (loginState.acToken != null && 
+            loginState.userInfo == null && 
+            !loginState.isLoading && 
+            loginState.error == null) {
             try {
                 val userInfo = loginViewModel.getUserInfo()
                 username = userInfo.name ?: "Unknown User"

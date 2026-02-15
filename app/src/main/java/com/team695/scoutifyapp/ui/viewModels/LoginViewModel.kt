@@ -133,7 +133,6 @@ class LoginViewModel(private val service: LoginService): ViewModel() {
                 }
                 println("Error fetching user info: ${e.message}")
                 e.printStackTrace()
-                throw e
             }
         } else {
             _loginState.update {
