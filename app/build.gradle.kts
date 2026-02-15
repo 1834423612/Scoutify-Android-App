@@ -29,11 +29,16 @@ configure<ApplicationExtension> {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "CASDOOR_ENDPOINT", "\"${localProperties["casdoor_endpoint"]}\"")
-        buildConfigField("String", "CASDOOR_CLIENT_ID", "\"${localProperties["casdoor_client_id"]}\"")
-        buildConfigField("String", "CASDOOR_CLIENT_SECRET", "\"${localProperties["casdoor_client_secret"]}\"")
-        buildConfigField("String", "CASDOOR_REDIRECT_URI", "\"${localProperties["casdoor_redirect_uri"]}\"")
-        buildConfigField("String", "CASDOOR_APP_NAME", "\"${localProperties["casdoor_app_name"]}\"")
+        fun requireSecret(key: String): String =
+            localProperties[key]?.toString()
+                ?: if (secretsPropertiesFile.exists()) error("Missing key '$key' in secrets.properties")
+                   else ""   // allow local/CI builds without secrets
+
+        buildConfigField("String", "CASDOOR_ENDPOINT", "\"${requireSecret("casdoor_endpoint")}\"")
+        buildConfigField("String", "CASDOOR_CLIENT_ID", "\"${requireSecret("casdoor_client_id")}\"")
+        buildConfigField("String", "CASDOOR_CLIENT_SECRET", "\"${requireSecret("casdoor_client_secret")}\"")
+        buildConfigField("String", "CASDOOR_REDIRECT_URI", "\"${requireSecret("casdoor_redirect_uri")}\"")
+        buildConfigField("String", "CASDOOR_APP_NAME", "\"${requireSecret("casdoor_app_name")}\"")
 
         proguardFiles()
     }
