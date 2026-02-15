@@ -96,12 +96,13 @@ class LoginViewModel(private val service: LoginService): ViewModel() {
         } catch (e: Exception) {
             _loginState.update {
                 it.copy(
-                    error = "Failed to exchange token: ${e.message}",
+                    error = "Login failed. Please try again.",
                     isLoading = false
                 )
             }
 
             println("Error in casdoor token exchange: ${e.message}")
+            e.printStackTrace()
         }
     }
 
@@ -126,10 +127,12 @@ class LoginViewModel(private val service: LoginService): ViewModel() {
             } catch (e: Exception) {
                 _loginState.update {
                     it.copy(
-                        error = "Failed to fetch user info: ${e.message}",
+                        error = "Unable to retrieve account information. Please try again.",
                         isLoading = false
                     )
                 }
+                println("Error fetching user info: ${e.message}")
+                e.printStackTrace()
                 throw e
             }
         } else {
@@ -155,6 +158,10 @@ class LoginViewModel(private val service: LoginService): ViewModel() {
 
     fun clearError() {
         _loginState.update { it.copy(error = null) }
+    }
+
+    fun setNavigationError(errorMessage: String) {
+        _loginState.update { it.copy(error = errorMessage, navigationReady = false) }
     }
 
     fun resetNavigation() {

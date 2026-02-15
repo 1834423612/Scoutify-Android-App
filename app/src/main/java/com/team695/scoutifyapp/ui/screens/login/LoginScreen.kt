@@ -95,13 +95,14 @@ fun LoginScreen(
                 loginViewModel.resetNavigation()
             } catch (e: Exception) {
                 Log.e(TAG, "Navigation error: ${e.message}", e)
-                loginViewModel.clearError()
+                loginViewModel.setNavigationError("Failed to navigate to home screen")
             }
         }
     }
 
-    if (loginState.acToken != null && loginState.userInfo == null) {
-        runBlocking {
+    // Fetch user info when token is available but user info hasn't been fetched yet
+    LaunchedEffect(loginState.acToken, loginState.userInfo) {
+        if (loginState.acToken != null && loginState.userInfo == null && !loginState.isLoading) {
             try {
                 val userInfo = loginViewModel.getUserInfo()
                 username = userInfo.name ?: "Unknown User"
