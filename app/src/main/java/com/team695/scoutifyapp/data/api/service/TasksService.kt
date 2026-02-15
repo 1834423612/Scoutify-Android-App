@@ -6,6 +6,9 @@ import com.team695.scoutifyapp.data.api.model.TaskType
 class TaskService {
     lateinit var db: AppDatabase
 
+    fun initialize(database: AppDatabase) {
+        db = database
+    }
     fun getTasks(): List<Task> {
         println( db.taskQueries
             .selectAllTasks().executeAsList())

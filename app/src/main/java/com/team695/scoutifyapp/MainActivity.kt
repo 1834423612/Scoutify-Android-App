@@ -20,10 +20,6 @@ class MainActivity : ComponentActivity() {
 
         ScoutifyClient.initialize(applicationContext)
 
-        val taskService = TaskService()
-        val matchService: MatchService = ScoutifyClient.matchService
-        val loginService: LoginService = CasdoorClient.loginService
-
         val driver = AndroidSqliteDriver(
             schema = AppDatabase.Schema,
             context = applicationContext,
@@ -31,7 +27,12 @@ class MainActivity : ComponentActivity() {
         )
 
         val db = AppDatabase(driver)
-        taskService.db = db
+
+        val taskService = TaskService()
+        val matchService: MatchService = ScoutifyClient.matchService
+        val loginService: LoginService = CasdoorClient.loginService
+
+        taskService.initialize(db)
 
         setContent {
             ScoutifyTheme {

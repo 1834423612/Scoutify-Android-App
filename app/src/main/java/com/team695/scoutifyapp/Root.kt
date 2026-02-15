@@ -36,8 +36,8 @@ fun Root(
     loginService: LoginService
 ) {
     val context = LocalContext.current
-// Create SQLDelight DB here (NOT inside LaunchedEffect)
 
+    /*
     LaunchedEffect(Unit) {
         // 1. Setup DB Driver (Just for this test)
 
@@ -83,6 +83,7 @@ fun Root(
 
         println("--- SQL TEST END ---")
     }
+     */
 
     Surface(
         modifier = Modifier.fillMaxSize(),
