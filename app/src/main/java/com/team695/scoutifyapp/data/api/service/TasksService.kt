@@ -1,15 +1,36 @@
 package com.team695.scoutifyapp.data.api.service
 
+import com.team695.scoutifyapp.db.AppDatabase
 import com.team695.scoutifyapp.data.api.model.Task
 import com.team695.scoutifyapp.data.api.model.TaskType
-
 class TaskService {
+    lateinit var db: AppDatabase
+
     fun getTasks(): List<Task> {
-        return listOf(
-            Task(2, TaskType.SCOUTING, 3, "118", "01m", 0.9f, false),
-            Task(3, TaskType.SCOUTING, 4, "254", "03m", 1.0f, true),
-            Task(4, TaskType.SCOUTING, 5, "148", "02m", 0.1f, false),
-            Task(5, TaskType.SCOUTING, 6, "971", "01m", 1.0f, true)
+        return db.taskQueries
+            .selectAllTasks()
+            .executeAsList()
+            .map { entity ->
+                Task(
+                    id = entity.id.toInt(),
+                    type = TaskType.SCOUTING,
+                    matchNum = 0,
+                    teamNum = entity.title,
+                    time = "01m",
+                    progress = 1.0f,
+                    isDone = entity.isCompleted == 1L
+                )
+            }
+    }
+
+    fun insertTask(task: Task) {
+        db.taskQueries.insertTask(
+            title = task.teamNum,
+            isCompleted = if (task.isDone) 1 else 0
         )
+    }
+
+    fun deleteTask(id: Long) {
+        db.taskQueries.deleteTaskById(id)
     }
 }

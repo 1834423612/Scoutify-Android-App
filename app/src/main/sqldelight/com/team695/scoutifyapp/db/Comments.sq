@@ -1,0 +1,4 @@
+CREATE TABLE comments (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    comment TEXT
+);
