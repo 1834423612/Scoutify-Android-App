@@ -86,7 +86,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.navigation.compose)
-    implementation(libs.accompanist.systemuicontroller) // 控制状态栏颜色
+    implementation(libs.accompanist.systemuicontroller) // Control status bar color
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
