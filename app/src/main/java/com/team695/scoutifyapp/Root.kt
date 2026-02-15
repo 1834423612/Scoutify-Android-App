@@ -106,6 +106,7 @@ fun Root(
                 onNavigateToPitScouting = { navController.navigate(route="pitScouting") },
                 onNavigateToUpload = { navController.navigate(route="upload") },
                 onNavigateToSettings = { navController.navigate(route="settings") },
+                onNavigateToLogin = { navController.navigate(route="login") },
                 navController = navController
             )
 

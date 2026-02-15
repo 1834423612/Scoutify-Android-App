@@ -51,6 +51,7 @@ onNavigateToHome: () -> Unit = {},
     onNavigateToPitScouting: () -> Unit = {},
     onNavigateToUpload: () -> Unit = {},
     onNavigateToSettings: () -> Unit = {},
+    onNavigateToLogin: () -> Unit = {},
     navController: NavHostController
 ) {
 
@@ -88,6 +89,9 @@ onNavigateToHome: () -> Unit = {},
                 verticalArrangement = Arrangement.spacedBy(5.dp)
                 
             ) {
+
+                // account button
+
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -96,7 +100,10 @@ onNavigateToHome: () -> Unit = {},
                             CircleShape
                         )
                         .border(width = 1.dp, color=LightGunmetal, shape=CircleShape)
-                        .background(Gunmetal),
+                        .background(Gunmetal)
+                        .clickable {
+                            onNavigateToLogin()
+                        },
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                 ) {
@@ -105,7 +112,7 @@ onNavigateToHome: () -> Unit = {},
                         contentDescription = "User Avatar",
                         colorFilter = ColorFilter.tint(Accent),
                         modifier = Modifier
-                            .size(30.dp)
+                            .size(30.dp),
                      )
                 }
 
