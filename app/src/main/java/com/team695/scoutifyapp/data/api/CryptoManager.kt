@@ -22,7 +22,7 @@ class CryptoManager {
             init(Cipher.ENCRYPT_MODE, getKey())
             doFinal(bytes)
         }
-        // We must save the IV (Initialization Vector) to decrypt later
+
         outputStream.use {
             it.write(encryptCipher.iv.size)
             it.write(encryptCipher.iv)

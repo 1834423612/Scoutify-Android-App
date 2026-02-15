@@ -115,6 +115,13 @@ class LoginViewModel(private val service: LoginService): ViewModel() {
         } else {
             _loginState.value = LoginStatus()
         }
+
+        return UserInfoResponse(
+            "FAILED_USER",
+            "FAILED_USER",
+            "FAILED_USER",
+            "FAILED_USER"
+        )
     }
 
     fun logout() {
