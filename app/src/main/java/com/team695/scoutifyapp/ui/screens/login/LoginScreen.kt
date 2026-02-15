@@ -25,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -35,6 +36,7 @@ import com.team695.scoutifyapp.data.api.ScoutifyClient
 import com.team695.scoutifyapp.data.api.service.LoginService
 import com.team695.scoutifyapp.ui.viewModels.LoginViewModel
 import com.team695.scoutifyapp.ui.viewModels.ViewModelFactory
+import com.team695.scoutifyapp.ui.extensions.deviceId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -56,62 +58,38 @@ fun LoginScreen(
     loginViewModel: LoginViewModel,
 ) {
 
+    println("DEVICE ID: ${LocalContext.current.deviceId}")
     val loginState by loginViewModel.loginState.collectAsState()
     var username by remember { mutableStateOf("") }
 
-    if (loginState.acToken != null) {
-        runBlocking {
-            val userInfo = loginViewModel.getUserInfo()
+    if (loginState.acToken == null) {
+        if (loginState.loginUrl != null) {
+            CasdoorWebView(
+                url = loginState.loginUrl!!,
+                onCodeReceived = { code ->
+                    Log.d(TAG, "🚀 Auth Code Received: $code")
 
-            username = userInfo.name!!
-            Log.d(TAG, "✅ Login Complete. User: $username")
-        }
-    }
+                    CoroutineScope(Dispatchers.IO).launch {
+                        try {
+                            // 1. MANUAL TOKEN EXCHANGE
+                            loginViewModel.tokenExchange(code)
+                            Log.d(TAG, "✅ Token Received: ${loginState.acToken}")
 
-    if (loginState.loginUrl != null) {
-        CasdoorWebView(
-            url = loginState.loginUrl!!,
-            onCodeReceived = { code ->
-                Log.d(TAG, "🚀 Auth Code Received: $code")
+                            // 2. MANUAL USER INFO FETCH (The Fix)
+                            val userInfo = loginViewModel.getUserInfo()
 
-                CoroutineScope(Dispatchers.IO).launch {
-                    try {
-                        // 1. MANUAL TOKEN EXCHANGE
-                        loginViewModel.tokenExchange(code)
-                        Log.d(TAG, "✅ Token Received: ${loginState.acToken}")
-
-                        // 2. MANUAL USER INFO FETCH (The Fix)
-                        val userInfo = loginViewModel.getUserInfo()
-
-                        withContext(Dispatchers.Main) {
-                            username = userInfo.name!!
-                            Log.d(TAG, "✅ Login Complete. User: $username")
+                            withContext(Dispatchers.Main) {
+                                username = userInfo.name!!
+                                Log.d(TAG, "✅ Login Complete. User: $username")
+                            }
+                        } catch (e: Exception) {
+                            Log.e(TAG, "❌ Login Error", e)
                         }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "❌ Login Error", e)
                     }
-                }
-            },
-            onNavigationBack = { }
-        )
-    } else {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            if (loginState.acToken != null) {
-                Text(text = "Welcome, $username!")
-                Text(text = "Logged in successfully", color = Color.Green)
-                // call coroutine here
-                LaunchedEffect(Unit) {
-                    delay(500)
-                    println("TOKEN: ${ScoutifyClient.tokenManager.getToken()}")
-                    navController.navigate("home")
-                }
-            }
-
-
+                },
+                onNavigationBack = { }
+            )
+        } else {
             Button(onClick = {
                 if (loginState.verifier == null) {
                     // 1. Generate PKCE
@@ -124,7 +102,37 @@ fun LoginScreen(
             }) {
                 Text(text = if (loginState.acToken != null) "Logout" else "Login with Casdoor")
             }
+        }
+    } else {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            if (loginState.acToken != null) {
+                if (username.isNotEmpty()) {
+                    Text(text = "Welcome, $username!", color = Color.Green)
+                    Text(text = "Logged in successfully", color = Color.Green)
 
+                    Button(onClick = {
+                        loginViewModel.logout()
+                    }) {
+                        Text(text = "Log out")
+                    }
+
+                    LaunchedEffect(loginState.verifier) {
+                        delay(3000)
+                        println("TOKEN: ${ScoutifyClient.tokenManager.getToken()}")
+                        navController.navigate("home")
+                    }
+                } else {
+                    LaunchedEffect(loginState.acToken) {
+                        username = loginViewModel.getUserInfo().name!!
+                    }
+                }
+                // call coroutine here
+
+            }
         }
     }
 }
