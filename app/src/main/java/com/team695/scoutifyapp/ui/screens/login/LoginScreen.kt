@@ -91,16 +91,9 @@ fun LoginScreen(
             )
         } else {
             Button(onClick = {
-                if (loginState.verifier == null) {
-                    // 1. Generate PKCE
-                    loginViewModel.generateLoginURL()
-                } else {
-                    // Logout
-                    loginViewModel.logout()
-                    username = ""
-                }
+                loginViewModel.generateLoginURL()
             }) {
-                Text(text = if (loginState.acToken != null) "Logout" else "Login with Casdoor")
+                Text(text = "Login with Casdoor")
             }
         }
     } else {
@@ -115,7 +108,9 @@ fun LoginScreen(
                     Text(text = "Logged in successfully", color = Color.Green)
 
                     Button(onClick = {
-                        loginViewModel.logout()
+                        CoroutineScope(Dispatchers.IO).launch {
+                            loginViewModel.logout()
+                        }
                     }) {
                         Text(text = "Log out")
                     }
@@ -132,6 +127,12 @@ fun LoginScreen(
                 }
                 // call coroutine here
 
+            } else {
+                Button(onClick = {
+                    loginViewModel.generateLoginURL()
+                }) {
+                    Text(text = "Login with Casdoor")
+                }
             }
         }
     }

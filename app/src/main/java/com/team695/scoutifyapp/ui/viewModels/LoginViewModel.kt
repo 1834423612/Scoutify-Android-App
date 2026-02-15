@@ -51,8 +51,10 @@ class LoginViewModel(private val service: LoginService): ViewModel() {
 
     init {
         runBlocking {
+            val token: String = ScoutifyClient.tokenManager.getToken()!!
+
             _loginState.value = LoginStatus(
-                acToken = ScoutifyClient.tokenManager.getToken()
+                acToken = token.ifEmpty { null }
             )
         }
     }
@@ -125,7 +127,8 @@ class LoginViewModel(private val service: LoginService): ViewModel() {
         return UserInfoResponse()
     }
 
-    fun logout() {
+    suspend fun logout() {
+        ScoutifyClient.tokenManager.saveToken("")
         _loginState.value = LoginStatus()
     }
 }
