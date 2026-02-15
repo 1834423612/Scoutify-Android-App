@@ -17,7 +17,9 @@ import com.team695.scoutifyapp.ui.screens.PitScoutingScreen
 import com.team695.scoutifyapp.ui.viewModels.HomeViewModel
 import com.team695.scoutifyapp.ui.viewModels.ViewModelFactory
 import com.team695.scoutifyapp.data.api.service.TaskService
+import com.team695.scoutifyapp.ui.screens.dataCollection.DataScreen
 import com.team695.scoutifyapp.ui.screens.login.LoginScreen
+import com.team695.scoutifyapp.ui.viewModels.DataViewModel
 import com.team695.scoutifyapp.ui.viewModels.LoginViewModel
 
 
@@ -41,6 +43,15 @@ fun AppNav(
 
             HomeScreen(navController = navController, homeViewModel = homeViewModel)
 
+        }
+        composable(route = "data") {
+
+            val dataViewModel: DataViewModel = viewModel(
+                viewModelStoreOwner = owner,
+                factory = ViewModelFactory { DataViewModel() }
+            )
+
+            DataScreen(navController = navController, dataViewModel = dataViewModel)
         }
         composable(route = "comments") {
             CommentsScreen()

@@ -58,7 +58,8 @@ import com.team695.scoutifyapp.ui.viewModels.HomeViewModel
 
 @Composable
 fun TasksCard(
-    homeViewModel: HomeViewModel
+    homeViewModel: HomeViewModel,
+    onPress: () -> Unit,
 ) {
 
     val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
@@ -134,7 +135,7 @@ fun TasksCard(
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 val tasks = if (uiState.selectedTab == 0) uiState.incompleteTasks else uiState.completeTasks
                 items(tasks) { task ->
-                    TaskItem(task = task)
+                    TaskItem(task = task, onPress = onPress)
                 }
             }
         }
@@ -184,7 +185,7 @@ fun borderGradient(progress: Float): Brush {
 
 
 @Composable
-fun TaskItem(task: Task) {
+fun TaskItem(task: Task, onPress: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -257,7 +258,7 @@ fun TaskItem(task: Task) {
         }
 
         Pressable (
-            onClick = {},
+            onClick = {onPress()},
             corner = smallCornerRadius,
             text = "",
             modifier = Modifier
