@@ -1,5 +1,6 @@
 package com.team695.scoutifyapp.ui.viewModels
 
+import android.content.Context
 import android.util.Base64
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.lifecycle.ViewModel
@@ -45,11 +46,18 @@ fun generateCodeChallenge(verifier: String): String {
 }
 
 class LoginViewModel(private val service: LoginService): ViewModel() {
-    private val _loginState = MutableStateFlow(LoginStatus(
-        acToken = runBlocking { ScoutifyClient.tokenManager.getToken() }
-    ))
+    private val _loginState = MutableStateFlow(LoginStatus())
     val loginState: StateFlow<LoginStatus> = _loginState
 
+    init {
+        runBlocking {
+            val token: String = ScoutifyClient.tokenManager.getToken()!!
+
+            _loginState.value = LoginStatus(
+                acToken = token.ifEmpty { null }
+            )
+        }
+    }
     fun generateLoginURL(): String {
         val verifier = generateCodeVerifier()
         val challenge = generateCodeChallenge(verifier)
@@ -116,15 +124,11 @@ class LoginViewModel(private val service: LoginService): ViewModel() {
             _loginState.value = LoginStatus()
         }
 
-        return UserInfoResponse(
-            "FAILED_USER",
-            "FAILED_USER",
-            "FAILED_USER",
-            "FAILED_USER"
-        )
+        return UserInfoResponse()
     }
 
-    fun logout() {
+    suspend fun logout() {
+        ScoutifyClient.tokenManager.saveToken("")
         _loginState.value = LoginStatus()
     }
 }

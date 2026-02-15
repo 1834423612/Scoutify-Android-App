@@ -16,10 +16,10 @@ data class TokenResponse(
 )
 
 data class UserInfoResponse(
-    val name: String?,
-    @SerializedName("preferred_username") val preferredUsername: String?,
-    val picture: String?,
-    val email: String?
+    val name: String? = null,
+    @SerializedName("preferred_username") val preferredUsername: String? = null,
+    val picture: String? = null,
+    val email: String? = null
 )
 
 interface LoginService {
