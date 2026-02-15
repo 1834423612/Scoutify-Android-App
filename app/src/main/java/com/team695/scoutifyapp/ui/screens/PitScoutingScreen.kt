@@ -388,7 +388,6 @@ fun RobotAbilitiesSection() {
 }
 
 @Composable
-@Suppress("UNUSED_VALUE")
 fun RobotMeasurementsSection() {
     var weight by remember { mutableStateOf("") }
     var bumperWeight by remember { mutableStateOf("") }
