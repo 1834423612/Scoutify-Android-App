@@ -5,6 +5,7 @@ import androidx.compose.runtime.currentRecomposeScope
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.team695.scoutifyapp.BuildConfig
+import com.team695.scoutifyapp.data.api.CasdoorClient
 import com.team695.scoutifyapp.data.api.ScoutifyClient
 import com.team695.scoutifyapp.data.api.model.LoginBody
 import com.team695.scoutifyapp.data.api.service.LoginService
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.json.JSONObject
 import java.security.MessageDigest
 import java.security.SecureRandom
@@ -43,7 +45,9 @@ fun generateCodeChallenge(verifier: String): String {
 }
 
 class LoginViewModel(private val service: LoginService): ViewModel() {
-    private val _loginState = MutableStateFlow(LoginStatus())
+    private val _loginState = MutableStateFlow(LoginStatus(
+        acToken = runBlocking { ScoutifyClient.tokenManager.getToken() }
+    ))
     val loginState: StateFlow<LoginStatus> = _loginState
 
     fun generateLoginURL(): String {
@@ -109,7 +113,7 @@ class LoginViewModel(private val service: LoginService): ViewModel() {
 
             return userInfo
         } else {
-            throw Exception("Access token is null; can't get casdoor user info")
+            _loginState.value = LoginStatus()
         }
     }
 

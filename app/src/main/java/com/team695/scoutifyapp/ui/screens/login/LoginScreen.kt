@@ -40,6 +40,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
@@ -57,6 +58,15 @@ fun LoginScreen(
 
     val loginState by loginViewModel.loginState.collectAsState()
     var username by remember { mutableStateOf("") }
+
+    if (loginState.acToken != null) {
+        runBlocking {
+            val userInfo = loginViewModel.getUserInfo()
+
+            username = userInfo.name!!
+            Log.d(TAG, "✅ Login Complete. User: $username")
+        }
+    }
 
     if (loginState.loginUrl != null) {
         CasdoorWebView(
