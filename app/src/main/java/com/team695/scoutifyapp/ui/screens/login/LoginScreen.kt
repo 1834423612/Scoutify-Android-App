@@ -97,10 +97,11 @@ fun LoginScreen(
 
     // Fetch user info when token is available but user info hasn't been fetched yet
     LaunchedEffect(loginState.acToken, loginState.userInfo) {
-        if (loginState.acToken != null && 
-            loginState.userInfo == null && 
-            !loginState.isLoading && 
-            loginState.error == null) {
+        if (loginState.acToken != null
+            && loginState.userInfo == null
+            && !loginState.isLoading
+            && loginState.error == null
+        ) {
             val userInfo = loginViewModel.getUserInfo()
             if (userInfo != null) {
                 username = loginViewModel.getDisplayName()

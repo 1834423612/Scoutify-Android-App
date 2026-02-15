@@ -108,7 +108,7 @@ class LoginViewModel(private val service: LoginService): ViewModel() {
 
     /**
      * Fetches user information from the authentication service.
-     * 
+     *
      * @return UserInfoResponse if successful, null if there's an error.
      *         When null is returned, the error state will be updated with a user-friendly message.
      *         Callers should check the loginState.error for details.
@@ -155,7 +155,7 @@ class LoginViewModel(private val service: LoginService): ViewModel() {
 
     /**
      * Gets the display name for the current user.
-     * 
+     *
      * @return The user's name from userInfo, or "Unknown User" if not available.
      */
     fun getDisplayName(): String {
