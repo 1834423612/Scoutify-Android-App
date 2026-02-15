@@ -18,6 +18,7 @@ class MainActivity : ComponentActivity() {
         ScoutifyClient.initialize(applicationContext)
 
         val taskService = TaskService()
+
         val matchService: MatchService = ScoutifyClient.matchService
         val loginService: LoginService = CasdoorClient.loginService
 
