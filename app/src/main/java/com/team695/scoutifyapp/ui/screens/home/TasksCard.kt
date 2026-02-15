@@ -145,7 +145,7 @@ fun TasksCard(
 fun Modifier.taskBorder(
     progress: Float
 ): Modifier {
-    if(progress == 1f) {
+    if (progress == 1f) {
         return this.then(
             other = Modifier
                 .border(
