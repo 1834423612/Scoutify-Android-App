@@ -27,6 +27,9 @@ data class LoginStatus(
     val error: String? = null,
     val acToken: String? = null,
     val loginUrl: String? = null,
+    val isLoading: Boolean = false,
+    val userInfo: UserInfoResponse? = null,
+    val navigationReady: Boolean = false
 )
 
 fun generateCodeVerifier(): String {
@@ -72,6 +75,7 @@ class LoginViewModel(private val service: LoginService): ViewModel() {
     }
 
     suspend fun tokenExchange(code: String) {
+        _loginState.update { it.copy(isLoading = true, error = null) }
         try {
             val tokenRes: TokenResponse = service.getAccessToken(
                 clientSecret = BuildConfig.CASDOOR_CLIENT_SECRET,
@@ -82,7 +86,8 @@ class LoginViewModel(private val service: LoginService): ViewModel() {
 
             _loginState.update {
                 it.copy(
-                    acToken = tokenRes.accessToken
+                    acToken = tokenRes.accessToken,
+                    isLoading = false
                 )
             }
 
@@ -91,7 +96,8 @@ class LoginViewModel(private val service: LoginService): ViewModel() {
         } catch (e: Exception) {
             _loginState.update {
                 it.copy(
-                    error = e.message
+                    error = "Failed to exchange token: ${e.message}",
+                    isLoading = false
                 )
             }
 
@@ -101,19 +107,38 @@ class LoginViewModel(private val service: LoginService): ViewModel() {
 
     suspend fun getUserInfo(): UserInfoResponse {
         if (loginState.value.acToken != null) {
-            val userInfo: UserInfoResponse = service.getUserInfo(
-                authHeader = "Bearer ${_loginState.value.acToken}"
-            )
+            _loginState.update { it.copy(isLoading = true, error = null) }
+            try {
+                val userInfo: UserInfoResponse = service.getUserInfo(
+                    authHeader = "Bearer ${_loginState.value.acToken}"
+                )
 
+                _loginState.update {
+                    it.copy(
+                        loginUrl = null,
+                        userInfo = userInfo,
+                        navigationReady = true,
+                        isLoading = false
+                    )
+                }
+
+                return userInfo
+            } catch (e: Exception) {
+                _loginState.update {
+                    it.copy(
+                        error = "Failed to fetch user info: ${e.message}",
+                        isLoading = false
+                    )
+                }
+                throw e
+            }
+        } else {
             _loginState.update {
                 it.copy(
-                    loginUrl = null
+                    error = "No access token available",
+                    isLoading = false
                 )
             }
-
-            return userInfo
-        } else {
-            _loginState.value = LoginStatus()
         }
 
         return UserInfoResponse(
@@ -126,5 +151,13 @@ class LoginViewModel(private val service: LoginService): ViewModel() {
 
     fun logout() {
         _loginState.value = LoginStatus()
+    }
+
+    fun clearError() {
+        _loginState.update { it.copy(error = null) }
+    }
+
+    fun resetNavigation() {
+        _loginState.update { it.copy(navigationReady = false) }
     }
 }

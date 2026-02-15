@@ -10,10 +10,19 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -25,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -58,13 +68,47 @@ fun LoginScreen(
 
     val loginState by loginViewModel.loginState.collectAsState()
     var username by remember { mutableStateOf("") }
+    val snackbarHostState = remember { SnackbarHostState() }
 
-    if (loginState.acToken != null) {
+    // Show error dialog when there's an error
+    if (loginState.error != null) {
+        AlertDialog(
+            onDismissRequest = { loginViewModel.clearError() },
+            title = { Text("Login Error") },
+            text = { Text(loginState.error ?: "An unknown error occurred") },
+            confirmButton = {
+                TextButton(onClick = { loginViewModel.clearError() }) {
+                    Text("OK")
+                }
+            }
+        )
+    }
+
+    // Handle navigation only when explicitly ready
+    LaunchedEffect(loginState.navigationReady) {
+        if (loginState.navigationReady) {
+            try {
+                navController.navigate("home") {
+                    // Clear the login screen from back stack
+                    popUpTo("login") { inclusive = true }
+                }
+                loginViewModel.resetNavigation()
+            } catch (e: Exception) {
+                Log.e(TAG, "Navigation error: ${e.message}", e)
+                loginViewModel.clearError()
+            }
+        }
+    }
+
+    if (loginState.acToken != null && loginState.userInfo == null) {
         runBlocking {
-            val userInfo = loginViewModel.getUserInfo()
-
-            username = userInfo.name!!
-            Log.d(TAG, "✅ Login Complete. User: $username")
+            try {
+                val userInfo = loginViewModel.getUserInfo()
+                username = userInfo.name ?: "Unknown User"
+                Log.d(TAG, "✅ Login Complete. User: $username")
+            } catch (e: Exception) {
+                Log.e(TAG, "❌ Failed to get user info", e)
+            }
         }
     }
 
@@ -84,7 +128,7 @@ fun LoginScreen(
                         val userInfo = loginViewModel.getUserInfo()
 
                         withContext(Dispatchers.Main) {
-                            username = userInfo.name!!
+                            username = userInfo.name ?: "Unknown User"
                             Log.d(TAG, "✅ Login Complete. User: $username")
                         }
                     } catch (e: Exception) {
@@ -100,31 +144,33 @@ fun LoginScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (loginState.acToken != null) {
-                Text(text = "Welcome, $username!")
+            if (loginState.isLoading) {
+                CircularProgressIndicator()
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(text = "Logging in...", style = MaterialTheme.typography.bodyMedium)
+            } else if (loginState.acToken != null) {
+                val displayName = loginState.userInfo?.name ?: username.ifEmpty { "User" }
+                Text(text = "Welcome, $displayName!", style = MaterialTheme.typography.headlineMedium)
+                Spacer(modifier = Modifier.height(8.dp))
                 Text(text = "Logged in successfully", color = Color.Green)
-                // call coroutine here
-                LaunchedEffect(Unit) {
-                    delay(500)
-                    println("TOKEN: ${ScoutifyClient.tokenManager.getToken()}")
-                    navController.navigate("home")
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(text = "Navigating to home...", style = MaterialTheme.typography.bodyMedium)
+            } else {
+                Text(text = "Scoutify Login", style = MaterialTheme.typography.headlineMedium)
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(onClick = {
+                    if (loginState.verifier == null) {
+                        // 1. Generate PKCE
+                        loginViewModel.generateLoginURL()
+                    } else {
+                        // Logout
+                        loginViewModel.logout()
+                        username = ""
+                    }
+                }) {
+                    Text(text = if (loginState.acToken != null) "Logout" else "Login with Casdoor")
                 }
             }
-
-
-            Button(onClick = {
-                if (loginState.verifier == null) {
-                    // 1. Generate PKCE
-                    loginViewModel.generateLoginURL()
-                } else {
-                    // Logout
-                    loginViewModel.logout()
-                    username = ""
-                }
-            }) {
-                Text(text = if (loginState.acToken != null) "Logout" else "Login with Casdoor")
-            }
-
         }
     }
 }
