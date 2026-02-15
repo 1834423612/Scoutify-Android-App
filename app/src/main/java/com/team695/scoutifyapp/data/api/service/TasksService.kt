@@ -7,10 +7,13 @@ class TaskService {
     lateinit var db: AppDatabase
 
     fun getTasks(): List<Task> {
+        println( db.taskQueries
+            .selectAllTasks().executeAsList())
         return db.taskQueries
             .selectAllTasks()
             .executeAsList()
             .map { entity ->
+                println("TASK: ${entity}")
                 Task(
                     id = entity.id.toInt(),
                     type = TaskType.SCOUTING,

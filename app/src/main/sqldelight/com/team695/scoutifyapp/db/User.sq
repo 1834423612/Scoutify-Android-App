@@ -1,0 +1,21 @@
+CREATE TABLE userEntity (
+    id INTEGER NOT NULL PRIMARY KEY DEFAULT 0,
+    name TEXT,
+    preferred_username TEXT,
+    picture TEXT,
+    email TEXT
+);
+
+selectUser:
+SELECT *
+FROM userEntity
+WHERE id = 0;
+
+insertUser:
+INSERT OR REPLACE INTO userEntity(id, name, preferred_username, picture, email)
+VALUES (0, ?, ?, ?, ?);
+
+
+deleteUser:
+DELETE FROM userEntity
+WHERE id = 0;
