@@ -1,6 +1,5 @@
 package com.team695.scoutifyapp
 
-import android.app.Service
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -9,48 +8,60 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
+import com.team695.scoutifyapp.data.api.CasdoorClient
 import com.team695.scoutifyapp.data.api.ScoutifyClient
+import com.team695.scoutifyapp.data.api.service.LoginService
 import com.team695.scoutifyapp.data.api.service.MatchService
 import com.team695.scoutifyapp.navigation.AppNav
-import com.team695.scoutifyapp.ui.components.app.structure.NavRail
-import com.team695.scoutifyapp.ui.viewModels.ViewModelFactory
-import com.team695.scoutifyapp.ui.viewModels.TaskService
-import com.team695.scoutifyapp.ui.viewModels.TasksViewModel
-import com.team695.scoutifyapp.ui.theme.*
+import com.team695.scoutifyapp.ui.components.NavRail
+import com.team695.scoutifyapp.data.api.service.TaskService
+//import com.team695.scoutifyapp.ui.theme.*
 import com.team695.scoutifyapp.db.AppDatabase
+import com.team695.scoutifyapp.ui.theme.Background
+import com.team695.scoutifyapp.ui.theme.ScoutifyTheme
+import kotlin.math.log
 
 @Composable
 fun Root(
     taskService: TaskService,
-    matchService: MatchService
+    matchService: MatchService,
+    loginService: LoginService
 ) {
     val context = LocalContext.current
-
+// Create SQLDelight DB here (NOT inside LaunchedEffect)
 
     LaunchedEffect(Unit) {
         // 1. Setup DB Driver (Just for this test)
-        val driver = AndroidSqliteDriver(
-            schema = AppDatabase.Schema,
-            context = context,
-            name = "scoutify_test.db" // Using a test name to avoid messing up real data
-        )
-        val db = AppDatabase(driver)
-        val queries = db.taskQueries
+
+        val queries = taskService.db.taskQueries
+        val queries2= taskService.db.pitscoutQueries
+        println("--- SQL TEST PitScout START ---")
+
+        println(queries2)
+        println("Inserting 'Test pitsout'...")
+        queries2.insertPitscout("ohcl","0001","{name:'test'}","","Clarence","","","")
+//        val pitscouts=queries2.selectAllPitscout().executeAsList()
+//
+//        println("Found ${queries2.size} tasks:")
+//        queries2.forEach { task ->
+//            println(" -> ID: ${task.id} | Title: ${task.title} | Completed: ${task.isCompleted}")
+//        }
+        val pitscouts = queries2.selectAllPitscout().executeAsList()
+
+        println("Found ${pitscouts.size} pitscout rows:")
+        pitscouts.forEach { row ->
+            println(" -> ID: ${row.id} | Event: ${row.event_id} | Form: ${row.form_id}")
+        }
+
+
 
         // 2. CLEAR previous test data (Optional, so you don't see duplicates every run)
         // You might need to add a "deleteAll: DELETE FROM taskEntity;" query to Task.sq first
@@ -91,6 +102,7 @@ fun Root(
                 onNavigateToPitScouting = { navController.navigate(route="pitScouting") },
                 onNavigateToUpload = { navController.navigate(route="upload") },
                 onNavigateToSettings = { navController.navigate(route="settings") },
+                onNavigateToLogin = { navController.navigate(route="login") },
                 navController = navController
             )
 
@@ -103,7 +115,8 @@ fun Root(
                     AppNav(
                         navController = navController,
                         taskService = taskService,
-                        matchService = matchService
+                        matchService = matchService,
+                        loginService = loginService,
                     )
                 }
             }
@@ -116,10 +129,13 @@ fun Root(
 fun RootPreview() {
     val taskService = TaskService()
     val matchService = ScoutifyClient.matchService
+    val loginService = CasdoorClient.loginService
+
     ScoutifyTheme {
         Root(
             taskService = taskService,
-            matchService = matchService
+            matchService = matchService,
+            loginService = loginService,
         )
     }
 }

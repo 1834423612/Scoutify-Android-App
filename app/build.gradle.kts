@@ -1,15 +1,19 @@
 import com.android.build.api.dsl.ApplicationExtension
+import java.util.Properties
 
 plugins {
-//    alias(libs.plugins.android.application)
-//    alias(libs.plugins.compose.compiler)
     id("org.jetbrains.kotlin.android")
-//    id("io.objectbox") // ObjectBox plugin
-//    //id("io.objectbox") version "4.0.2" apply false
     id("com.android.application")
-    //id("io.objectbox") // ObjectBox plugin
     id("org.jetbrains.kotlin.plugin.compose") // Compose compiler plugin
     alias(libs.plugins.sqldelight) // Apply the plugin
+}
+
+// ENV CONFIG
+
+val localProperties = Properties()
+val secretsPropertiesFile = rootProject.file("app/secrets.properties")
+if (secretsPropertiesFile.exists()) {
+    localProperties.load(secretsPropertiesFile.inputStream())
 }
 
 configure<ApplicationExtension> {
@@ -24,6 +28,18 @@ configure<ApplicationExtension> {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        fun requireSecret(key: String): String =
+            localProperties[key]?.toString()
+                ?: if (secretsPropertiesFile.exists()) error("Missing key '$key' in secrets.properties")
+                   else ""   // allow local/CI builds without secrets
+
+        buildConfigField("String", "CASDOOR_ENDPOINT", "\"${requireSecret("casdoor_endpoint")}\"")
+        buildConfigField("String", "CASDOOR_CLIENT_ID", "\"${requireSecret("casdoor_client_id")}\"")
+        buildConfigField("String", "CASDOOR_CLIENT_SECRET", "\"${requireSecret("casdoor_client_secret")}\"")
+        buildConfigField("String", "CASDOOR_REDIRECT_URI", "\"${requireSecret("casdoor_redirect_uri")}\"")
+        buildConfigField("String", "CASDOOR_APP_NAME", "\"${requireSecret("casdoor_app_name")}\"")
+
         proguardFiles()
     }
 
@@ -64,13 +80,13 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    implementation("androidx.compose.material:material-icons-extended:1.7.8")
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.1")
-    implementation("androidx.navigation:navigation-compose:2.9.5")
-    implementation("com.google.accompanist:accompanist-systemuicontroller:0.36.0") // 控制状态栏颜色
+    implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.retrofit)
+    implementation(libs.converter.gson)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.accompanist.systemuicontroller) // Control status bar color
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -83,4 +99,9 @@ dependencies {
     // SQL Delight
     implementation(libs.sqldelight.android)
     implementation(libs.sqldelight.coroutines)
+    implementation(libs.androidx.security.crypto)
+    // datastore
+    implementation(libs.androidx.datastore)
 }
+
+android.buildFeatures.buildConfig = true

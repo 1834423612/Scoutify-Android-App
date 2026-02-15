@@ -1,4 +1,4 @@
-package com.team695.scoutifyapp.ui.components.app.structure
+package com.team695.scoutifyapp.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -51,6 +51,7 @@ onNavigateToHome: () -> Unit = {},
     onNavigateToPitScouting: () -> Unit = {},
     onNavigateToUpload: () -> Unit = {},
     onNavigateToSettings: () -> Unit = {},
+    onNavigateToLogin: () -> Unit = {},
     navController: NavHostController
 ) {
 
@@ -71,7 +72,7 @@ onNavigateToHome: () -> Unit = {},
             .clip(RoundedCornerShape(8.dp))
             .border(width=1.dp, color=LightGunmetal, shape = RoundedCornerShape(8.dp))
     ) {
-        ImageBackground(x = 350f, y = 325f)
+        ImageBackground(x = 80f, y = 325f)
         BackgroundGradient()
 
         Column(
@@ -88,6 +89,9 @@ onNavigateToHome: () -> Unit = {},
                 verticalArrangement = Arrangement.spacedBy(5.dp)
                 
             ) {
+
+                // account button
+
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -96,7 +100,10 @@ onNavigateToHome: () -> Unit = {},
                             CircleShape
                         )
                         .border(width = 1.dp, color=LightGunmetal, shape=CircleShape)
-                        .background(Gunmetal),
+                        .background(Gunmetal)
+                        .clickable {
+                            onNavigateToLogin()
+                        },
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                 ) {
@@ -105,7 +112,7 @@ onNavigateToHome: () -> Unit = {},
                         contentDescription = "User Avatar",
                         colorFilter = ColorFilter.tint(Accent),
                         modifier = Modifier
-                            .size(30.dp)
+                            .size(30.dp),
                      )
                 }
 

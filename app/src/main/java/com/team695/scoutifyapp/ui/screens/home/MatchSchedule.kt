@@ -63,6 +63,8 @@ import com.team695.scoutifyapp.ui.theme.RedAlliance
 import com.team695.scoutifyapp.ui.theme.TextFieldBackground
 import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.theme.TextSecondary
+import com.team695.scoutifyapp.ui.theme.mediumCornerRadius
+import com.team695.scoutifyapp.ui.theme.smallCornerRadius
 
 data class Match(
     val matchNum: String,
@@ -107,12 +109,12 @@ fun MatchSchedule(modifier: Modifier = Modifier, onCommentClicked: () -> Unit) {
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFF171920))
-            .clip(RoundedCornerShape(8.dp))
-            .border(1.dp, LightGunmetal, RoundedCornerShape(8.dp))
+            .background(Color(0xFF000000))
+            .clip(RoundedCornerShape(smallCornerRadius))
+            .border(1.dp, LightGunmetal, RoundedCornerShape(smallCornerRadius))
 
     ) {
-        ImageBackground(x = -1950f, y = 335f)
+        ImageBackground(x = -1350f, y = 355f)
         BackgroundGradient()
         Column(
             modifier = Modifier
@@ -136,7 +138,7 @@ fun MatchSchedule(modifier: Modifier = Modifier, onCommentClicked: () -> Unit) {
                     modifier = Modifier
                         .fillMaxSize()
                         .alpha(0.3f)
-                        .clip(RoundedCornerShape(8.dp))
+                        .clip(RoundedCornerShape(smallCornerRadius))
                 )
                 Column(
                     modifier = Modifier
@@ -219,19 +221,19 @@ fun MatchSchedule(modifier: Modifier = Modifier, onCommentClicked: () -> Unit) {
                             .height(35.dp) // BasicTextField respects exact heights better
                             .background(
                                 color = TextFieldBackground,
-                                shape = RoundedCornerShape(8.dp)
+                                shape = RoundedCornerShape(smallCornerRadius)
                             )
                             .border(
                                 width = 1.dp,
                                 color = LightGunmetal,
-                                shape = RoundedCornerShape(8.dp)
+                                shape = RoundedCornerShape(smallCornerRadius)
                             )
                     )
                 }
             }
             LazyColumn(
                 modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                verticalArrangement = Arrangement.spacedBy(smallCornerRadius)
             ) {
                 items(filteredMatches) {
                     MatchItem(
@@ -260,11 +262,11 @@ fun TeamNumber(number: String) {
         contentAlignment = Alignment.Center,
         modifier = Modifier
             .background(if (isHighlighted) Accent.copy(0.3f) else DarkishGunmetal,
-                RoundedCornerShape(4.dp))
+                RoundedCornerShape(smallCornerRadius))
             .fillMaxHeight()
             .width(50.dp)
             .buttonHighlight(
-                corner = 4.dp
+                corner = smallCornerRadius
             )
 
     ) {
@@ -294,10 +296,10 @@ fun MatchItem(
         modifier = Modifier
             .fillMaxWidth()
             .height(45.dp)
-            .background(DarkGunmetal, shape = RoundedCornerShape(8.dp))
-            .border(1.dp, borderColor, shape = RoundedCornerShape(8.dp))
+            .background(DarkGunmetal, shape = RoundedCornerShape(mediumCornerRadius))
+            .border(1.dp, borderColor, shape = RoundedCornerShape(mediumCornerRadius))
             .buttonHighlight(
-                corner = 8.dp
+                corner = mediumCornerRadius
             )
             .padding(horizontal = 8.dp, vertical = 7.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -306,10 +308,10 @@ fun MatchItem(
         Row(
             modifier = Modifier
                 .fillMaxHeight()
-                .clip(RoundedCornerShape(8.dp))
+                .clip(RoundedCornerShape(smallCornerRadius))
                 .background(DarkishGunmetal)
                 .buttonHighlight(
-                    corner = 8.dp
+                    corner = smallCornerRadius
                 )
                 .width(135.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -376,7 +378,7 @@ fun MatchItem(
 
         Pressable (
             onClick = {onCommentClicked()},
-            corner = 4.dp,
+            corner = smallCornerRadius,
             text = "Comment",
             modifier = Modifier
                 .fillMaxHeight()
@@ -394,36 +396,5 @@ fun MatchItem(
 
             )
         }
-/*
-        Button(
-            onClick = { /*TODO*/ },
-            colors = ButtonDefaults.buttonColors(containerColor = DarkishGunmetal),
-            shape = RoundedCornerShape(4.dp),
-            contentPadding = PaddingValues(0.dp),
-            modifier = Modifier
-                .fillMaxHeight()
-                .width(135.dp)
-
-
-        ) {
-
-            Text(
-                "Comment",
-                color = Deselected,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Normal,
-                )
-            Spacer(modifier = Modifier.width(8.dp))
-            Image(
-                painterResource(id = R.drawable.comment),
-                contentScale = ContentScale.Fit,
-                contentDescription = "Comment",
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .padding(vertical=8.dp)
-
-
-            )
-        } */
     }
 }

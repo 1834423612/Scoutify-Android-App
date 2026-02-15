@@ -1,30 +1,183 @@
 package com.team695.scoutifyapp.ui.viewModels
 
+import android.content.Context
+import android.util.Base64
+import androidx.compose.runtime.currentRecomposeScope
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.team695.scoutifyapp.BuildConfig
+import com.team695.scoutifyapp.data.api.CasdoorClient
+import com.team695.scoutifyapp.data.api.ScoutifyClient
 import com.team695.scoutifyapp.data.api.model.LoginBody
 import com.team695.scoutifyapp.data.api.service.LoginService
+import com.team695.scoutifyapp.data.api.service.TokenResponse
+import com.team695.scoutifyapp.data.api.service.UserInfoResponse
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import org.json.JSONObject
+import java.security.MessageDigest
+import java.security.SecureRandom
+
+data class LoginStatus(
+    val verifier: String? = null,
+    val error: String? = null,
+    val acToken: String? = null,
+    val loginUrl: String? = null,
+    val isLoading: Boolean = false,
+    val userInfo: UserInfoResponse? = null,
+    val navigationReady: Boolean = false
+)
+
+fun generateCodeVerifier(): String {
+    val sr = SecureRandom()
+    val code = ByteArray(32)
+    sr.nextBytes(code)
+    return Base64.encodeToString(code, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
+}
+
+fun generateCodeChallenge(verifier: String): String {
+    val bytes = verifier.toByteArray(Charsets.US_ASCII)
+    val md = MessageDigest.getInstance("SHA-256")
+    md.update(bytes, 0, bytes.size)
+    val digest = md.digest()
+    return Base64.encodeToString(digest, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
+}
 
 class LoginViewModel(private val service: LoginService): ViewModel() {
-    private val _loginRes = MutableStateFlow<String>("")
-    val loginRes: StateFlow<String?> = _loginRes
+    private val _loginState = MutableStateFlow(LoginStatus())
+    val loginState: StateFlow<LoginStatus> = _loginState
 
-    fun login() {
-        viewModelScope.launch {
-            try {
-                val body: LoginBody = LoginBody(
-                    695,
-                    "alex",
-                    "87e31e75d0229aeac6909b2c12dd5feb43380238b011f985ee9e58bf8e4d40ee"
-                )
-                val res = service.login(body)
-                _loginRes.value = res.string()
-            } catch (e: Exception) {
-                println("Error when trying to log in: ${e.message}")
-            }
+    init {
+        runBlocking {
+            val token: String = ScoutifyClient.tokenManager.getToken()!!
+
+            _loginState.value = LoginStatus(
+                acToken = token.ifEmpty { null }
+            )
         }
+    }
+    fun generateLoginURL(): String {
+        val verifier = generateCodeVerifier()
+        val challenge = generateCodeChallenge(verifier)
+
+        val loginUrl = "${BuildConfig.CASDOOR_ENDPOINT}/login/oauth/authorize?" +
+                "client_id=${BuildConfig.CASDOOR_CLIENT_ID}" +
+                "&response_type=code" +
+                "&scope=profile email openid" +
+                "&state=${BuildConfig.CASDOOR_APP_NAME}" +
+                "&code_challenge_method=S256" +
+                "&code_challenge=$challenge" +
+                "&redirect_uri=${BuildConfig.CASDOOR_REDIRECT_URI}"
+
+        _loginState.value = LoginStatus(
+                verifier = verifier,
+                loginUrl = loginUrl
+            )
+
+        return loginUrl
+    }
+
+    suspend fun tokenExchange(code: String) {
+        _loginState.update { it.copy(isLoading = true, error = null) }
+        try {
+            val tokenRes: TokenResponse = service.getAccessToken(
+                clientSecret = BuildConfig.CASDOOR_CLIENT_SECRET,
+                clientId = BuildConfig.CASDOOR_CLIENT_ID,
+                code = code,
+                verifier = loginState.value.verifier!!
+            )
+
+            _loginState.update {
+                it.copy(
+                    acToken = tokenRes.accessToken,
+                    isLoading = false
+                )
+            }
+
+            ScoutifyClient.tokenManager.saveToken(tokenRes.accessToken)
+
+        } catch (e: Exception) {
+            _loginState.update {
+                it.copy(
+                    error = "Login failed. Please try again.",
+                    isLoading = false
+                )
+            }
+
+            println("Error in casdoor token exchange: ${e.message}")
+            e.printStackTrace()
+        }
+    }
+
+    /**
+     * Fetches user information from the authentication service.
+     *
+     * @return UserInfoResponse if successful, null if there's an error.
+     *         When null is returned, the error state will be updated with a user-friendly message.
+     *         Callers should check the loginState.error for details.
+     */
+    suspend fun getUserInfo(): UserInfoResponse? {
+        if (loginState.value.acToken == null) {
+            _loginState.update {
+                it.copy(
+                    error = "No access token available",
+                    isLoading = false
+                )
+            }
+            return null
+        }
+
+        _loginState.update { it.copy(isLoading = true, error = null) }
+        try {
+            val userInfo: UserInfoResponse = service.getUserInfo(
+                authHeader = "Bearer ${_loginState.value.acToken}"
+            )
+
+            _loginState.update {
+                it.copy(
+                    loginUrl = null,
+                    userInfo = userInfo,
+                    navigationReady = true,
+                    isLoading = false
+                )
+            }
+
+            return userInfo
+        } catch (e: Exception) {
+            _loginState.update {
+                it.copy(
+                    error = "Unable to retrieve account information. Please try again.",
+                    isLoading = false
+                )
+            }
+            println("Error fetching user info: ${e.message}")
+            e.printStackTrace()
+            return null
+        }
+    }
+
+        return UserInfoResponse()
+    }
+
+    suspend fun logout() {
+        ScoutifyClient.tokenManager.saveToken("")
+        _loginState.value = LoginStatus()
+    }
+
+    fun clearError() {
+        _loginState.update { it.copy(error = null) }
+    }
+
+    fun setNavigationError(errorMessage: String) {
+        _loginState.update { it.copy(error = errorMessage, navigationReady = false) }
+    }
+
+    fun resetNavigation() {
+        _loginState.update { it.copy(navigationReady = false) }
     }
 }
