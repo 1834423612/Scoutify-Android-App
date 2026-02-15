@@ -20,6 +20,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -35,7 +36,6 @@ import com.team695.scoutifyapp.data.api.ScoutifyClient
 import com.team695.scoutifyapp.data.api.service.LoginService
 import com.team695.scoutifyapp.ui.viewModels.LoginViewModel
 import com.team695.scoutifyapp.ui.viewModels.ViewModelFactory
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -58,6 +58,7 @@ fun LoginScreen(
 
     val loginState by loginViewModel.loginState.collectAsState()
     var username by remember { mutableStateOf("") }
+    val coroutineScope = rememberCoroutineScope()
 
     if (loginState.acToken != null) {
         runBlocking {
@@ -74,7 +75,7 @@ fun LoginScreen(
             onCodeReceived = { code ->
                 Log.d(TAG, "🚀 Auth Code Received: $code")
 
-                CoroutineScope(Dispatchers.IO).launch {
+                coroutineScope.launch(Dispatchers.IO) {
                     try {
                         // 1. MANUAL TOKEN EXCHANGE
                         loginViewModel.tokenExchange(code)
