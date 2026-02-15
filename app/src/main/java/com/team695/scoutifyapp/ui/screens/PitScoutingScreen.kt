@@ -25,9 +25,7 @@ import com.team695.scoutifyapp.ui.components.form.*
 import com.team695.scoutifyapp.ui.theme.*
 
 @Composable
-fun PitScoutingScreen(
-    onNavigate: (String) -> Unit = {}
-) {
+fun PitScoutingScreen() {
     var selectedTask by remember { mutableStateOf(1) }
     var selectedTab by remember { mutableStateOf("1") }
     var selectedStatus by remember { mutableStateOf(TaskStatus.IN_PROGRESS) }
@@ -46,12 +44,6 @@ fun PitScoutingScreen(
             .fillMaxSize()
             .background(BgPrimary)
     ) {
-        // Navigation Sidebar
-        NavSidebar(
-            currentScreen = "pit_scouting",
-            onNavigate = onNavigate
-        )
-
         // Tasks Sidebar
         TasksSidebar(
             tasks = sampleTasks.filter { it.status == selectedStatus },
@@ -396,6 +388,7 @@ fun RobotAbilitiesSection() {
 }
 
 @Composable
+@Suppress("UNUSED_VALUE")
 fun RobotMeasurementsSection() {
     var weight by remember { mutableStateOf("") }
     var bumperWeight by remember { mutableStateOf("") }
@@ -483,6 +476,7 @@ fun RobotImagesSection() {
 }
 
 @Composable
+@Suppress("UNUSED_VALUE")
 fun AdditionalCommentsSection() {
     var comments by remember { mutableStateOf("") }
 
