@@ -33,11 +33,14 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.team695.scoutifyapp.R
 import com.team695.scoutifyapp.data.api.model.Task
+import com.team695.scoutifyapp.data.api.model.TaskType
 import com.team695.scoutifyapp.ui.components.progressBorder
 import com.team695.scoutifyapp.ui.reusables.Pressable
 import com.team695.scoutifyapp.ui.reusables.BackgroundGradient
@@ -157,6 +160,13 @@ fun borderGradient(progress: Float): Brush {
     )
 }
 
+@Preview(showBackground = true, widthDp = 200)
+@Composable
+fun TaskItemPreview() {
+    val dummyTask: Task = Task(id=0, type = TaskType.SCOUTING, matchNum = 0, teamNum = "test", time = "01m", progress = 0f, isDone = false)
+
+    TaskItem(task = dummyTask, onPress = {})
+}
 
 @Composable
 fun TaskItem(task: Task, onPress: () -> Unit) {
