@@ -2,6 +2,7 @@ package com.team695.scoutifyapp.ui.viewModels
 
 import android.content.Context
 import android.util.Base64
+import android.util.Log
 import androidx.compose.runtime.currentRecomposeScope
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -51,10 +52,12 @@ class LoginViewModel(private val service: LoginService): ViewModel() {
 
     init {
         runBlocking {
-            val token: String = ScoutifyClient.tokenManager.getToken()!!
+
+            val token: String? = ScoutifyClient.tokenManager.getToken()
+            Log.i("tokenizer", "token is" + token)
 
             _loginState.value = LoginStatus(
-                acToken = token.ifEmpty { null }
+                acToken = token?.ifEmpty { null }
             )
         }
     }
