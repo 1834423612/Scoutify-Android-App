@@ -5,6 +5,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose") // Compose compiler plugin
+    id("kotlin-parcelize")
     alias(libs.plugins.sqldelight) // Apply the plugin
 }
 
@@ -71,7 +72,9 @@ sqldelight {
 }
 
 dependencies {
-
+    implementation(libs.androidx.compose.adaptive)
+    implementation(libs.androidx.compose.adaptive.layout)
+    implementation(libs.androidx.compose.adaptive.navigation.v130alpha08)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
