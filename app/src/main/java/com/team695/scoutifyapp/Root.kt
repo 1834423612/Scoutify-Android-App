@@ -23,6 +23,7 @@ import com.team695.scoutifyapp.data.api.service.MatchService
 import com.team695.scoutifyapp.navigation.AppNav
 import com.team695.scoutifyapp.ui.components.NavRail
 import com.team695.scoutifyapp.data.api.service.TaskService
+import com.team695.scoutifyapp.data.repository.UserRepository
 //import com.team695.scoutifyapp.ui.theme.*
 import com.team695.scoutifyapp.db.AppDatabase
 import com.team695.scoutifyapp.ui.theme.Background
@@ -33,7 +34,7 @@ import kotlin.math.log
 fun Root(
     taskService: TaskService,
     matchService: MatchService,
-    loginService: LoginService
+    userRepository: UserRepository
 ) {
     val context = LocalContext.current
 
@@ -117,7 +118,7 @@ fun Root(
                         navController = navController,
                         taskService = taskService,
                         matchService = matchService,
-                        loginService = loginService,
+                        userRepository = userRepository,
                     )
                 }
             }
@@ -125,12 +126,15 @@ fun Root(
     }
 }
 
+/*
+TODO: How to add db?
+
 @Preview(showBackground = true, widthDp = 1280, heightDp = 800)
 @Composable
 fun RootPreview() {
     val taskService = TaskService()
     val matchService = ScoutifyClient.matchService
-    val loginService = CasdoorClient.loginService
+    val user = CasdoorClient.loginService
 
     ScoutifyTheme {
         Root(
@@ -140,3 +144,4 @@ fun RootPreview() {
         )
     }
 }
+ */

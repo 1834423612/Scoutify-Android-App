@@ -66,7 +66,7 @@ fun LoginScreen(
 
     println("DEVICE ID: ${LocalContext.current.deviceId}")
     val loginState by loginViewModel.loginState.collectAsState()
-    var username by remember { mutableStateOf("") }
+    val userInfo by loginViewModel.userState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
 
     if (loginState.acToken == null) {
@@ -78,17 +78,10 @@ fun LoginScreen(
 
                     CoroutineScope(Dispatchers.IO).launch {
                         try {
-                            // 1. MANUAL TOKEN EXCHANGE
                             loginViewModel.tokenExchange(code)
                             Log.d(TAG, "✅ Token Received: ${loginState.acToken}")
 
-                            // 2. MANUAL USER INFO FETCH (The Fix)
-                            val userInfo = loginViewModel.getUserInfo()
-
-                            withContext(Dispatchers.Main) {
-                                username = userInfo.name!!
-                                Log.d(TAG, "✅ Login Complete. User: $username")
-                            }
+                           loginViewModel.getUserInfo()
                         } catch (e: Exception) {
                             Log.e(TAG, "❌ Login Error", e)
                         }
@@ -110,8 +103,8 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (loginState.acToken != null) {
-                if (username.isNotEmpty()) {
-                    Text(text = "Welcome, $username!", color = Color.Green)
+                if (userInfo?.name != null) {
+                    Text(text = "Welcome, ${userInfo?.name}!", color = Color.Green)
                     Text(text = "Logged in successfully", color = Color.Green)
 
                     Button(onClick = {
@@ -127,12 +120,7 @@ fun LoginScreen(
                         println("TOKEN: ${ScoutifyClient.tokenManager.getToken()}")
                         navController.navigate("home")
                     }
-                } else {
-                    LaunchedEffect(loginState.acToken) {
-                        username = loginViewModel.getUserInfo().name!!
-                    }
                 }
-                // call coroutine here
 
             } else {
                 Button(onClick = {
