@@ -65,7 +65,6 @@ class LoginViewModel(private val repository: UserRepository): ViewModel() {
     init {
         viewModelScope.launch {
             val token: String? = ScoutifyClient.tokenManager.getToken()
-            Log.i("tokenizer", "token is" + token)
 
             _loginState.value = LoginStatus(
                 acToken = token?.ifEmpty { null }
