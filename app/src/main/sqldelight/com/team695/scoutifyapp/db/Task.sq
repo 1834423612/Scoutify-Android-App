@@ -1,11 +1,11 @@
 -- 1. Define the Table
 CREATE TABLE taskEntity (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    type TEXT NOT NULL,          -- We will store TaskType.name here
+    type TEXT NOT NULL,
     matchNum INTEGER NOT NULL,
     teamNum TEXT NOT NULL,
-    time TEXT NOT NULL,
-    progress REAL NOT NULL,      -- REAL = Float/Double
+    time INTEGER NOT NULL,       -- Stored as Long (Unix Milliseconds)
+    progress REAL NOT NULL,
     isDone INTEGER NOT NULL DEFAULT 0
 );
 
@@ -34,10 +34,10 @@ WHERE id = ?;
 clearAllTasks:
 DELETE FROM taskEntity;
 
--- 7. Dummy Data (Updated for new columns)
+-- 7. Dummy Data (Using Milliseconds)
 seedData:
 INSERT INTO taskEntity (type, matchNum, teamNum, time, progress, isDone)
 VALUES
-('SCOUTING', 42, '254', '02:30', 0.5, 0),
-('PIT', 0, '1678', '10:00', 1.0, 1),
-('SCOUTING', 12, '695', '05:00', 0.0, 0);
+('SCOUTING', 42, '254', 1707840000000, 0.5, 0),  -- Example Timestamps
+('PIT', 0, '1678', 1707843600000, 1.0, 1),
+('SCOUTING', 12, '695', 1707847200000, 0.0, 0);
