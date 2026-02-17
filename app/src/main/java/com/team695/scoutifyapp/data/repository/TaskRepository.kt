@@ -51,7 +51,7 @@ class TaskRepository(
         }
     }
 
-    suspend fun fetchTasks() {
+    suspend fun fetchTasks():  {
         val oldTasks = db.taskQueries.selectAllTasks()
             .executeAsList()
             .map { entity ->

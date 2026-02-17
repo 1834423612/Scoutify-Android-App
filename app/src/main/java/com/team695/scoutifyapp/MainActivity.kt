@@ -10,6 +10,7 @@ import com.team695.scoutifyapp.data.api.service.LoginService
 import com.team695.scoutifyapp.data.api.service.MatchService
 import com.team695.scoutifyapp.ui.theme.ScoutifyTheme
 import com.team695.scoutifyapp.data.api.service.TaskService
+import com.team695.scoutifyapp.data.repository.TaskRepository
 import com.team695.scoutifyapp.data.repository.UserRepository
 import com.team695.scoutifyapp.db.AppDatabase
 import com.team695.scoutifyapp.db.AppDatabase.Companion.invoke
@@ -33,6 +34,7 @@ class MainActivity : ComponentActivity() {
         val matchService: MatchService = ScoutifyClient.matchService
         val loginService: LoginService = CasdoorClient.loginService
         val userRepository = UserRepository(service = loginService, db = db)
+        val taskRepository = TaskRepository(service = taskService, db = db)
 
 
         setContent {
