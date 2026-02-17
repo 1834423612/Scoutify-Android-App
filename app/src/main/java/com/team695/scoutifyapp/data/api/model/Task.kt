@@ -1,5 +1,7 @@
 package com.team695.scoutifyapp.data.api.model
 
+import com.team695.scoutifyapp.db.TaskEntity
+
 data class Task(
     val id: Int,
     val type: TaskType,
@@ -9,3 +11,15 @@ data class Task(
     val progress: Float, // 0.0 to 1.0
     val isDone: Boolean = false,
 )
+
+fun TaskEntity.createTaskFromDb(): Task {
+    return Task(
+        id = this.id.toInt(),
+        type = TaskType.valueOf(this.type),
+        matchNum = this.matchNum.toInt(),
+        teamNum = this.teamNum,
+        time = this.time,
+        progress = this.progress.toFloat(),
+        isDone = this.isDone == 1L
+    )
+}

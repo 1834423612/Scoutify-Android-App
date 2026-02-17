@@ -5,8 +5,6 @@ import com.team695.scoutifyapp.data.api.model.Task
 import com.team695.scoutifyapp.data.api.model.TaskType
 class TaskService(val db: AppDatabase) {
     fun getTasks(): List<Task> {
-        println( db.taskQueries
-            .selectAllTasks().executeAsList())
         return db.taskQueries
             .selectAllTasks()
             .executeAsList()
