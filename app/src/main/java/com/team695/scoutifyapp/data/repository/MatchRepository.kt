@@ -47,14 +47,14 @@ class MatchRepository(
         }
     }
 
-    suspend fun fetchMatches(): Result<Boolean> {
+    suspend fun fetchMatches(): Result<List<Match>> {
         val oldMatches = db.matchQueries.selectAllMatches()
             .executeAsList()
             .map { entity ->
                 entity.createMatchFromDb()
             }
 
-        withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.IO) {
             try {
                 val apiMatches: List<Match> = service.listMatches()
 
@@ -62,14 +62,12 @@ class MatchRepository(
                     updateDbFromMatchList(apiMatches)
                 }
 
-                return@withContext Result.success(true)
+                return@withContext Result.success(apiMatches)
             } catch(e: Exception) {
                 println("Error when trying to fetch matches: $e")
                 updateDbFromMatchList(oldMatches)
                 return@withContext Result.failure(e)
             }
         }
-
-        return Result.failure(Exception())
     }
 }
