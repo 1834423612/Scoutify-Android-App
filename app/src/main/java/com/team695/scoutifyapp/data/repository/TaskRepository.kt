@@ -41,6 +41,7 @@ class TaskRepository(
 
             tasks.forEach {
                 db.taskQueries.insertTask(
+                    id = it.id.toLong(),
                     type = it.type.toString(),
                     matchNum = it.matchNum.toLong(),
                     teamNum = it.teamNum,

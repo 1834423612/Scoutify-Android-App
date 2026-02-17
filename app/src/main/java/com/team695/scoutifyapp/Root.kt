@@ -23,6 +23,7 @@ import com.team695.scoutifyapp.data.api.service.MatchService
 import com.team695.scoutifyapp.navigation.AppNav
 import com.team695.scoutifyapp.ui.components.NavRail
 import com.team695.scoutifyapp.data.api.service.TaskService
+import com.team695.scoutifyapp.data.repository.MatchRepository
 import com.team695.scoutifyapp.data.repository.TaskRepository
 import com.team695.scoutifyapp.data.repository.UserRepository
 //import com.team695.scoutifyapp.ui.theme.*
@@ -34,7 +35,7 @@ import kotlin.math.log
 @Composable
 fun Root(
     taskRepository: TaskRepository,
-    matchService: MatchService,
+    matchRepository: MatchRepository,
     userRepository: UserRepository
 ) {
     val context = LocalContext.current
@@ -118,7 +119,7 @@ fun Root(
                     AppNav(
                         navController = navController,
                         taskRepository = taskRepository,
-                        matchService = matchService,
+                        matchRepository = matchRepository,
                         userRepository = userRepository,
                     )
                 }

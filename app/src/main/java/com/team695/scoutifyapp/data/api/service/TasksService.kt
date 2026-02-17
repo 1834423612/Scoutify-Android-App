@@ -18,6 +18,7 @@ class TaskService(val db: AppDatabase) {
 
     fun insertTask(task: Task) {
         db.taskQueries.insertTask(
+            id = task.id.toLong(),
             type = task.type.toString(),
             matchNum = task.matchNum.toLong(),
             teamNum = task.teamNum,

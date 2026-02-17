@@ -25,5 +25,18 @@ INSERT OR REPLACE INTO matchEntity(
 )
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
+-- dummy data
+seedData:
+INSERT OR REPLACE INTO matchEntity(
+    matchNumber,
+    gameType,
+    time,
+    r1, r2, r3,
+    b1, b2, b3
+)
+VALUES (1, "Q", 0, 9999, 9999, 9999, 9999, 9999, 9999),
+    (2, "Q", 0, 9999, 695, 9999, 9999, 9999, 9999);
+
+
 deleteAllMatches:
 DELETE FROM matchEntity;

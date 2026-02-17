@@ -9,6 +9,7 @@ import com.team695.scoutifyapp.data.api.model.TaskType
 import com.team695.scoutifyapp.data.api.model.User
 import com.team695.scoutifyapp.data.api.service.MatchService
 import com.team695.scoutifyapp.data.api.service.TaskService
+import com.team695.scoutifyapp.data.repository.MatchRepository
 import com.team695.scoutifyapp.data.repository.TaskRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -22,7 +23,9 @@ data class TabState(
 )
 
 class HomeViewModel(
-    private val taskRepository: TaskRepository
+    private val taskRepository: TaskRepository,
+    private val matchRepository: MatchRepository
+
 ): ViewModel() {
     private val _tabState = MutableStateFlow(TabState())
     val tabState: StateFlow<TabState> = _tabState
@@ -34,6 +37,14 @@ class HomeViewModel(
             initialValue = null
         )
     val tasksState: StateFlow<List<Task>?> = _tasksState
+
+    private val _matchState = matchRepository.matches
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
+        )
+    val matchState: StateFlow<List<Match>?> = _matchState
 
 
     init {

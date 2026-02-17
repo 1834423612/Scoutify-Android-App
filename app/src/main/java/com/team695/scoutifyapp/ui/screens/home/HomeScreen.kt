@@ -26,7 +26,7 @@ fun HomeScreen(
             TasksCard(homeViewModel = homeViewModel, onPress = {navController.navigate(route = "data")})
         }
         Box(modifier = Modifier.weight(0.7f)) {
-            MatchSchedule(onCommentClicked = {navController.navigate("comments")})
+            MatchSchedule(homeViewModel = homeViewModel, onCommentClicked = {navController.navigate("comments")})
         }
     }
 }
