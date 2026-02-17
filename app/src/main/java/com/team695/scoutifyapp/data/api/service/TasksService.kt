@@ -3,6 +3,8 @@ package com.team695.scoutifyapp.data.api.service
 import com.team695.scoutifyapp.db.AppDatabase
 import com.team695.scoutifyapp.data.api.model.Task
 import com.team695.scoutifyapp.data.api.model.TaskType
+import com.team695.scoutifyapp.data.api.model.createTaskFromDb
+
 class TaskService(val db: AppDatabase) {
     fun getTasks(): List<Task> {
         return db.taskQueries
@@ -10,22 +12,18 @@ class TaskService(val db: AppDatabase) {
             .executeAsList()
             .map { entity ->
                 println("TASK: ${entity}")
-                Task(
-                    id = entity.id.toInt(),
-                    type = TaskType.SCOUTING,
-                    matchNum = 0,
-                    teamNum = entity.title,
-                    time = "01m",
-                    progress = 1.0f,
-                    isDone = entity.isCompleted == 1L
-                )
+                entity.createTaskFromDb()
             }
     }
 
     fun insertTask(task: Task) {
         db.taskQueries.insertTask(
-            title = task.teamNum,
-            isCompleted = if (task.isDone) 1 else 0
+            type = task.type.toString(),
+            matchNum = task.matchNum.toLong(),
+            teamNum = task.teamNum,
+            time = task.time,
+            progress = task.progress.toDouble(),
+            isDone = if (task.isDone) 1L else 0L
         )
     }
 
