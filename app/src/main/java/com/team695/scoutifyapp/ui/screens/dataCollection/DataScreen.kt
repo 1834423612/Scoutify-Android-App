@@ -54,13 +54,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.team695.scoutifyapp.ui.components.progressBorder
 import com.team695.scoutifyapp.ui.modifier.buttonHighlight
 import com.team695.scoutifyapp.ui.reusables.BackgroundGradient
 import com.team695.scoutifyapp.ui.reusables.ImageBackground
 import com.team695.scoutifyapp.ui.theme.DarkGunmetal
 import com.team695.scoutifyapp.ui.theme.DarkishGunmetal
+import com.team695.scoutifyapp.ui.theme.Deselected
 import com.team695.scoutifyapp.ui.theme.LightGunmetal
+import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.theme.mediumCornerRadius
 import com.team695.scoutifyapp.ui.theme.smallCornerRadius
 import kotlinx.coroutines.launch
@@ -163,7 +166,8 @@ private fun ListContent(
 
             Text(
                 text = "Game Sections",
-                style = MaterialTheme.typography.headlineMedium
+                color = TextPrimary,
+                fontSize = 20.sp,
             )
 
             LazyColumn(
@@ -184,7 +188,7 @@ private fun ListContent(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(45.dp)
+                            .height(60.dp)
                             .progressBorder(progress=section.progress)
                             .background(color = DarkGunmetal, shape = RoundedCornerShape(mediumCornerRadius))
                             .clip(RoundedCornerShape(mediumCornerRadius))
@@ -202,14 +206,15 @@ private fun ListContent(
                                 .fillMaxHeight()
                                 .clip(RoundedCornerShape(smallCornerRadius))
                                 .background(DarkishGunmetal)
-                                .width(80.dp)
+                                .fillMaxWidth()
                                 .buttonHighlight(
                                     corner = smallCornerRadius
                                 )
                         ) {
                             Text(
-                                text = "Pre-Game",
-                                style = MaterialTheme.typography.headlineMedium
+                                text = section.name,
+                                color = TextPrimary,
+                                fontSize = 20.sp,
                             )
                         }
                     }

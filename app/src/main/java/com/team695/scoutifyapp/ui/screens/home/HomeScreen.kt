@@ -20,7 +20,7 @@ fun HomeScreen(
     Row(
         modifier = Modifier
             .fillMaxSize(),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Box(modifier = Modifier.weight(0.3f)) {
             TasksCard(homeViewModel = homeViewModel, onPress = {navController.navigate(route = "data")})

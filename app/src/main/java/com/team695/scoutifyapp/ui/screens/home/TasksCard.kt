@@ -65,7 +65,6 @@ fun TasksCard(
     homeViewModel: HomeViewModel,
     onPress: () -> Unit,
 ) {
-
     val tabState by homeViewModel.tabState.collectAsStateWithLifecycle()
     val tabs = arrayOf("Incomplete", "Complete")
 
@@ -73,16 +72,12 @@ fun TasksCard(
     val incompleteTasks = tasksState?.filter { it -> !it.isDone }
     val completeTasks = tasksState?.filter { it -> it.isDone }
 
-    println("TASKS STATE:$tasksState")
-
-
     Box(
         modifier = Modifier
             .fillMaxHeight()
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
             .border(1.dp, LightGunmetal, RoundedCornerShape(smallCornerRadius))
-
     ) {
         ImageBackground(x = -350f, y = 330f)
         BackgroundGradient()

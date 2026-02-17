@@ -29,7 +29,7 @@ class MainActivity : ComponentActivity() {
         )
 
         val db = AppDatabase(driver)
-        db.taskQueries.seedData()
+        //db.taskQueries.seedData() //to add default data
 
         val taskService = TaskService(db = db)
         val matchService: MatchService = ScoutifyClient.matchService
