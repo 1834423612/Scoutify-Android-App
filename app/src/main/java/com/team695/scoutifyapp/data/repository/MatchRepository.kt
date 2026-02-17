@@ -33,7 +33,7 @@ class MatchRepository(
 
             matches.forEach {
                 db.matchQueries.insertMatch(
-                    time = it.time.toLong(),
+                    time = it.time,
                     matchNumber = it.matchNumber.toLong(),
                     gameType = it.gameType,
                     r1 = it.redAlliance[0].toLong(),
