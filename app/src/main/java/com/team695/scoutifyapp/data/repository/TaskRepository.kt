@@ -51,7 +51,7 @@ class TaskRepository(
         }
     }
 
-    suspend fun fetchTasks():  {
+    suspend fun fetchTasks(): Result<Boolean> {
         val oldTasks = db.taskQueries.selectAllTasks()
             .executeAsList()
             .map { entity ->
@@ -65,10 +65,15 @@ class TaskRepository(
                 if (apiTasks.isNotEmpty()) {
                     updateDbFromTaskList(apiTasks)
                 }
+
+                return@withContext Result.success(true)
             } catch(e: Exception) {
                 println("Error when trying to fetch tasks: $e")
                 updateDbFromTaskList(oldTasks)
+                return@withContext Result.failure(e)
             }
         }
+
+        return Result.failure(Exception())
     }
 }
