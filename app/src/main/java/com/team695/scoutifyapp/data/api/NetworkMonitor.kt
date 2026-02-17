@@ -11,10 +11,13 @@ import kotlinx.coroutines.flow.StateFlow
 
 
 // IMPLEMENTATION OF NetworkService
+// Please keep in mind that the NetworkMonitor MUST be actively monitoring
+// by calling NetworkMonitor.startMonitoring() in order for NetworkMonitor.isConnected
+// to return the correct network status
 class NetworkMonitor(private val context: Context) : NetworkService {
     private val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
 
-    private val _isConnected = MutableStateFlow(false)
+    private val _isConnected = MutableStateFlow<Boolean>(false)
     override val isConnected: StateFlow<Boolean> = _isConnected
 
     // listener for when network has changed
@@ -41,7 +44,7 @@ class NetworkMonitor(private val context: Context) : NetworkService {
             .build()
 
         // register the listener
-        connectivityManager.requestNetwork(networkRequest, networkCallback)
+        connectivityManager.registerNetworkCallback(networkRequest, networkCallback)
     }
 
     override fun stopMonitoring() {
