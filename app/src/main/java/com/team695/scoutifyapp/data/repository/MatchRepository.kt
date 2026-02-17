@@ -56,15 +56,15 @@ class MatchRepository(
 
         withContext(Dispatchers.IO) {
             try {
-                val apiTasks: List<Match> = service.listMatches()
+                val apiMatches: List<Match> = service.listMatches()
 
-                if (apiTasks.isNotEmpty()) {
-                    updateDbFromMatchList(apiTasks)
+                if (apiMatches.isNotEmpty()) {
+                    updateDbFromMatchList(apiMatches)
                 }
 
                 return@withContext Result.success(true)
             } catch(e: Exception) {
-                println("Error when trying to fetch tasks: $e")
+                println("Error when trying to fetch matches: $e")
                 updateDbFromMatchList(oldMatches)
                 return@withContext Result.failure(e)
             }
