@@ -52,14 +52,14 @@ class TaskRepository(
         }
     }
 
-    suspend fun fetchTasks(): Result<Boolean> {
+    suspend fun fetchTasks(): Result<List<Task>> {
         val oldTasks = db.taskQueries.selectAllTasks()
             .executeAsList()
             .map { entity ->
                 entity.createTaskFromDb()
             }
 
-        withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.IO) {
             try {
                 val apiTasks: List<Task> = service.getTasks()
 
@@ -67,14 +67,12 @@ class TaskRepository(
                     updateDbFromTaskList(apiTasks)
                 }
 
-                return@withContext Result.success(true)
+                return@withContext Result.success(apiTasks)
             } catch(e: Exception) {
                 println("Error when trying to fetch tasks: $e")
                 updateDbFromTaskList(oldTasks)
                 return@withContext Result.failure(e)
             }
         }
-
-        return Result.failure(Exception())
     }
 }
