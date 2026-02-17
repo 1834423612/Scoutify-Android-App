@@ -29,6 +29,7 @@ class MainActivity : ComponentActivity() {
         )
 
         val db = AppDatabase(driver)
+        db.taskQueries.seedData()
 
         val taskService = TaskService(db = db)
         val matchService: MatchService = ScoutifyClient.matchService
@@ -40,7 +41,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             ScoutifyTheme {
                 Root(
-                    taskService = taskService,
+                    taskRepository = taskRepository,
                     matchService = matchService,
                     userRepository
                 )

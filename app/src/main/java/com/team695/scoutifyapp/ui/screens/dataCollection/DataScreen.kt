@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
@@ -58,6 +59,7 @@ import com.team695.scoutifyapp.ui.modifier.buttonHighlight
 import com.team695.scoutifyapp.ui.reusables.BackgroundGradient
 import com.team695.scoutifyapp.ui.reusables.ImageBackground
 import com.team695.scoutifyapp.ui.theme.DarkGunmetal
+import com.team695.scoutifyapp.ui.theme.DarkishGunmetal
 import com.team695.scoutifyapp.ui.theme.LightGunmetal
 import com.team695.scoutifyapp.ui.theme.mediumCornerRadius
 import com.team695.scoutifyapp.ui.theme.smallCornerRadius
@@ -193,10 +195,23 @@ private fun ListContent(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(
-                            text = "List Content",
-                            style = MaterialTheme.typography.headlineMedium
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .clip(RoundedCornerShape(smallCornerRadius))
+                                .background(DarkishGunmetal)
+                                .width(80.dp)
+                                .buttonHighlight(
+                                    corner = smallCornerRadius
+                                )
+                        ) {
+                            Text(
+                                text = "Pre-Game",
+                                style = MaterialTheme.typography.headlineMedium
+                            )
+                        }
                     }
                 }
             }
