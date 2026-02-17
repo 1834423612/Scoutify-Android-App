@@ -23,6 +23,6 @@ data class Match(
     @SerializedName(value="b3_team_number")
     private val b3: Int,
 ) {
-    val blueAlliance: List<Int> = listOf(r1, r2,r3)
-    val redAlliance: List<Int> = listOf(b1, b2, b3)
+    val redAlliance: List<Int> = listOf(r1, r2, r3)
+    val blueAlliance: List<Int> = listOf(b1, b2, b3)
 }

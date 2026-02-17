@@ -5,6 +5,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose") // Compose compiler plugin
+    id("kotlin-parcelize")
     alias(libs.plugins.sqldelight) // Apply the plugin
 }
 
@@ -29,11 +30,16 @@ configure<ApplicationExtension> {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        buildConfigField("String", "CASDOOR_ENDPOINT", "\"${localProperties["casdoor_endpoint"]}\"")
-        buildConfigField("String", "CASDOOR_CLIENT_ID", "\"${localProperties["casdoor_client_id"]}\"")
-        buildConfigField("String", "CASDOOR_CLIENT_SECRET", "\"${localProperties["casdoor_client_secret"]}\"")
-        buildConfigField("String", "CASDOOR_REDIRECT_URI", "\"${localProperties["casdoor_redirect_uri"]}\"")
-        buildConfigField("String", "CASDOOR_APP_NAME", "\"${localProperties["casdoor_app_name"]}\"")
+        fun requireSecret(key: String): String =
+            localProperties[key]?.toString()
+                ?: if (secretsPropertiesFile.exists()) error("Missing key '$key' in secrets.properties")
+                   else ""   // allow local/CI builds without secrets
+
+        buildConfigField("String", "CASDOOR_ENDPOINT", "\"${requireSecret("casdoor_endpoint")}\"")
+        buildConfigField("String", "CASDOOR_CLIENT_ID", "\"${requireSecret("casdoor_client_id")}\"")
+        buildConfigField("String", "CASDOOR_CLIENT_SECRET", "\"${requireSecret("casdoor_client_secret")}\"")
+        buildConfigField("String", "CASDOOR_REDIRECT_URI", "\"${requireSecret("casdoor_redirect_uri")}\"")
+        buildConfigField("String", "CASDOOR_APP_NAME", "\"${requireSecret("casdoor_app_name")}\"")
 
         proguardFiles()
     }
@@ -66,7 +72,9 @@ sqldelight {
 }
 
 dependencies {
-
+    implementation(libs.androidx.compose.adaptive)
+    implementation(libs.androidx.compose.adaptive.layout)
+    implementation(libs.androidx.compose.adaptive.navigation.v130alpha08)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -81,7 +89,7 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.navigation.compose)
-    implementation(libs.accompanist.systemuicontroller) // 控制状态栏颜色
+    implementation(libs.accompanist.systemuicontroller) // Control status bar color
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

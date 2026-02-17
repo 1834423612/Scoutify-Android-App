@@ -33,11 +33,15 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.team695.scoutifyapp.R
 import com.team695.scoutifyapp.data.api.model.Task
+import com.team695.scoutifyapp.data.api.model.TaskType
+import com.team695.scoutifyapp.ui.components.progressBorder
 import com.team695.scoutifyapp.ui.reusables.Pressable
 import com.team695.scoutifyapp.ui.reusables.BackgroundGradient
 import com.team695.scoutifyapp.ui.reusables.ImageBackground
@@ -61,16 +65,19 @@ fun TasksCard(
     homeViewModel: HomeViewModel,
     onPress: () -> Unit,
 ) {
-
-    val uiState by homeViewModel.uiState.collectAsStateWithLifecycle()
+    val tabState by homeViewModel.tabState.collectAsStateWithLifecycle()
     val tabs = arrayOf("Incomplete", "Complete")
+
+    val tasksState by homeViewModel.tasksState.collectAsStateWithLifecycle()
+    val incompleteTasks = tasksState?.filter { it -> !it.isDone }
+    val completeTasks = tasksState?.filter { it -> it.isDone }
 
     Box(
         modifier = Modifier
             .fillMaxHeight()
+            .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
             .border(1.dp, LightGunmetal, RoundedCornerShape(smallCornerRadius))
-
     ) {
         ImageBackground(x = -350f, y = 330f)
         BackgroundGradient()
@@ -89,7 +96,7 @@ fun TasksCard(
                     .background(Background)
             ) {
                 PrimaryTabRow(
-                    selectedTabIndex = uiState.selectedTab,
+                    selectedTabIndex = tabState.selectedTab,
                     containerColor = Color.Transparent,
                     indicator = {},
                     divider = {},
@@ -99,9 +106,9 @@ fun TasksCard(
                 ) {
                     tabs.forEachIndexed { index, tabTitle ->
                         Tab(
-                            selected = uiState.selectedTab == index,
+                            selected = tabState.selectedTab == index,
                             onClick = {homeViewModel.selectTab(index = index)},
-                            modifier = if (uiState.selectedTab == index) Modifier
+                            modifier = if (tabState.selectedTab == index) Modifier
                                 .background(
                                     Gunmetal,
                                     shape = RoundedCornerShape(smallCornerRadius)
@@ -123,7 +130,7 @@ fun TasksCard(
                                             translationX = -10f
                                             translationY = -10f
                                         }
-                                ) { Text(text=if(index==0) uiState.incompleteTasks.size.toString() else uiState.completeTasks.size.toString() , color = BadgeContent) }
+                                ) { Text(text=if(index==0) incompleteTasks?.size.toString() else completeTasks?.size.toString() , color = BadgeContent) }
                             }
                         }
                     }
@@ -133,56 +140,38 @@ fun TasksCard(
             }
             Spacer(modifier = Modifier.height(16.dp))
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                val tasks = if (uiState.selectedTab == 0) uiState.incompleteTasks else uiState.completeTasks
-                items(tasks) { task ->
-                    TaskItem(task = task, onPress = onPress)
+                val tasks = if (tabState.selectedTab == 0) incompleteTasks else completeTasks
+                if(tasks != null) {
+                    items(tasks) { task ->
+                        TaskItem(task = task, onPress = onPress)
+                    }
                 }
             }
         }
     }
 }
 
-fun Modifier.taskBorder(
-    progress: Float
-): Modifier {
-    if(progress == 1f) {
-        return this.then(
-            other = Modifier
-                .border(
-                    width = 2f.dp,
-                    color = ProgressGreen,
-                    shape = RoundedCornerShape(mediumCornerRadius))
-        )
-    }
-    else if (progress == 0f) {
-        return this.then(
-            other = Modifier
-                .border(
-                    width = 2f.dp,
-                    color = DarkishGunmetal,
-                    shape = RoundedCornerShape(mediumCornerRadius))
-        )
-    }
-    return this.then(
-        other = Modifier
-            .border(
-                width = 2f.dp,
-                brush = borderGradient(progress),
-                shape = RoundedCornerShape(mediumCornerRadius))
-    )
-}
-
 fun borderGradient(progress: Float): Brush {
+    val before = (progress - 0.1f).coerceIn(0f, 1f)
+    val after = (progress + 0.1f).coerceIn(0f, 1f)
+
     return Brush.linearGradient(
         colorStops = arrayOf(
             0f to ProgressGreen,
-            (progress-0.1f) to ProgressGreen,
-            (progress+0.1f) to DarkGunmetal,
+            before to ProgressGreen,
+            after to DarkGunmetal,
             1f to DarkishGunmetal,
         )
     )
 }
 
+@Preview(showBackground = true, widthDp = 200)
+@Composable
+fun TaskItemPreview() {
+    val dummyTask: Task = Task(id=0, type = TaskType.SCOUTING, matchNum = 0, teamNum = "test", time = 0L, progress = 0f, isDone = false)
+
+    TaskItem(task = dummyTask, onPress = {})
+}
 
 @Composable
 fun TaskItem(task: Task, onPress: () -> Unit) {
@@ -190,7 +179,7 @@ fun TaskItem(task: Task, onPress: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .height(45.dp)
-            .taskBorder(progress=task.progress)
+            .progressBorder(progress=task.progress)
             .background(color = DarkGunmetal, shape = RoundedCornerShape(mediumCornerRadius))
             .clip(RoundedCornerShape(mediumCornerRadius))
             .buttonHighlight(
@@ -211,7 +200,7 @@ fun TaskItem(task: Task, onPress: () -> Unit) {
                 .buttonHighlight(
                     corner = smallCornerRadius
                 )
-            ) {
+        ) {
             Image(
                 painter = painterResource(id = R.drawable.edit),
                 colorFilter = ColorFilter.tint(Deselected),
@@ -254,7 +243,7 @@ fun TaskItem(task: Task, onPress: () -> Unit) {
                     .size(16.dp)
             )
             Spacer(modifier = Modifier.width(10.dp))
-            Text(task.time, color = Deselected)
+            Text(task.time.toString(), color = Deselected)
         }
 
         Pressable (

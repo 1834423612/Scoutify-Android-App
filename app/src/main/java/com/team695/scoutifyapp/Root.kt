@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -22,6 +23,8 @@ import com.team695.scoutifyapp.data.api.service.MatchService
 import com.team695.scoutifyapp.navigation.AppNav
 import com.team695.scoutifyapp.ui.components.NavRail
 import com.team695.scoutifyapp.data.api.service.TaskService
+import com.team695.scoutifyapp.data.repository.TaskRepository
+import com.team695.scoutifyapp.data.repository.UserRepository
 //import com.team695.scoutifyapp.ui.theme.*
 import com.team695.scoutifyapp.db.AppDatabase
 import com.team695.scoutifyapp.ui.theme.Background
@@ -30,23 +33,18 @@ import kotlin.math.log
 
 @Composable
 fun Root(
-    taskService: TaskService,
+    taskRepository: TaskRepository,
     matchService: MatchService,
-    loginService: LoginService
+    userRepository: UserRepository
 ) {
     val context = LocalContext.current
 
-
+    /*
     LaunchedEffect(Unit) {
         // 1. Setup DB Driver (Just for this test)
-        val driver = AndroidSqliteDriver(
-            schema = AppDatabase.Schema,
-            context = context,
-            name = "scoutify_test.db" // Using a test name to avoid messing up real data
-        )
-        val db = AppDatabase(driver)
-        val queries = db.taskQueries
-        val queries2=db.pitscoutQueries
+
+        val queries = taskService.db.taskQueries
+        val queries2= taskService.db.pitscoutQueries
         println("--- SQL TEST PitScout START ---")
 
         println(queries2)
@@ -87,6 +85,7 @@ fun Root(
 
         println("--- SQL TEST END ---")
     }
+     */
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -97,8 +96,8 @@ fun Root(
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
 
             NavRail(
@@ -118,9 +117,9 @@ fun Root(
                 Box(modifier = Modifier.weight(0.67f)) {
                     AppNav(
                         navController = navController,
-                        taskService = taskService,
+                        taskRepository = taskRepository,
                         matchService = matchService,
-                        loginService = loginService,
+                        userRepository = userRepository,
                     )
                 }
             }
@@ -128,12 +127,15 @@ fun Root(
     }
 }
 
+/*
+TODO: How to add db?
+
 @Preview(showBackground = true, widthDp = 1280, heightDp = 800)
 @Composable
 fun RootPreview() {
     val taskService = TaskService()
     val matchService = ScoutifyClient.matchService
-    val loginService = CasdoorClient.loginService
+    val user = CasdoorClient.loginService
 
     ScoutifyTheme {
         Root(
@@ -143,3 +145,4 @@ fun RootPreview() {
         )
     }
 }
+ */

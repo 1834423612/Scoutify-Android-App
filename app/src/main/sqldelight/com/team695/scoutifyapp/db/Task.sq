@@ -1,9 +1,12 @@
 -- 1. Define the Table
--- Removed "AS Boolean". Now it will generate as a 'Long' in Kotlin.
 CREATE TABLE taskEntity (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    isCompleted INTEGER NOT NULL DEFAULT 0
+    type TEXT NOT NULL,
+    matchNum INTEGER NOT NULL,
+    teamNum TEXT NOT NULL,
+    time INTEGER NOT NULL,       -- Stored as Long (Unix Milliseconds)
+    progress REAL NOT NULL,
+    isDone INTEGER NOT NULL DEFAULT 0
 );
 
 -- 2. Select All
@@ -11,16 +14,15 @@ selectAllTasks:
 SELECT *
 FROM taskEntity;
 
--- 3. Insert (Use 0 or 1)
+-- 3. Insert
 insertTask:
-INSERT INTO taskEntity(title, isCompleted)
-VALUES (?, ?);
+INSERT INTO taskEntity(type, matchNum, teamNum, time, progress, isDone)
+VALUES (?, ?, ?, ?, ?, ?);
 
--- 4. Toggle/Update
--- We pass the new 0 or 1 integer directly
+-- 4. Toggle/Update isDone
 updateCompletion:
 UPDATE taskEntity
-SET isCompleted = ?
+SET isDone = ?
 WHERE id = ?;
 
 -- 5. Delete
@@ -28,12 +30,14 @@ deleteTaskById:
 DELETE FROM taskEntity
 WHERE id = ?;
 
--- 6. Dummy Data
+-- 6. Clear All
+clearAllTasks:
+DELETE FROM taskEntity;
+
+-- 7. Dummy Data (Using Milliseconds)
 seedData:
-INSERT INTO taskEntity (title, isCompleted)
+INSERT INTO taskEntity (type, matchNum, teamNum, time, progress, isDone)
 VALUES
-('Scout Match 42', 0),
-('Fix Bumper Fabric', 1),
-('Charge Battery A', 0),
-('Upload Pit Data', 0),
-('Buy Energy Drinks', 1);
+('SCOUTING', 42, '254', 1707840000000, 0.5, 0),  -- Example Timestamps
+('PIT', 0, '1678', 1707843600000, 1.0, 1),
+('SCOUTING', 12, '695', 1707847200000, 0.0, 0);

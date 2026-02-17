@@ -10,21 +10,28 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -35,6 +42,7 @@ import com.team695.scoutifyapp.data.api.ScoutifyClient
 import com.team695.scoutifyapp.data.api.service.LoginService
 import com.team695.scoutifyapp.ui.viewModels.LoginViewModel
 import com.team695.scoutifyapp.ui.viewModels.ViewModelFactory
+import com.team695.scoutifyapp.ui.extensions.deviceId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -56,44 +64,38 @@ fun LoginScreen(
     loginViewModel: LoginViewModel,
 ) {
 
+    println("DEVICE ID: ${LocalContext.current.deviceId}")
     val loginState by loginViewModel.loginState.collectAsState()
-    var username by remember { mutableStateOf("") }
+    val userInfo by loginViewModel.userState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
 
-    if (loginState.acToken != null) {
-        runBlocking {
-            val userInfo = loginViewModel.getUserInfo()
+    if (loginState.acToken == null) {
+        if (loginState.loginUrl != null) {
+            CasdoorWebView(
+                url = loginState.loginUrl!!,
+                onCodeReceived = { code ->
+                    Log.d(TAG, "🚀 Auth Code Received: $code")
 
-            username = userInfo.name!!
-            Log.d(TAG, "✅ Login Complete. User: $username")
-        }
-    }
+                    CoroutineScope(Dispatchers.IO).launch {
+                        try {
+                            loginViewModel.tokenExchange(code)
+                            Log.d(TAG, "✅ Token Received: ${loginState.acToken}")
 
-    if (loginState.loginUrl != null) {
-        CasdoorWebView(
-            url = loginState.loginUrl!!,
-            onCodeReceived = { code ->
-                Log.d(TAG, "🚀 Auth Code Received: $code")
-
-                CoroutineScope(Dispatchers.IO).launch {
-                    try {
-                        // 1. MANUAL TOKEN EXCHANGE
-                        loginViewModel.tokenExchange(code)
-                        Log.d(TAG, "✅ Token Received: ${loginState.acToken}")
-
-                        // 2. MANUAL USER INFO FETCH (The Fix)
-                        val userInfo = loginViewModel.getUserInfo()
-
-                        withContext(Dispatchers.Main) {
-                            username = userInfo.name!!
-                            Log.d(TAG, "✅ Login Complete. User: $username")
+                           loginViewModel.getUserInfo()
+                        } catch (e: Exception) {
+                            Log.e(TAG, "❌ Login Error", e)
                         }
-                    } catch (e: Exception) {
-                        Log.e(TAG, "❌ Login Error", e)
                     }
-                }
-            },
-            onNavigationBack = { }
-        )
+                },
+                onNavigationBack = { }
+            )
+        } else {
+            Button(onClick = {
+                loginViewModel.generateLoginURL()
+            }) {
+                Text(text = "Login with Casdoor")
+            }
+        }
     } else {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -101,30 +103,32 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             if (loginState.acToken != null) {
-                Text(text = "Welcome, $username!")
-                Text(text = "Logged in successfully", color = Color.Green)
-                // call coroutine here
-                LaunchedEffect(Unit) {
-                    delay(500)
-                    println("TOKEN: ${ScoutifyClient.tokenManager.getToken()}")
-                    navController.navigate("home")
+                if (userInfo?.name != null) {
+                    Text(text = "Welcome, ${userInfo?.name}!", color = Color.Green)
+                    Text(text = "Logged in successfully", color = Color.Green)
+
+                    Button(onClick = {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            loginViewModel.logout()
+                        }
+                    }) {
+                        Text(text = "Log out")
+                    }
+
+                    LaunchedEffect(loginState.verifier) {
+                        delay(3000)
+                        println("TOKEN: ${ScoutifyClient.tokenManager.getToken()}")
+                        navController.navigate("home")
+                    }
                 }
-            }
 
-
-            Button(onClick = {
-                if (loginState.verifier == null) {
-                    // 1. Generate PKCE
+            } else {
+                Button(onClick = {
                     loginViewModel.generateLoginURL()
-                } else {
-                    // Logout
-                    loginViewModel.logout()
-                    username = ""
+                }) {
+                    Text(text = "Login with Casdoor")
                 }
-            }) {
-                Text(text = if (loginState.acToken != null) "Logout" else "Login with Casdoor")
             }
-
         }
     }
 }
