@@ -39,7 +39,6 @@ fun Root(
     matchRepository: MatchRepository,
     userRepository: UserRepository,
     gameDetailRepository: GameDetailRepository,
-    database: AppDatabase
 ) {
     val context = LocalContext.current
 
@@ -125,7 +124,6 @@ fun Root(
                         matchRepository = matchRepository,
                         userRepository = userRepository,
                         gameDetailRepository = gameDetailRepository,
-                        database = database
                     )
                 }
             }

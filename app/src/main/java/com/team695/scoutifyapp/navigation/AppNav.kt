@@ -34,7 +34,6 @@ fun AppNav(
     matchRepository: MatchRepository,
     userRepository: UserRepository,
     gameDetailRepository: GameDetailRepository,
-    database: AppDatabase
 ) {
     val owner: ViewModelStoreOwner = LocalViewModelStoreOwner.current
         ?: throw IllegalStateException("Root must be attached to a ViewModelStoreOwner")
@@ -56,7 +55,6 @@ fun AppNav(
                 viewModelStoreOwner = owner,
                 factory = ViewModelFactory { DataViewModel(
                     repository = gameDetailRepository,
-                    db = database
                 ) }
             )
 

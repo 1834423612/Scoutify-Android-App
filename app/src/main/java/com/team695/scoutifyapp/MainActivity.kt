@@ -94,7 +94,6 @@ class MainActivity : ComponentActivity() {
                     matchRepository = matchRepository,
                     userRepository = userRepository,
                     gameDetailRepository = gameDetailRepository,
-                    database = db
                 )
             }
         }
