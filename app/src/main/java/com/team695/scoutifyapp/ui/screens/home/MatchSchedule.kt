@@ -45,7 +45,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.team695.scoutifyapp.R
+import com.team695.scoutifyapp.data.api.model.Match
 import com.team695.scoutifyapp.ui.reusables.Pressable
 import com.team695.scoutifyapp.ui.reusables.BackgroundGradient
 import com.team695.scoutifyapp.ui.reusables.ImageBackground
@@ -65,45 +67,16 @@ import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.theme.TextSecondary
 import com.team695.scoutifyapp.ui.theme.mediumCornerRadius
 import com.team695.scoutifyapp.ui.theme.smallCornerRadius
-
-data class Match(
-    val matchNum: String,
-    val time: String,
-    val red1: String,
-    val red2: String,
-    val red3: String,
-    val blue1: String,
-    val blue2: String,
-    val blue3: String,
-    val isSpecial: Boolean,
-)
+import com.team695.scoutifyapp.ui.viewModels.HomeViewModel
+import com.team695.scoutifyapp.utility.displayTime
 
 @Composable
-fun MatchSchedule(modifier: Modifier = Modifier, onCommentClicked: () -> Unit) {
+fun MatchSchedule(homeViewModel: HomeViewModel, modifier: Modifier = Modifier, onCommentClicked: () -> Unit) {
     var searchQuery: String by remember { mutableStateOf("") }
+    val matchState by homeViewModel.matchState.collectAsStateWithLifecycle()
 
-    val allMatches = remember {
-        listOf(
-            Match("Q1", "9:00AM", "9999", "9999", "9999", "9999", "9999", "9999", false),
-            Match("Q3", "9:14AM", "9999", "695", "9999", "9999", "9999", "9999", true),
-            Match("Q3", "9:14AM", "9999", "9999", "9999", "9999", "9999", "9999", false),
-            Match("Q4", "9:21AM", "9999", "4211", "9999", "9999", "9999", "9999", false),
-            Match("Q5", "9:28AM", "9999", "9999", "9999", "1787", "9999", "9999", false),
-            Match("Q6", "9:35AM", "9999", "9999", "9999", "9999", "9999", "9999", false),
-            Match("Q7", "9:42AM", "9999", "9999", "9999", "9999", "254", "9999", false),
-            Match("Q7", "9:42AM", "9999", "9999", "9999", "9999", "254", "9999", false),
-            Match("Q6", "9:35AM", "9999", "9999", "9999", "9999", "9999", "9999", false),
-        )
-    }
-
-    val filteredMatches = allMatches.filter { match ->
-        searchQuery.isBlank() ||
-                match.red1.contains(searchQuery, ignoreCase = true) ||
-                match.red2.contains(searchQuery, ignoreCase = true) ||
-                match.red3.contains(searchQuery, ignoreCase = true) ||
-                match.blue1.contains(searchQuery, ignoreCase = true) ||
-                match.blue2.contains(searchQuery, ignoreCase = true) ||
-                match.blue3.contains(searchQuery, ignoreCase = true)
+    val filteredMatches = matchState?.filter { m ->
+        searchQuery.isBlank() || m.redAlliance.any{it.toString().contains(searchQuery)} || m.blueAlliance.any{it.toString().contains(searchQuery) }
     }
 
     Box(
@@ -235,19 +208,17 @@ fun MatchSchedule(modifier: Modifier = Modifier, onCommentClicked: () -> Unit) {
                 modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(smallCornerRadius)
             ) {
-                items(filteredMatches) {
-                    MatchItem(
-                        matchNum = it.matchNum,
-                        time = it.time,
-                        red1 = it.red1,
-                        red2 = it.red2,
-                        red3 = it.red3,
-                        blue1 = it.blue1,
-                        blue2 = it.blue2,
-                        blue3 = it.blue3,
-                        isSpecial = it.isSpecial,
-                        onCommentClicked = onCommentClicked
-                    )
+                if(filteredMatches != null) {
+                    items(filteredMatches) {
+                        MatchItem(
+                            matchNum = it.matchNumber,
+                            time = it.time,
+                            redAlliance = it.redAlliance,
+                            blueAlliance = it.blueAlliance,
+                            showHighlight = showMatchHighlight(it),
+                            onCommentClicked = onCommentClicked
+                        )
+                    }
                 }
             }
         }
@@ -280,18 +251,14 @@ fun TeamNumber(number: String) {
 
 @Composable
 fun MatchItem(
-    matchNum: String,
-    time: String,
-    red1: String,
-    red2: String,
-    red3: String,
-    blue1: String,
-    blue2: String,
-    blue3: String,
-    isSpecial: Boolean,
+    matchNum: Int,
+    time: Long,
+    redAlliance: List<Int>,
+    blueAlliance: List<Int>,
+    showHighlight: Boolean,
     onCommentClicked: () -> Unit
 ) {
-    val borderColor = if (isSpecial) Accent else Border
+    val borderColor = if (showHighlight) Accent else Border
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -317,7 +284,7 @@ fun MatchItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
         ) {
-            Text(matchNum, color = Deselected, fontSize = 16.sp)
+            Text(matchNum.toString(), color = Deselected, fontSize = 16.sp)
             Spacer(modifier = Modifier.width(8.dp))
             Image(
                 painter = painterResource(id = R.drawable.clock),
@@ -326,7 +293,7 @@ fun MatchItem(
                 modifier = Modifier.size(17.dp)
             )
             Spacer(modifier = Modifier.width(4.dp))
-            Text(time, color = Deselected, fontSize = 16.sp)
+            Text(displayTime(time), color = Deselected, fontSize = 16.sp)
         }
 
 
@@ -338,9 +305,9 @@ fun MatchItem(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            TeamNumber(red1)
-            TeamNumber(red2)
-            TeamNumber(red3)
+            for (t in redAlliance) {
+                TeamNumber(t.toString())
+            }
         }
 
         Box(
@@ -367,9 +334,9 @@ fun MatchItem(
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            TeamNumber(blue1)
-            TeamNumber(blue2)
-            TeamNumber(blue3)
+            for (t in blueAlliance) {
+                TeamNumber(t.toString())
+            }
         }
 
 
@@ -397,4 +364,8 @@ fun MatchItem(
             )
         }
     }
+}
+
+fun showMatchHighlight(m: Match): Boolean {
+    return m.redAlliance.any{it == 695} || m.blueAlliance.any{it == 695}
 }

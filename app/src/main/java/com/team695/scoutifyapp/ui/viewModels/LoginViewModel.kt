@@ -28,28 +28,6 @@ import org.json.JSONObject
 import java.security.MessageDigest
 import java.security.SecureRandom
 
-data class LoginStatus(
-    val verifier: String? = null,
-    val error: String? = null,
-    val acToken: String? = null,
-    val loginUrl: String? = null,
-)
-
-fun generateCodeVerifier(): String {
-    val sr = SecureRandom()
-    val code = ByteArray(32)
-    sr.nextBytes(code)
-    return Base64.encodeToString(code, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
-}
-
-fun generateCodeChallenge(verifier: String): String {
-    val bytes = verifier.toByteArray(Charsets.US_ASCII)
-    val md = MessageDigest.getInstance("SHA-256")
-    md.update(bytes, 0, bytes.size)
-    val digest = md.digest()
-    return Base64.encodeToString(digest, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
-}
-
 class LoginViewModel(private val repository: UserRepository): ViewModel() {
     private val _loginState = MutableStateFlow(LoginStatus())
     val loginState: StateFlow<LoginStatus> = _loginState
@@ -126,4 +104,26 @@ class LoginViewModel(private val repository: UserRepository): ViewModel() {
         ScoutifyClient.tokenManager.saveToken("")
         _loginState.value = LoginStatus()
     }
+}
+
+data class LoginStatus(
+    val verifier: String? = null,
+    val error: String? = null,
+    val acToken: String? = null,
+    val loginUrl: String? = null,
+)
+
+fun generateCodeVerifier(): String {
+    val sr = SecureRandom()
+    val code = ByteArray(32)
+    sr.nextBytes(code)
+    return Base64.encodeToString(code, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
+}
+
+fun generateCodeChallenge(verifier: String): String {
+    val bytes = verifier.toByteArray(Charsets.US_ASCII)
+    val md = MessageDigest.getInstance("SHA-256")
+    md.update(bytes, 0, bytes.size)
+    val digest = md.digest()
+    return Base64.encodeToString(digest, Base64.URL_SAFE or Base64.NO_PADDING or Base64.NO_WRAP)
 }

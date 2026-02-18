@@ -1,11 +1,11 @@
 -- 1. Define the Table
 CREATE TABLE taskEntity (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    type TEXT NOT NULL,          -- We will store TaskType.name here
+    type TEXT NOT NULL,
     matchNum INTEGER NOT NULL,
     teamNum TEXT NOT NULL,
-    time TEXT NOT NULL,
-    progress REAL NOT NULL,      -- REAL = Float/Double
+    time INTEGER NOT NULL,       -- Stored as Long (Unix Milliseconds)
+    progress REAL NOT NULL,
     isDone INTEGER NOT NULL DEFAULT 0
 );
 
@@ -16,8 +16,8 @@ FROM taskEntity;
 
 -- 3. Insert
 insertTask:
-INSERT INTO taskEntity(type, matchNum, teamNum, time, progress, isDone)
-VALUES (?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO taskEntity(id, type, matchNum, teamNum, time, progress, isDone)
+VALUES (?,?, ?, ?, ?, ?, ?);
 
 -- 4. Toggle/Update isDone
 updateCompletion:
@@ -34,10 +34,19 @@ WHERE id = ?;
 clearAllTasks:
 DELETE FROM taskEntity;
 
--- 7. Dummy Data (Updated for new columns)
+-- Get a Task and its details (if they exist)
+selectTaskWithDetails:
+SELECT
+    taskEntity.*,
+    gameDetailsEntity.*
+FROM taskEntity
+LEFT JOIN gameDetailsEntity ON taskEntity.id = gameDetailsEntity.task_id
+WHERE taskEntity.id = ?;
+
+-- 7. Dummy Data (Using Milliseconds)
 seedData:
-INSERT INTO taskEntity (type, matchNum, teamNum, time, progress, isDone)
+INSERT OR REPLACE INTO taskEntity (id, type, matchNum, teamNum, time, progress, isDone)
 VALUES
-('SCOUTING', 42, '254', '02:30', 0.5, 0),
-('PIT', 0, '1678', '10:00', 1.0, 1),
-('SCOUTING', 12, '695', '05:00', 0.0, 0);
+(1, 'SCOUTING', 42, '254', 1707840000000, 0.5, 0),  -- Example Timestamps
+(2, 'PIT', 0, '1678', 1707843600000, 1.0, 1),
+(3, 'SCOUTING', 12, '695', 1707847200000, 0.0, 0);

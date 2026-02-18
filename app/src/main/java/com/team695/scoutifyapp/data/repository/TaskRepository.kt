@@ -14,6 +14,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class TaskRepository(
     private val service: TaskService,
@@ -28,16 +30,16 @@ class TaskRepository(
             }
         }
 
+
     suspend fun pushTasks() {
         //service.pushTasks(tasks.first())
     }
 
     private fun updateDbFromTaskList(tasks: List<Task>) {
         db.transaction {
-            db.taskQueries.clearAllTasks()
-
             tasks.forEach {
                 db.taskQueries.insertTask(
+                    id = it.id.toLong(),
                     type = it.type.toString(),
                     matchNum = it.matchNum.toLong(),
                     teamNum = it.teamNum,
@@ -49,23 +51,26 @@ class TaskRepository(
         }
     }
 
-    suspend fun fetchTasks() {
+    suspend fun fetchTasks(): Result<List<Task>> {
         val oldTasks = db.taskQueries.selectAllTasks()
             .executeAsList()
             .map { entity ->
                 entity.createTaskFromDb()
             }
 
-        withContext(Dispatchers.IO) {
+        return withContext(Dispatchers.IO) {
             try {
                 val apiTasks: List<Task> = service.getTasks()
 
                 if (apiTasks.isNotEmpty()) {
                     updateDbFromTaskList(apiTasks)
                 }
+
+                return@withContext Result.success(apiTasks)
             } catch(e: Exception) {
                 println("Error when trying to fetch tasks: $e")
                 updateDbFromTaskList(oldTasks)
+                return@withContext Result.failure(e)
             }
         }
     }

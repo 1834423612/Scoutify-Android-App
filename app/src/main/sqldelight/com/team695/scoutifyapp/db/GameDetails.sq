@@ -1,5 +1,6 @@
-CREATE TABLE match (
+CREATE TABLE gameDetailsEntity (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    task_id INTEGER NOT NULL UNIQUE,
 
     -- Starting & Preload
     starting_location REAL,
@@ -67,7 +68,9 @@ CREATE TABLE match (
     teleop_over_trench INTEGER,
 
     -- Review
-    review_match_flag INTEGER
+    review_match_flag INTEGER,
+
+    FOREIGN KEY (task_id) REFERENCES taskEntity(id) ON DELETE CASCADE
 );
 
 -- insertEmptyMatch:
@@ -146,14 +149,15 @@ CREATE TABLE match (
 
 
 
-selectAllMatches:
-SELECT * FROM match;
+selectDetailsForTask:
+SELECT * FROM gameDetailsEntity
+WHERE task_id = ?;
 
-selectMatchById:
-SELECT * FROM match
+selectDetailsById:
+SELECT * FROM gameDetailsEntity
 WHERE id = ?;
 
-deleteMatch:
-DELETE FROM match
+deleteDetails:
+DELETE FROM gameDetailsEntity
 WHERE id = ?;
 

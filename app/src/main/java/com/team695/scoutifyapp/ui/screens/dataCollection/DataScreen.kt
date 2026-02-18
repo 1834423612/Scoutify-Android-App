@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
@@ -53,12 +54,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.team695.scoutifyapp.ui.components.progressBorder
 import com.team695.scoutifyapp.ui.modifier.buttonHighlight
 import com.team695.scoutifyapp.ui.reusables.BackgroundGradient
 import com.team695.scoutifyapp.ui.reusables.ImageBackground
 import com.team695.scoutifyapp.ui.theme.DarkGunmetal
+import com.team695.scoutifyapp.ui.theme.DarkishGunmetal
+import com.team695.scoutifyapp.ui.theme.Deselected
 import com.team695.scoutifyapp.ui.theme.LightGunmetal
+import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.theme.mediumCornerRadius
 import com.team695.scoutifyapp.ui.theme.smallCornerRadius
 import kotlinx.coroutines.launch
@@ -161,7 +166,8 @@ private fun ListContent(
 
             Text(
                 text = "Game Sections",
-                style = MaterialTheme.typography.headlineMedium
+                color = TextPrimary,
+                fontSize = 20.sp,
             )
 
             LazyColumn(
@@ -182,7 +188,7 @@ private fun ListContent(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(45.dp)
+                            .height(60.dp)
                             .progressBorder(progress=section.progress)
                             .background(color = DarkGunmetal, shape = RoundedCornerShape(mediumCornerRadius))
                             .clip(RoundedCornerShape(mediumCornerRadius))
@@ -193,10 +199,24 @@ private fun ListContent(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(
-                            text = "List Content",
-                            style = MaterialTheme.typography.headlineMedium
-                        )
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center,
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .clip(RoundedCornerShape(smallCornerRadius))
+                                .background(DarkishGunmetal)
+                                .fillMaxWidth()
+                                .buttonHighlight(
+                                    corner = smallCornerRadius
+                                )
+                        ) {
+                            Text(
+                                text = section.name,
+                                color = TextPrimary,
+                                fontSize = 20.sp,
+                            )
+                        }
                     }
                 }
             }

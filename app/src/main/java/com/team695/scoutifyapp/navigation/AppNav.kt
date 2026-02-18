@@ -8,7 +8,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.team695.scoutifyapp.data.api.service.LoginService
-import com.team695.scoutifyapp.data.api.service.MatchService
 import com.team695.scoutifyapp.ui.InputScreen
 import com.team695.scoutifyapp.ui.screens.CommentsScreen
 import com.team695.scoutifyapp.ui.screens.home.HomeScreen
@@ -17,6 +16,8 @@ import com.team695.scoutifyapp.ui.screens.PitScoutingScreen
 import com.team695.scoutifyapp.ui.viewModels.HomeViewModel
 import com.team695.scoutifyapp.ui.viewModels.ViewModelFactory
 import com.team695.scoutifyapp.data.api.service.TaskService
+import com.team695.scoutifyapp.data.repository.MatchRepository
+import com.team695.scoutifyapp.data.repository.TaskRepository
 import com.team695.scoutifyapp.data.repository.UserRepository
 import com.team695.scoutifyapp.ui.screens.dataCollection.DataScreen
 import com.team695.scoutifyapp.ui.screens.login.LoginScreen
@@ -27,8 +28,8 @@ import com.team695.scoutifyapp.ui.viewModels.LoginViewModel
 @Composable
 fun AppNav(
     navController: NavHostController,
-    taskService: TaskService,
-    matchService: MatchService,
+    taskRepository: TaskRepository,
+    matchRepository: MatchRepository,
     userRepository: UserRepository
 ) {
     val owner: ViewModelStoreOwner = LocalViewModelStoreOwner.current
@@ -39,7 +40,7 @@ fun AppNav(
 
             val homeViewModel: HomeViewModel = viewModel(
                 viewModelStoreOwner = owner,
-                factory = ViewModelFactory { HomeViewModel(matchService, taskService) }
+                factory = ViewModelFactory { HomeViewModel(taskRepository, matchRepository) }
             )
 
             HomeScreen(navController = navController, homeViewModel = homeViewModel)

@@ -10,6 +10,8 @@ import com.team695.scoutifyapp.data.api.service.LoginService
 import com.team695.scoutifyapp.data.api.service.MatchService
 import com.team695.scoutifyapp.ui.theme.ScoutifyTheme
 import com.team695.scoutifyapp.data.api.service.TaskService
+import com.team695.scoutifyapp.data.repository.MatchRepository
+import com.team695.scoutifyapp.data.repository.TaskRepository
 import com.team695.scoutifyapp.data.repository.UserRepository
 import com.team695.scoutifyapp.db.AppDatabase
 import com.team695.scoutifyapp.db.AppDatabase.Companion.invoke
@@ -28,21 +30,27 @@ class MainActivity : ComponentActivity() {
         )
 
         val db = AppDatabase(driver)
+        db.taskQueries.seedData() //to add default data
+        db.matchQueries.seedData() //to add default data
 
         val taskService = TaskService(db = db)
         val matchService: MatchService = ScoutifyClient.matchService
         val loginService: LoginService = CasdoorClient.loginService
         val userRepository = UserRepository(service = loginService, db = db)
+        val taskRepository = TaskRepository(service = taskService, db = db)
+        val matchRepository = MatchRepository(service = matchService, db = db)
 
 
         setContent {
             ScoutifyTheme {
                 Root(
-                    taskService = taskService,
-                    matchService = matchService,
-                    userRepository
+                    taskRepository = taskRepository,
+                    matchRepository = matchRepository,
+                    userRepository = userRepository,
                 )
             }
         }
+
+
     }
 }
