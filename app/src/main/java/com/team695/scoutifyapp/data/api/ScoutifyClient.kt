@@ -10,7 +10,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object ScoutifyClient {
     lateinit var tokenManager: TokenManager
-    private const val BASE_URL = "http://10.150.0.154:3000/"
+    private const val BASE_URL = "http://scoutify.team695.com/"
     private lateinit var retrofit: Retrofit
 
     fun initialize(context: Context) {
@@ -44,5 +44,9 @@ object ScoutifyClient {
 
     val matchService: MatchService by lazy {
         retrofit.create(MatchService::class.java)
+    }
+
+    val userService: UserService by lazy {
+
     }
 }

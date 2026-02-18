@@ -17,17 +17,8 @@ import com.team695.scoutifyapp.db.AppDatabase
 import com.team695.scoutifyapp.db.GameDetailsEntity
 import app.cash.sqldelight.ColumnAdapter
 import com.team695.scoutifyapp.data.api.service.GameDetailsService
+import com.team695.scoutifyapp.data.intAdapter
 import com.team695.scoutifyapp.data.repository.GameDetailRepository
-
-val booleanAdapter = object : ColumnAdapter<Boolean, Long> {
-    override fun decode(databaseValue: Long): Boolean = databaseValue == 1L
-    override fun encode(value: Boolean): Long = if (value) 1L else 0L
-}
-
-val intAdapter = object : ColumnAdapter<Int, Long> {
-    override fun decode(databaseValue: Long): Int = databaseValue.toInt()
-    override fun encode(value: Int): Long = value.toLong()
-}
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
