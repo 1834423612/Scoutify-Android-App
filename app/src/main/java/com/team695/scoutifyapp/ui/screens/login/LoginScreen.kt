@@ -64,7 +64,7 @@ fun LoginScreen(
     loginViewModel: LoginViewModel,
 ) {
 
-    println("DEVICE ID: ${LocalContext.current.deviceId}")
+    //println("DEVICE ID: ${LocalContext.current.deviceId}")
     val loginState by loginViewModel.loginState.collectAsState()
     val userInfo by loginViewModel.userState.collectAsState()
     val coroutineScope = rememberCoroutineScope()

@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -55,6 +56,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.team695.scoutifyapp.R
 import com.team695.scoutifyapp.ui.components.progressBorder
 import com.team695.scoutifyapp.ui.modifier.buttonHighlight
 import com.team695.scoutifyapp.ui.reusables.BackgroundGradient
@@ -201,7 +203,7 @@ private fun ListContent(
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.Center,
+                            horizontalArrangement = Arrangement.SpaceBetween,
                             modifier = Modifier
                                 .fillMaxHeight()
                                 .clip(RoundedCornerShape(smallCornerRadius))
@@ -210,11 +212,18 @@ private fun ListContent(
                                 .buttonHighlight(
                                     corner = smallCornerRadius
                                 )
+                                .padding(10.dp,0.dp,10.dp,0.dp)
                         ) {
                             Text(
                                 text = section.name,
                                 color = TextPrimary,
                                 fontSize = 20.sp,
+                            )
+                            Image(
+                                painter = painterResource(id = if (selectedSection?.name == section.name) R.drawable.flag_selected else R.drawable.flag_deselected),
+                                contentDescription = "Time",
+                                modifier = Modifier
+                                    .size(16.dp)
                             )
                         }
                     }

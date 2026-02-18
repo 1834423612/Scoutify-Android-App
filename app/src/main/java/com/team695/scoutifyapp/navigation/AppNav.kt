@@ -16,6 +16,7 @@ import com.team695.scoutifyapp.ui.screens.PitScoutingScreen
 import com.team695.scoutifyapp.ui.viewModels.HomeViewModel
 import com.team695.scoutifyapp.ui.viewModels.ViewModelFactory
 import com.team695.scoutifyapp.data.api.service.TaskService
+import com.team695.scoutifyapp.data.repository.GameDetailRepository
 import com.team695.scoutifyapp.data.repository.MatchRepository
 import com.team695.scoutifyapp.data.repository.TaskRepository
 import com.team695.scoutifyapp.data.repository.UserRepository
@@ -30,7 +31,8 @@ fun AppNav(
     navController: NavHostController,
     taskRepository: TaskRepository,
     matchRepository: MatchRepository,
-    userRepository: UserRepository
+    userRepository: UserRepository,
+    gameDetailRepository: GameDetailRepository
 ) {
     val owner: ViewModelStoreOwner = LocalViewModelStoreOwner.current
         ?: throw IllegalStateException("Root must be attached to a ViewModelStoreOwner")
@@ -50,7 +52,7 @@ fun AppNav(
 
             val dataViewModel: DataViewModel = viewModel(
                 viewModelStoreOwner = owner,
-                factory = ViewModelFactory { DataViewModel() }
+                factory = ViewModelFactory { DataViewModel(repository = gameDetailRepository) }
             )
 
             DataScreen(navController = navController, dataViewModel = dataViewModel)

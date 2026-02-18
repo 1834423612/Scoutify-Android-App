@@ -23,6 +23,7 @@ import com.team695.scoutifyapp.data.api.service.MatchService
 import com.team695.scoutifyapp.navigation.AppNav
 import com.team695.scoutifyapp.ui.components.NavRail
 import com.team695.scoutifyapp.data.api.service.TaskService
+import com.team695.scoutifyapp.data.repository.GameDetailRepository
 import com.team695.scoutifyapp.data.repository.MatchRepository
 import com.team695.scoutifyapp.data.repository.TaskRepository
 import com.team695.scoutifyapp.data.repository.UserRepository
@@ -36,7 +37,8 @@ import kotlin.math.log
 fun Root(
     taskRepository: TaskRepository,
     matchRepository: MatchRepository,
-    userRepository: UserRepository
+    userRepository: UserRepository,
+    gameDetailRepository: GameDetailRepository
 ) {
     val context = LocalContext.current
 
@@ -121,6 +123,7 @@ fun Root(
                         taskRepository = taskRepository,
                         matchRepository = matchRepository,
                         userRepository = userRepository,
+                        gameDetailRepository = gameDetailRepository
                     )
                 }
             }

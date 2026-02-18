@@ -29,8 +29,6 @@ class MatchRepository(
 
     private fun updateDbFromMatchList(matches: List<Match>) {
         db.transaction {
-            db.taskQueries.clearAllTasks()
-
             matches.forEach {
                 db.matchQueries.insertMatch(
                     time = it.time,
