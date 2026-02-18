@@ -43,6 +43,8 @@ class MainActivity : ComponentActivity() {
         val db = AppDatabase(
             driver = driver,
             gameDetailsEntityAdapter = GameDetailsEntity.Adapter(
+                idAdapter = intAdapter,
+                task_idAdapter = intAdapter,
                 auton_fuel_countAdapter = intAdapter,
                 transition_cycling_timeAdapter = intAdapter,
                 transition_stockpiling_timeAdapter = intAdapter,

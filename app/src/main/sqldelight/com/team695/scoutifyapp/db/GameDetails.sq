@@ -2,7 +2,8 @@ import kotlin.Boolean;
 import kotlin.Int;
 
 CREATE TABLE gameDetailsEntity (
-    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    id INTEGER AS Int NOT NULL PRIMARY KEY AUTOINCREMENT,
+    task_id INTEGER AS Int NOT NULL UNIQUE,
 
     -- Starting & Preload
     starting_location REAL,
@@ -70,19 +71,26 @@ CREATE TABLE gameDetailsEntity (
     teleop_over_trench INTEGER AS Boolean,
 
     -- Review
-    review_match_flag INTEGER AS Boolean
+    review_match_flag INTEGER AS Boolean,
+
+    FOREIGN KEY (task_id) REFERENCES taskEntity(id) ON DELETE CASCADE
 );
 
 -- Queries
 selectAllGameDetails:
 SELECT * FROM gameDetailsEntity;
 
-selectGameDetailById:
-SELECT * FROM gameDetailsEntity WHERE id = ?;
+selectDetailsById:
+SELECT * FROM gameDetailsEntity
+WHERE id = ?;
 
-deleteGameDetail:
+deleteDetail:
 DELETE FROM gameDetailsEntity WHERE id = ?;
 
 -- Using an object parameter (?) allows you to pass the entire generated data class
-insertGameDetail:
+insertDetail:
 INSERT OR REPLACE INTO gameDetailsEntity VALUES ?;
+
+selectDetailsForTask:
+SELECT * FROM gameDetailsEntity
+WHERE task_id = ?;

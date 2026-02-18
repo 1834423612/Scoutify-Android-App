@@ -14,7 +14,7 @@ class GameDetailRepository(
     private val service: GameDetailsService,
     private val db: AppDatabase,
 ) {
-    val matches: Flow<List<GameDetails>> = db.game_detailsQueries.selectAllGameDetails()
+    val gameDetails: Flow<List<GameDetails>> = db.gameDetailsQueries.selectAllGameDetails()
         .asFlow()
         .mapToList(Dispatchers.IO)
         .map { entries ->

@@ -3,7 +3,8 @@ package com.team695.scoutifyapp.data.api.model
 import com.team695.scoutifyapp.db.GameDetailsEntity
 
 data class GameDetails(
-    val id: Long = 0,
+    val id: Int? = null,
+    val task_id: Int? = null,
 
     // Starting & Preload
     val startingLocation: Double? = null,
@@ -78,6 +79,7 @@ data class GameDetails(
 fun GameDetailsEntity.createGameDetailsFromDb(): GameDetails {
     return GameDetails(
         id = this.id,
+        task_id = this.task_id,
 
         // Starting & Preload
         startingLocation = this.starting_location,
@@ -149,9 +151,11 @@ fun GameDetailsEntity.createGameDetailsFromDb(): GameDetails {
     )
 }
 
+/*
 fun GameDetails.toDbEntity(): GameDetailsEntity {
     return GameDetailsEntity(
         id = this.id,
+        task_id = this.task_id,
 
         // Starting & Preload
         starting_location = this.startingLocation,
@@ -221,3 +225,4 @@ fun GameDetails.toDbEntity(): GameDetailsEntity {
         review_match_flag = this.reviewMatchFlag
     )
 }
+*/

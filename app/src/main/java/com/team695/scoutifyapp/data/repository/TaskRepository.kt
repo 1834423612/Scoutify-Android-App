@@ -37,8 +37,6 @@ class TaskRepository(
 
     private fun updateDbFromTaskList(tasks: List<Task>) {
         db.transaction {
-            db.taskQueries.clearAllTasks()
-
             tasks.forEach {
                 db.taskQueries.insertTask(
                     id = it.id.toLong(),

@@ -34,6 +34,15 @@ WHERE id = ?;
 clearAllTasks:
 DELETE FROM taskEntity;
 
+-- Get a Task and its details (if they exist)
+selectTaskWithDetails:
+SELECT
+    taskEntity.*,
+    gameDetailsEntity.*
+FROM taskEntity
+LEFT JOIN gameDetailsEntity ON taskEntity.id = gameDetailsEntity.task_id
+WHERE taskEntity.id = ?;
+
 -- 7. Dummy Data (Using Milliseconds)
 seedData:
 INSERT OR REPLACE INTO taskEntity (id, type, matchNum, teamNum, time, progress, isDone)
