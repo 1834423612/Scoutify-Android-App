@@ -93,7 +93,8 @@ class MainActivity : ComponentActivity() {
                     taskRepository = taskRepository,
                     matchRepository = matchRepository,
                     userRepository = userRepository,
-                    gameDetailRepository = gameDetailRepository
+                    gameDetailRepository = gameDetailRepository,
+                    database = db
                 )
             }
         }

@@ -38,7 +38,8 @@ fun Root(
     taskRepository: TaskRepository,
     matchRepository: MatchRepository,
     userRepository: UserRepository,
-    gameDetailRepository: GameDetailRepository
+    gameDetailRepository: GameDetailRepository,
+    database: AppDatabase
 ) {
     val context = LocalContext.current
 
@@ -123,7 +124,8 @@ fun Root(
                         taskRepository = taskRepository,
                         matchRepository = matchRepository,
                         userRepository = userRepository,
-                        gameDetailRepository = gameDetailRepository
+                        gameDetailRepository = gameDetailRepository,
+                        database = database
                     )
                 }
             }

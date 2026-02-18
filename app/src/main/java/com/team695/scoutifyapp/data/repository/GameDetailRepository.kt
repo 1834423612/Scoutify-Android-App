@@ -25,8 +25,8 @@ class GameDetailRepository(
             }
         } */
 
-    private fun updateDbFromGameDetails(details: GameDetails) {
-
+    suspend fun updateDbFromGameDetails(details: GameDetails) {
+        //db.gameDetailsQueries.
     }
 
     /*suspend fun fetchGameDetails(): Result<List<Match>> {
