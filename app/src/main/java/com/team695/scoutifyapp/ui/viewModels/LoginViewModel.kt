@@ -72,18 +72,26 @@ class LoginViewModel(private val repository: UserRepository): ViewModel() {
 
     suspend fun tokenExchange(code: String) {
         try {
-            val tokenRes: TokenResponse = repository.getAccessToken(
-                code = code,
-                verifier = loginState.value.verifier!!
-            )
-
-            _loginState.update {
-                it.copy(
-                    acToken = tokenRes.accessToken
+            if (loginState.value.verifier != null) {
+                val tokenRes: TokenResponse = repository.getAccessToken(
+                    code = code,
+                    verifier = loginState.value.verifier!!
                 )
-            }
 
-            ScoutifyClient.tokenManager.saveToken(tokenRes.accessToken)
+                _loginState.update {
+                    it.copy(
+                        acToken = tokenRes.accessToken
+                    )
+                }
+
+                ScoutifyClient.tokenManager.saveToken(tokenRes.accessToken)
+            } else {
+                _loginState.update {
+                    it.copy(
+                        error = "No verifier found"
+                    )
+                }
+            }
 
         } catch (e: Exception) {
             _loginState.update {
@@ -108,9 +116,9 @@ class LoginViewModel(private val repository: UserRepository): ViewModel() {
 
 data class LoginStatus(
     val verifier: String? = null,
-    val error: String? = null,
     val acToken: String? = null,
     val loginUrl: String? = null,
+    val error: String? = null,
 )
 
 fun generateCodeVerifier(): String {
