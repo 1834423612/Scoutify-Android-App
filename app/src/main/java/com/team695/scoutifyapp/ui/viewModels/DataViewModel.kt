@@ -16,28 +16,29 @@ import com.team695.scoutifyapp.data.api.model.GameDetails
 import com.team695.scoutifyapp.data.api.model.TaskType
 import com.team695.scoutifyapp.data.api.model.User
 import com.team695.scoutifyapp.data.repository.GameDetailRepository
+import com.team695.scoutifyapp.db.AppDatabase
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 
-class DataViewModel(private val repository: GameDetailRepository) : ViewModel() {
+class DataViewModel(private val repository: GameDetailRepository, private val db: AppDatabase) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(MatchFormState())
-    val uiState: StateFlow<MatchFormState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(GameFormState())
+    val uiState: StateFlow<GameFormState> = _uiState.asStateFlow()
 
     init {
-        // Set up the auto-save listener as soon as the ViewModel is created
         _uiState
-            .debounce(500L) // Wait 500ms after the last state change
+            .debounce(2000L)
             .distinctUntilChanged() // Only save if the state actually changed
-            .onEach { currentGameDetails: GameDetails ->
-                // This block only runs when the user pauses for 500ms
-                saveToDatabase(currentGameDetails)
+            .onEach { currentFormState: GameFormState ->
+                saveToDatabase(currentFormState)
             }
             .launchIn(viewModelScope) // Run this in the background tied to the ViewModel's lifecycle
     }
@@ -58,13 +59,12 @@ class DataViewModel(private val repository: GameDetailRepository) : ViewModel() 
     }
 
 
-    private fun saveToDatabase(gameDetails: GameDetails) {
-        // Map the domain model to the DB entity and insert/replace
-        db.matchDetailsQueries.insertOrReplaceMatch(matchDetails.toDbEntity())
+    suspend fun saveToDatabase(gameFormState: GameFormState) {
+
     }
 }
 
-data class MatchFormState(
+data class GameFormState(
     val matchId: Int = 0,
     val teamNumber: Int = 0,
 
