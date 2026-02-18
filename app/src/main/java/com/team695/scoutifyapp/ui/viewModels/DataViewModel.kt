@@ -17,6 +17,7 @@ import com.team695.scoutifyapp.data.api.model.TaskType
 import com.team695.scoutifyapp.data.api.model.User
 import com.team695.scoutifyapp.data.repository.GameDetailRepository
 import com.team695.scoutifyapp.db.AppDatabase
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
@@ -28,7 +29,8 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 
-class DataViewModel(private val repository: GameDetailRepository, private val db: AppDatabase) : ViewModel() {
+@OptIn(FlowPreview::class)
+class DataViewModel(private val repository: GameDetailRepository) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GameFormState())
     val uiState: StateFlow<GameFormState> = _uiState.asStateFlow()
@@ -68,27 +70,18 @@ data class GameFormState(
     val matchId: Int = 0,
     val teamNumber: Int = 0,
 
-    val auto: AutoData = AutoData(),
+    val preGame: MutableMap<String, Any?> = mutableMapOf<String, Any?>(
+        "starting_location" to null,
+        "robot_on_field" to null,
+        "robot_preloaded" to null,
+    )
+
+
 
 ) {
-    val autoProgress: Float get() = auto.calculateProgress()
+        val preGameProgress =
 }
 
-
-
-data class AutoData(
-    val isFlagged: Boolean = false,
-    val coralScored: Int? = null, // Null means unfilled, useful for progress
-    val algaeRemoved: Int? = null
-) {
-    fun calculateProgress(): Float {
-        var filled = 0
-        val totalFields = 2 // Update as you add fields
-        if (coralScored != null) filled++
-        if (algaeRemoved != null) filled++
-        return filled.toFloat() / totalFields
-    }
-}
 
 // Represents everything the user can DO on the screen
 sealed class FormEvent {
