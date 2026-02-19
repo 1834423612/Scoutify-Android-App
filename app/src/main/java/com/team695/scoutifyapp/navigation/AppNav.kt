@@ -5,8 +5,10 @@ import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.team695.scoutifyapp.ui.InputScreen
 import com.team695.scoutifyapp.ui.screens.CommentsScreen
 import com.team695.scoutifyapp.ui.screens.home.HomeScreen
@@ -46,11 +48,23 @@ fun AppNav(
             HomeScreen(navController = navController, homeViewModel = homeViewModel)
 
         }
-        composable(route = "data") {
+        composable(
+            route = "data/{taskId}",
+            arguments = listOf(
+                    navArgument("taskId") { type = NavType.IntType}
+            )
+        ) { navBackStackEntry ->
+
+            val taskId = navBackStackEntry.arguments?.getInt("taskId")
+                ?: return@composable navController.navigate("home")
 
             val dataViewModel: DataViewModel = viewModel(
                 viewModelStoreOwner = owner,
-                factory = ViewModelFactory { DataViewModel(gameDetailRepository = gameDetailRepository) }
+                factory = ViewModelFactory { DataViewModel(
+                    gameDetailRepository = gameDetailRepository,
+                    taskRepository = taskRepository,
+                    taskId = taskId
+                ) }
             )
 
             DataScreen(navController = navController, dataViewModel = dataViewModel)

@@ -85,10 +85,10 @@ selectDetailsById:
 SELECT * FROM gameDetailsEntity
 WHERE id = ?;
 
-deleteDetail:
+deleteDetails:
 DELETE FROM gameDetailsEntity WHERE id = ?;
 
-insertDetail:
+insertDetails:
 INSERT OR REPLACE INTO gameDetailsEntity(
     task_id,
     starting_location,
