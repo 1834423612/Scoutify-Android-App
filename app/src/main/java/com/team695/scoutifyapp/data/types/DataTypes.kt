@@ -37,8 +37,7 @@ enum class TransitionBoolField {
     FIRST_ACTIVE
 }
 
-// --- Standard Shifts (1, 2, 3, and 4) ---
-// Reuse this single enum for all four standard shifts to save code!
+// --- Shifts (1, 2, 3, and 4) ---
 enum class ShiftIntField {
     CYCLING_TIME,
     STOCKPILING_TIME,

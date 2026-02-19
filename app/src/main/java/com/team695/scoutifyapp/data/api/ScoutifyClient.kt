@@ -3,6 +3,7 @@ package com.team695.scoutifyapp.data.api
 import android.content.Context
 import com.team695.scoutifyapp.data.api.service.LoginService
 import com.team695.scoutifyapp.data.api.service.MatchService
+import com.team695.scoutifyapp.data.api.service.UserService
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -47,6 +48,6 @@ object ScoutifyClient {
     }
 
     val userService: UserService by lazy {
-
+        retrofit.create(UserService::class.java)
     }
 }
