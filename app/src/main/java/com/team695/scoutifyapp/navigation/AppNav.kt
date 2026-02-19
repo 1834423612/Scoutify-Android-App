@@ -50,7 +50,7 @@ fun AppNav(
 
             val dataViewModel: DataViewModel = viewModel(
                 viewModelStoreOwner = owner,
-                factory = ViewModelFactory { DataViewModel(repository = gameDetailRepository) }
+                factory = ViewModelFactory { DataViewModel(gameDetailRepository = gameDetailRepository) }
             )
 
             DataScreen(navController = navController, dataViewModel = dataViewModel)

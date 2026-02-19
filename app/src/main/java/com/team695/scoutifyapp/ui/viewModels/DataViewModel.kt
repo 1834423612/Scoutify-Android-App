@@ -2,6 +2,7 @@ package com.team695.scoutifyapp.ui.viewModels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.team695.scoutifyapp.data.api.model.GameDetails
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -17,11 +18,20 @@ import kotlin.collections.plus
 
 
 @OptIn(FlowPreview::class)
-class DataViewModel(private val repository: GameDetailRepository) : ViewModel() {
+class DataViewModel(private val gameDetailRepository: GameDetailRepository) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GameFormState())
     val uiState: StateFlow<GameFormState> = _uiState.asStateFlow()
 
+    init {
+        _uiState
+            .debounce(2000L)
+            .distinctUntilChanged() // Only save if the state actually changed
+            .onEach { currentFormState: GameFormState ->
+                gameDetailRepository.updateDbFromGameDetails(convertFormToGameDetails(currentFormState))
+            }
+            .launchIn(viewModelScope) // Run this in the background tied to the ViewModel's lifecycle
+    }
 
     // called by UI to update match form state
     fun onEvent(event: FormEvent) {
@@ -117,8 +127,9 @@ class DataViewModel(private val repository: GameDetailRepository) : ViewModel() 
     }
 
 
-    suspend fun saveToDatabase(gameFormState: GameFormState) {
-
+    suspend fun convertFormToGameDetails(gameFormState: GameFormState): GameDetails {
+        //TO DO: Convert form state to game details
+        return GameDetails() //Placeholder
     }
 }
 
