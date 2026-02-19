@@ -77,7 +77,7 @@ fun LoginScreen(
         ) {
             if (loginState.acToken != null) {
                 if (userInfo?.name != null) {
-                    Text(text = "Welcome, ${userInfo?.name}!", color = Color.Green)
+                    Text(text = "Welcome, ${userInfo?.displayName}!", color = Color.Green)
                     Text(text = "Logged in successfully", color = Color.Green)
 
                     Button(onClick = {

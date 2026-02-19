@@ -12,6 +12,7 @@ import com.team695.scoutifyapp.data.api.service.UserInfoResponse
 import com.team695.scoutifyapp.data.api.service.UserService
 import com.team695.scoutifyapp.db.AppDatabase
 import com.team695.scoutifyapp.ui.viewModels.LoginStatus
+import com.team695.scoutifyapp.utility.displayTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -31,6 +32,7 @@ class UserRepository(
 
             User(
                 name = entity.name,
+                displayName = entity.display_name,
                 preferredUsername = entity.preferred_username,
                 picture = entity.picture,
                 email = entity.email
@@ -47,6 +49,7 @@ class UserRepository(
 
             db.userQueries.insertUser(
                 name = userRes.name,
+                display_name = userRes.displayName,
                 preferred_username = userRes.preferredUsername,
                 picture = userRes.picture,
                 email = userRes.email
