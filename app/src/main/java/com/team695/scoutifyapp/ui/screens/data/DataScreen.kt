@@ -54,6 +54,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.team695.scoutifyapp.R
+import com.team695.scoutifyapp.data.api.model.GameDetails
 import com.team695.scoutifyapp.data.types.GameFormState
 import com.team695.scoutifyapp.ui.components.progressBorder
 import com.team695.scoutifyapp.ui.components.buttonHighlight
@@ -68,12 +69,17 @@ import com.team695.scoutifyapp.ui.theme.smallCornerRadius
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 
+enum class SectionType {
+    PREGAME, AUTON, TELEOP, POSTGAME
+}
 
 @Parcelize
 data class GameSection(
-    val name: String,
+    val type: SectionType,
     var progress: Float = 0f,
-) : Parcelable
+) : Parcelable {
+    val name: String get() = type.name.lowercase().replaceFirstChar { it.uppercase() }
+}
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
@@ -83,7 +89,10 @@ fun DataScreen(
 ) {
     val formState: GameFormState by dataViewModel.formState.collectAsStateWithLifecycle()
 
-    val sections: List<GameSection> = arrayOf("Pre-game", "Autonomous", "Tele-op", "Post-game").map { s: String -> GameSection(name = s, progress = 0f) }
+    val sections: List<GameSection> = arrayOf(
+        SectionType.PREGAME, SectionType.AUTON, SectionType.TELEOP, SectionType.POSTGAME)
+        .map { s: SectionType -> GameSection(type = s, progress = 0f) }
+    
     val adaptiveInfo = currentWindowAdaptiveInfo()
     val customDirective = calculatePaneScaffoldDirective(adaptiveInfo).copy(
         horizontalPartitionSpacerSize = 8.dp //change default gap between list and detail panes
@@ -121,7 +130,8 @@ fun DataScreen(
                                 }
                             },
                             animatedVisibilityScope = this@AnimatedPane,
-                            sharedTransitionScope = this@SharedTransitionLayout
+                            sharedTransitionScope = this@SharedTransitionLayout,
+                            formState = formState,
                         )
                     }
                 },
@@ -154,7 +164,8 @@ private fun ListContent(
     onSectionClick: (section: GameSection) -> Unit,
     modifier: Modifier = Modifier,
     sharedTransitionScope: SharedTransitionScope,
-    animatedVisibilityScope: AnimatedVisibilityScope
+    animatedVisibilityScope: AnimatedVisibilityScope,
+    formState: GameFormState
 ) {
     Box(
         modifier = Modifier
@@ -184,6 +195,24 @@ private fun ListContent(
                 modifier = modifier.selectableGroup()
             ) {
                 itemsIndexed(sections) { index: Int, section: GameSection ->
+
+                    var isFlagged: Boolean = false
+
+                    when(section.type) {
+                        SectionType.PREGAME -> {
+                            isFlagged = formState.gameDetails.pregameFlag ?: false
+                        }
+                        SectionType.AUTON -> {
+                            isFlagged = formState.gameDetails.autonFlag ?: false
+                        }
+                        SectionType.TELEOP -> {
+                            isFlagged = formState.gameDetails.teleopFlag ?: false
+                        }
+                        SectionType.POSTGAME -> {
+                            isFlagged = formState.gameDetails.postgameFlag ?: false
+                        }
+                    }
+
 
                     val containerColor =
                         if (sections[index] == selectedSection) MaterialTheme.colorScheme.surfaceVariant else MaterialTheme.colorScheme.surface
@@ -221,15 +250,15 @@ private fun ListContent(
                                 .padding(10.dp,0.dp,10.dp,0.dp)
                         ) {
                             Text(
-                                text = section.name,
+                                text = section.name.toString().lowercase().replaceFirstChar { it.uppercase() },
                                 color = TextPrimary,
                                 fontSize = 20.sp,
                             )
                             Image(
-                                painter = painterResource(id = if (selectedSection?.name == section.name) R.drawable.flag_selected else R.drawable.flag_deselected),
+                                painter = painterResource(id = if (isFlagged) R.drawable.flag_selected else R.drawable.flag_deselected),
                                 contentDescription = "Time",
                                 modifier = Modifier
-                                    .size(16.dp)
+                                    .size(32.dp)
                             )
                         }
                     }

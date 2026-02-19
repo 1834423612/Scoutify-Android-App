@@ -63,4 +63,14 @@ class DataViewModel(
             }
             .launchIn(viewModelScope) // Run this in the background tied to the ViewModel's lifecycle
     }
+
+    fun formEvent(gameDetails: GameDetails) {
+        _formState.update {
+            it.copy(
+                gameDetails = gameDetails
+            )
+        }
+    }
+
+
 }
