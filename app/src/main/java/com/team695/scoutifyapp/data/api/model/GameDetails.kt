@@ -88,6 +88,7 @@ fun GameDetailsEntity.createGameDetailsFromDb(): GameDetails {
         startingLocation = this.starting_location,
         robotOnField = this.robot_on_field,
         robotPreloaded = this.robot_preloaded,
+        pregameFlag = this.pregame_flag,          // ADDED
 
         // Auton
         autonPath = this.auton_path,
@@ -95,6 +96,7 @@ fun GameDetailsEntity.createGameDetailsFromDb(): GameDetails {
         autonClimbSuccess = this.auton_climb_success,
         autonClimbPosition = this.auton_climb_position,
         autonFuelCount = this.auton_fuel_count,
+        autonFlag = this.auton_flag,              // ADDED
 
         // Transition Shift
         transitionCyclingTime = this.transition_cycling_time,
@@ -138,7 +140,10 @@ fun GameDetailsEntity.createGameDetailsFromDb(): GameDetails {
         endgameClimbPosition = this.endgame_climb_position,
 
         // Teleop
-        postgameFuelCount = this.postgame_fuel_count,
+        teleopFuelCount = this.teleop_fuel_count,
+        teleopFlag = this.teleop_flag,            // ADDED
+
+        // Postgame
         postgameShootAnywhere = this.postgame_shoot_anywhere,
         postgameShootWhileMoving = this.postgame_shoot_while_moving,
         postgameStockpileNeutral = this.postgame_stockpile_neutral,
@@ -148,83 +153,6 @@ fun GameDetailsEntity.createGameDetailsFromDb(): GameDetails {
         postgameReceiveOutpost = this.postgame_receive_outpost,
         postgameUnderTrench = this.postgame_under_trench,
         postgameOverTrench = this.postgame_over_trench,
-
-        // Review
-        reviewMatchFlag = this.review_match_flag
-    )
+        postgameFlag = this.postgame_flag,
+        )
 }
-
-fun GameDetails.toDbEntity(): GameDetailsEntity {
-    return GameDetailsEntity(
-        id = this.id,
-        task_id = this.task_id,
-
-        // Starting & Preload
-        starting_location = this.startingLocation,
-        robot_on_field = this.robotOnField,
-        robot_preloaded = this.robotPreloaded,
-
-        // Auton
-        auton_path = this.autonPath,
-        auton_attempts_climb = this.autonAttemptsClimb,
-        auton_climb_success = this.autonClimbSuccess,
-        auton_climb_position = this.autonClimbPosition,
-        auton_fuel_count = this.autonFuelCount,
-
-        // Transition Shift
-        transition_cycling_time = this.transitionCyclingTime,
-        transition_stockpiling_time = this.transitionStockpilingTime,
-        transition_defending_time = this.transitionDefendingTime,
-        transition_broken_time = this.transitionBrokenTime,
-        transition_first_active = this.transitionFirstActive,
-
-        // 1st Shift
-        shift1_cycling_time = this.shift1CyclingTime,
-        shift1_stockpiling_time = this.shift1StockpilingTime,
-        shift1_defending_time = this.shift1DefendingTime,
-        shift1_broken_time = this.shift1BrokenTime,
-
-        // 2nd Shift
-        shift2_cycling_time = this.shift2CyclingTime,
-        shift2_stockpiling_time = this.shift2StockpilingTime,
-        shift2_defending_time = this.shift2DefendingTime,
-        shift2_broken_time = this.shift2BrokenTime,
-
-        // 3rd Shift
-        shift3_cycling_time = this.shift3CyclingTime,
-        shift3_stockpiling_time = this.shift3StockpilingTime,
-        shift3_defending_time = this.shift3DefendingTime,
-        shift3_broken_time = this.shift3BrokenTime,
-
-        // 4th Shift
-        shift4_cycling_time = this.shift4CyclingTime,
-        shift4_stockpiling_time = this.shift4StockpilingTime,
-        shift4_defending_time = this.shift4DefendingTime,
-        shift4_broken_time = this.shift4BrokenTime,
-
-        // Endgame
-        endgame_cycling_time = this.endgameCyclingTime,
-        endgame_stockpiling_time = this.endgameStockpilingTime,
-        endgame_defending_time = this.endgameDefendingTime,
-        endgame_broken_time = this.endgameBrokenTime,
-        endgame_attempts_climb = this.endgameAttemptsClimb,
-        endgame_climb_success = this.endgameClimbSuccess,
-        endgame_climb_position = this.endgameClimbPosition,
-
-        // Teleop
-        postgame_fuel_count = this.postgameFuelCount,
-        postgame_shoot_anywhere = this.postgameShootAnywhere,
-        postgame_shoot_while_moving = this.postgameShootWhileMoving,
-        postgame_stockpile_neutral = this.postgameStockpileNeutral,
-        postgame_stockpile_alliance = this.postgameStockpileAlliance,
-        postgame_stockpile_cross_court = this.postgameStockpileCrossCourt,
-        postgame_feed_outpost = this.postgameFeedOutpost,
-        postgame_receive_outpost = this.postgameReceiveOutpost,
-        postgame_under_trench = this.postgameUnderTrench,
-        postgame_over_trench = this.postgameOverTrench,
-
-        // Review
-        review_match_flag = this.reviewMatchFlag
-    )
-}
-*/

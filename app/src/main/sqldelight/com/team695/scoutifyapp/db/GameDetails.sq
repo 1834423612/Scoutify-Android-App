@@ -74,9 +74,6 @@ CREATE TABLE gameDetailsEntity (
     postgame_over_trench INTEGER AS Boolean,
     postgame_flag INTEGER AS Boolean,
 
-    -- Review
-    review_match_flag INTEGER AS Boolean,
-
     FOREIGN KEY (task_id) REFERENCES taskEntity(id) ON DELETE CASCADE
 );
 
@@ -91,18 +88,19 @@ WHERE id = ?;
 deleteDetail:
 DELETE FROM gameDetailsEntity WHERE id = ?;
 
--- Using an object parameter (?) allows you to pass the entire generated data class
 insertDetail:
 INSERT OR REPLACE INTO gameDetailsEntity(
     task_id,
     starting_location,
     robot_on_field,
     robot_preloaded,
+    pregame_flag,
     auton_path,
     auton_attempts_climb,
     auton_climb_success,
     auton_climb_position,
     auton_fuel_count,
+    auton_flag,
     transition_cycling_time,
     transition_stockpiling_time,
     transition_defending_time,
@@ -132,6 +130,7 @@ INSERT OR REPLACE INTO gameDetailsEntity(
     endgame_climb_success,
     endgame_climb_position,
     teleop_fuel_count,
+    teleop_flag,
     postgame_shoot_anywhere,
     postgame_shoot_while_moving,
     postgame_stockpile_neutral,
@@ -141,10 +140,9 @@ INSERT OR REPLACE INTO gameDetailsEntity(
     postgame_receive_outpost,
     postgame_under_trench,
     postgame_over_trench,
-    postgame_flag,
-    teleop_flag
+    postgame_flag
 )
-VALUES ?;
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 selectDetailsForTask:
 SELECT * FROM gameDetailsEntity
