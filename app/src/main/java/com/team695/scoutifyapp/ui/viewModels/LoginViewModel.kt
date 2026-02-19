@@ -90,8 +90,9 @@ class LoginViewModel(private val repository: UserRepository): ViewModel() {
     }
 
     suspend fun logout() {
-        ScoutifyClient.tokenManager.saveToken("")
         _loginState.value = LoginStatus()
+
+        repository.logout()
     }
 }
 
@@ -99,6 +100,7 @@ data class LoginStatus(
     val verifier: String? = null,
     val error: String? = null,
     val acToken: String? = null,
+    val displayName: String? = null,
     val loginUrl: String? = null,
 )
 

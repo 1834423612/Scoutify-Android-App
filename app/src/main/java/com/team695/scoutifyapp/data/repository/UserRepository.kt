@@ -1,5 +1,6 @@
 package com.team695.scoutifyapp.data.repository
 
+import android.webkit.CookieManager
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToOneOrNull
 import com.team695.scoutifyapp.BuildConfig
@@ -10,6 +11,7 @@ import com.team695.scoutifyapp.data.api.service.TokenResponse
 import com.team695.scoutifyapp.data.api.service.UserInfoResponse
 import com.team695.scoutifyapp.data.api.service.UserService
 import com.team695.scoutifyapp.db.AppDatabase
+import com.team695.scoutifyapp.ui.viewModels.LoginStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -59,5 +61,14 @@ class UserRepository(
             code = code,
             verifier = verifier
         )
+    }
+
+    suspend fun logout() {
+        withContext(Dispatchers.IO) {
+            ScoutifyClient.tokenManager.saveToken("")
+
+            CookieManager.getInstance().removeAllCookies(null)
+            CookieManager.getInstance().flush()
+        }
     }
 }

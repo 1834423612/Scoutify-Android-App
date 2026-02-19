@@ -9,6 +9,7 @@ data class UserInfoResponse(
     @SerializedName("preferred_username") val preferredUsername: String? = null,
     val picture: String? = null,
     val email: String? = null,
+    @SerializedName("display_name") val displayName: String? = null,
     @SerializedName("android_id") val androidId: String? = null
 )
 
