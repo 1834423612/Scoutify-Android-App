@@ -20,22 +20,23 @@ import kotlin.collections.plus
 @OptIn(FlowPreview::class)
 class DataViewModel(private val gameDetailRepository: GameDetailRepository) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(GameFormState())
-    val uiState: StateFlow<GameFormState> = _uiState.asStateFlow()
+    private val _formState = MutableStateFlow(GameFormState())
+    val formState: StateFlow<GameFormState> = _formState.asStateFlow()
 
     init {
-        _uiState
+        _formState
             .debounce(2000L)
             .distinctUntilChanged() // Only save if the state actually changed
             .onEach { currentFormState: GameFormState ->
-                gameDetailRepository.updateDbFromGameDetails(convertFormToGameDetails(currentFormState))
+                //When saving works, use this!
+                //gameDetailRepository.updateDbFromGameDetails(convertFormToGameDetails(currentFormState))
             }
             .launchIn(viewModelScope) // Run this in the background tied to the ViewModel's lifecycle
     }
 
     // called by UI to update match form state
     fun onEvent(event: FormEvent) {
-        _uiState.update { state ->
+        _formState.update { state ->
             when (event) {
                 // Metadata
                 is FormEvent.UpdateMetadata -> {
@@ -66,54 +67,7 @@ class DataViewModel(private val gameDetailRepository: GameDetailRepository) : Vi
                     state.copy(auton = state.auton.copy(intFields = updatedMap))
                 }
 
-                // Transition
-                is FormEvent.UpdateTransitionInt -> {
-                    val updatedMap = state.transition.intFields + (event.field to event.value)
-                    state.copy(transition = state.transition.copy(intFields = updatedMap))
-                }
-                is FormEvent.UpdateTransitionBool -> {
-                    val updatedMap = state.transition.boolFields + (event.field to event.value)
-                    state.copy(transition = state.transition.copy(boolFields = updatedMap))
-                }
-
-                // Shifts (1 through 4)
-                is FormEvent.UpdateShiftInt -> {
-                    when (event.shiftNumber) {
-                        1 -> {
-                            val updatedMap = state.shift1.intFields + (event.field to event.value)
-                            state.copy(shift1 = state.shift1.copy(intFields = updatedMap))
-                        }
-                        2 -> {
-                            val updatedMap = state.shift2.intFields + (event.field to event.value)
-                            state.copy(shift2 = state.shift2.copy(intFields = updatedMap))
-                        }
-                        3 -> {
-                            val updatedMap = state.shift3.intFields + (event.field to event.value)
-                            state.copy(shift3 = state.shift3.copy(intFields = updatedMap))
-                        }
-                        4 -> {
-                            val updatedMap = state.shift4.intFields + (event.field to event.value)
-                            state.copy(shift4 = state.shift4.copy(intFields = updatedMap))
-                        }
-                        else -> state // Ignore invalid shift numbers
-                    }
-                }
-
-                // Endgame
-                is FormEvent.UpdateEndgameInt -> {
-                    val updatedMap = state.endgame.intFields + (event.field to event.value)
-                    state.copy(endgame = state.endgame.copy(intFields = updatedMap))
-                }
-                is FormEvent.UpdateEndgameBool -> {
-                    val updatedMap = state.endgame.boolFields + (event.field to event.value)
-                    state.copy(endgame = state.endgame.copy(boolFields = updatedMap))
-                }
-                is FormEvent.UpdateEndgameString -> {
-                    val updatedMap = state.endgame.stringFields + (event.field to event.value)
-                    state.copy(endgame = state.endgame.copy(stringFields = updatedMap))
-                }
-
-                // Teleop
+                // Teleop Base Fields
                 is FormEvent.UpdateTeleopInt -> {
                     val updatedMap = state.teleop.intFields + (event.field to event.value)
                     state.copy(teleop = state.teleop.copy(intFields = updatedMap))
@@ -122,7 +76,99 @@ class DataViewModel(private val gameDetailRepository: GameDetailRepository) : Vi
                     val updatedMap = state.teleop.boolFields + (event.field to event.value)
                     state.copy(teleop = state.teleop.copy(boolFields = updatedMap))
                 }
+
+                // Nested Teleop Transition
+                is FormEvent.UpdateTransitionInt -> {
+                    // 1. Create the new map
+                    val updatedMap = state.teleop.transition.intFields + (event.field to event.value)
+                    // 2. Deep copy: GameFormState -> TeleopState -> TransitionState
+                    state.copy(
+                        teleop = state.teleop.copy(
+                            transition = state.teleop.transition.copy(intFields = updatedMap)
+                        )
+                    )
+                }
+                is FormEvent.UpdateTransitionBool -> {
+                    val updatedMap = state.teleop.transition.boolFields + (event.field to event.value)
+                    state.copy(
+                        teleop = state.teleop.copy(
+                            transition = state.teleop.transition.copy(boolFields = updatedMap)
+                        )
+                    )
+                }
+
+                // Nested Teleop Shifts (1 through 4)
+                is FormEvent.UpdateShiftInt -> {
+                    when (event.shiftNumber) {
+                        1 -> {
+                            val updatedMap = state.teleop.shift1.intFields + (event.field to event.value)
+                            state.copy(
+                                teleop = state.teleop.copy(
+                                    shift1 = state.teleop.shift1.copy(intFields = updatedMap)
+                                )
+                            )
+                        }
+                        2 -> {
+                            val updatedMap = state.teleop.shift2.intFields + (event.field to event.value)
+                            state.copy(
+                                teleop = state.teleop.copy(
+                                    shift2 = state.teleop.shift2.copy(intFields = updatedMap)
+                                )
+                            )
+                        }
+                        3 -> {
+                            val updatedMap = state.teleop.shift3.intFields + (event.field to event.value)
+                            state.copy(
+                                teleop = state.teleop.copy(
+                                    shift3 = state.teleop.shift3.copy(intFields = updatedMap)
+                                )
+                            )
+                        }
+                        4 -> {
+                            val updatedMap = state.teleop.shift4.intFields + (event.field to event.value)
+                            state.copy(
+                                teleop = state.teleop.copy(
+                                    shift4 = state.teleop.shift4.copy(intFields = updatedMap)
+                                )
+                            )
+                        }
+                        else -> state
+                    }
+                }
+
+                // Nested Teleop Endgame
+                is FormEvent.UpdateEndgameInt -> {
+                    val updatedMap = state.teleop.endgame.intFields + (event.field to event.value)
+                    state.copy(
+                        teleop = state.teleop.copy(
+                            endgame = state.teleop.endgame.copy(intFields = updatedMap)
+                        )
+                    )
+                }
+                is FormEvent.UpdateEndgameBool -> {
+                    val updatedMap = state.teleop.endgame.boolFields + (event.field to event.value)
+                    state.copy(
+                        teleop = state.teleop.copy(
+                            endgame = state.teleop.endgame.copy(boolFields = updatedMap)
+                        )
+                    )
+                }
+                is FormEvent.UpdateEndgameString -> {
+                    val updatedMap = state.teleop.endgame.stringFields + (event.field to event.value)
+                    state.copy(
+                        teleop = state.teleop.copy(
+                            endgame = state.teleop.endgame.copy(stringFields = updatedMap)
+                        )
+                    )
+                }
+
+                // Postgame
+                is FormEvent.UpdatePostgameBool -> {
+                    val updatedMap = state.postgame.boolFields + (event.field to event.value)
+                    state.copy(postgame = state.postgame.copy(boolFields = updatedMap))
+                }
             }
+
         }
     }
 

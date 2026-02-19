@@ -1,6 +1,6 @@
 package com.team695.scoutifyapp.data.types
 
-// --- Starting & Preload ---
+// Starting & Preload
 enum class PreloadDoubleField {
     STARTING_LOCATION
 }
@@ -10,7 +10,7 @@ enum class PreloadBoolField {
     ROBOT_PRELOADED
 }
 
-// --- Auton ---
+// Auton
 enum class AutonStringField {
     PATH,
     CLIMB_POSITION
@@ -25,7 +25,7 @@ enum class AutonIntField {
     FUEL_COUNT
 }
 
-// --- Transition Shift ---
+// Transition Shift
 enum class TransitionIntField {
     CYCLING_TIME,
     STOCKPILING_TIME,
@@ -37,7 +37,7 @@ enum class TransitionBoolField {
     FIRST_ACTIVE
 }
 
-// --- Shifts (1, 2, 3, and 4) ---
+// Shifts (1, 2, 3, and 4)
 enum class ShiftIntField {
     CYCLING_TIME,
     STOCKPILING_TIME,
@@ -45,7 +45,7 @@ enum class ShiftIntField {
     BROKEN_TIME
 }
 
-// --- Endgame ---
+// Endgame
 enum class EndgameIntField {
     CYCLING_TIME,
     STOCKPILING_TIME,
@@ -62,12 +62,17 @@ enum class EndgameStringField {
     CLIMB_POSITION
 }
 
-// --- Teleop ---
+// Teleop
 enum class TeleopIntField {
     FUEL_COUNT
 }
-
 enum class TeleopBoolField {
+    TELEOP_FLAG
+}
+
+// Postgame
+
+enum class PostgameBoolField {
     SHOOT_ANYWHERE,
     SHOOT_WHILE_MOVING,
     STOCKPILE_NEUTRAL,

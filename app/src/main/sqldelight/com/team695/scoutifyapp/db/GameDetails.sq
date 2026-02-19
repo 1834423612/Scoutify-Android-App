@@ -9,6 +9,7 @@ CREATE TABLE gameDetailsEntity (
     starting_location REAL,
     robot_on_field INTEGER AS Boolean,
     robot_preloaded INTEGER AS Boolean,
+    pregame_flag INTEGER AS Boolean,
 
     -- Auton
     auton_path TEXT,
@@ -16,6 +17,7 @@ CREATE TABLE gameDetailsEntity (
     auton_climb_success INTEGER AS Boolean,
     auton_climb_position TEXT,
     auton_fuel_count INTEGER AS Int,
+    auton_flag INTEGER AS Boolean,
 
     -- Transition Shift
     transition_cycling_time INTEGER AS Int,
@@ -58,17 +60,19 @@ CREATE TABLE gameDetailsEntity (
     endgame_climb_success INTEGER AS Boolean,
     endgame_climb_position TEXT,
 
-    -- Teleop
     teleop_fuel_count INTEGER AS Int,
-    teleop_shoot_anywhere INTEGER AS Boolean,
-    teleop_shoot_while_moving INTEGER AS Boolean,
-    teleop_stockpile_neutral INTEGER AS Boolean,
-    teleop_stockpile_alliance INTEGER AS Boolean,
-    teleop_stockpile_cross_court INTEGER AS Boolean,
-    teleop_feed_outpost INTEGER AS Boolean,
-    teleop_receive_outpost INTEGER AS Boolean,
-    teleop_under_trench INTEGER AS Boolean,
-    teleop_over_trench INTEGER AS Boolean,
+    teleop_flag INTEGER AS Boolean,
+    -- Postgame
+    postgame_shoot_anywhere INTEGER AS Boolean,
+    postgame_shoot_while_moving INTEGER AS Boolean,
+    postgame_stockpile_neutral INTEGER AS Boolean,
+    postgame_stockpile_alliance INTEGER AS Boolean,
+    postgame_stockpile_cross_court INTEGER AS Boolean,
+    postgame_feed_outpost INTEGER AS Boolean,
+    postgame_receive_outpost INTEGER AS Boolean,
+    postgame_under_trench INTEGER AS Boolean,
+    postgame_over_trench INTEGER AS Boolean,
+    postgame_flag INTEGER AS Boolean,
 
     -- Review
     review_match_flag INTEGER AS Boolean,
@@ -128,18 +132,19 @@ INSERT OR REPLACE INTO gameDetailsEntity(
     endgame_climb_success,
     endgame_climb_position,
     teleop_fuel_count,
-    teleop_shoot_anywhere,
-    teleop_shoot_while_moving,
-    teleop_stockpile_neutral,
-    teleop_stockpile_alliance,
-    teleop_stockpile_cross_court,
-    teleop_feed_outpost,
-    teleop_receive_outpost,
-    teleop_under_trench,
-    teleop_over_trench,
-    review_match_flag
+    postgame_shoot_anywhere,
+    postgame_shoot_while_moving,
+    postgame_stockpile_neutral,
+    postgame_stockpile_alliance,
+    postgame_stockpile_cross_court,
+    postgame_feed_outpost,
+    postgame_receive_outpost,
+    postgame_under_trench,
+    postgame_over_trench,
+    postgame_flag,
+    teleop_flag
 )
-VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+VALUES ?;
 
 selectDetailsForTask:
 SELECT * FROM gameDetailsEntity
