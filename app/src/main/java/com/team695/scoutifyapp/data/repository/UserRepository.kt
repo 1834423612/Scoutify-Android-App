@@ -37,9 +37,11 @@ class UserRepository(
 
     suspend fun getUserInfo() {
         withContext(Dispatchers.IO) {
+            println("HERE!")
             val userRes: UserInfoResponse = userService.getUserInfo(
                 authHeader = "Bearer ${ScoutifyClient.tokenManager.getToken() ?: ""}"
             )
+            println("HERE2")
 
             db.userQueries.insertUser(
                 name = userRes.name,
