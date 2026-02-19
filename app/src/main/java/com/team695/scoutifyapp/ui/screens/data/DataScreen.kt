@@ -1,4 +1,4 @@
-package com.team695.scoutifyapp.ui.screens.dataCollection
+package com.team695.scoutifyapp.ui.screens.data
 
 import android.os.Parcelable
 import androidx.compose.animation.AnimatedVisibilityScope
@@ -25,18 +25,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -53,17 +47,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.team695.scoutifyapp.R
 import com.team695.scoutifyapp.ui.components.progressBorder
-import com.team695.scoutifyapp.ui.modifier.buttonHighlight
-import com.team695.scoutifyapp.ui.reusables.BackgroundGradient
-import com.team695.scoutifyapp.ui.reusables.ImageBackground
+import com.team695.scoutifyapp.ui.components.buttonHighlight
+import com.team695.scoutifyapp.ui.components.BackgroundGradient
+import com.team695.scoutifyapp.ui.components.ImageBackground
 import com.team695.scoutifyapp.ui.theme.DarkGunmetal
 import com.team695.scoutifyapp.ui.theme.DarkishGunmetal
-import com.team695.scoutifyapp.ui.theme.Deselected
 import com.team695.scoutifyapp.ui.theme.LightGunmetal
 import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.theme.mediumCornerRadius

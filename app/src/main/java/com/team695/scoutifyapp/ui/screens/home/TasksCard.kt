@@ -34,7 +34,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -43,9 +42,9 @@ import com.team695.scoutifyapp.data.api.model.Task
 import com.team695.scoutifyapp.data.api.model.TaskType
 import com.team695.scoutifyapp.ui.components.progressBorder
 import com.team695.scoutifyapp.ui.reusables.Pressable
-import com.team695.scoutifyapp.ui.reusables.BackgroundGradient
-import com.team695.scoutifyapp.ui.reusables.ImageBackground
-import com.team695.scoutifyapp.ui.modifier.buttonHighlight
+import com.team695.scoutifyapp.ui.components.BackgroundGradient
+import com.team695.scoutifyapp.ui.components.ImageBackground
+import com.team695.scoutifyapp.ui.components.buttonHighlight
 import com.team695.scoutifyapp.ui.theme.BadgeBackground
 import com.team695.scoutifyapp.ui.theme.BadgeContent
 import com.team695.scoutifyapp.ui.theme.Background
