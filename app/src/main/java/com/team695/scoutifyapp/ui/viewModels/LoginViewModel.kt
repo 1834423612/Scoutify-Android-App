@@ -1,30 +1,19 @@
 package com.team695.scoutifyapp.ui.viewModels
 
-import android.content.Context
 import android.util.Base64
-import android.util.Log
-import androidx.compose.runtime.currentRecomposeScope
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.team695.scoutifyapp.BuildConfig
-import com.team695.scoutifyapp.data.api.CasdoorClient
-import com.team695.scoutifyapp.data.api.ScoutifyClient
-import com.team695.scoutifyapp.data.api.model.LoginBody
+import com.team695.scoutifyapp.data.api.client.ScoutifyClient
 import com.team695.scoutifyapp.data.api.model.User
-import com.team695.scoutifyapp.data.api.service.LoginService
 import com.team695.scoutifyapp.data.api.service.TokenResponse
-import com.team695.scoutifyapp.data.api.service.UserInfoResponse
 import com.team695.scoutifyapp.data.repository.UserRepository
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import org.json.JSONObject
 import java.security.MessageDigest
 import java.security.SecureRandom
 

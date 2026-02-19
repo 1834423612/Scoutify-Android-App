@@ -1,25 +1,12 @@
 package com.team695.scoutifyapp.data.api.service
 
 import com.google.gson.annotations.SerializedName
-import com.team695.scoutifyapp.data.api.model.LoginBody
-import okhttp3.ResponseBody
-import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
-import retrofit2.http.GET
-import retrofit2.http.Header
 import retrofit2.http.POST
-import retrofit2.http.QueryMap
 
 data class TokenResponse(
     @SerializedName("access_token") final val accessToken: String
-)
-
-data class UserInfoResponse(
-    val name: String? = null,
-    @SerializedName("preferred_username") val preferredUsername: String? = null,
-    val picture: String? = null,
-    val email: String? = null
 )
 
 interface LoginService {
@@ -32,9 +19,4 @@ interface LoginService {
         @Field("code") code: String,
         @Field("code_verifier") verifier: String
     ): TokenResponse
-
-    @GET("api/userinfo")
-    suspend fun getUserInfo(
-        @Header("Authorization") authHeader: String
-    ): UserInfoResponse
 }

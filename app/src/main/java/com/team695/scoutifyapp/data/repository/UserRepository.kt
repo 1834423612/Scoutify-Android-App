@@ -3,11 +3,12 @@ package com.team695.scoutifyapp.data.repository
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToOneOrNull
 import com.team695.scoutifyapp.BuildConfig
-import com.team695.scoutifyapp.data.api.ScoutifyClient
+import com.team695.scoutifyapp.data.api.client.ScoutifyClient
 import com.team695.scoutifyapp.data.api.model.User
 import com.team695.scoutifyapp.data.api.service.LoginService
 import com.team695.scoutifyapp.data.api.service.TokenResponse
 import com.team695.scoutifyapp.data.api.service.UserInfoResponse
+import com.team695.scoutifyapp.data.api.service.UserService
 import com.team695.scoutifyapp.db.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -15,7 +16,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 class UserRepository(
-    private val service: LoginService,
+    private val loginService: LoginService,
+    private val userService: UserService,
     private val db: AppDatabase,
 ) {
 
@@ -35,7 +37,7 @@ class UserRepository(
 
     suspend fun getUserInfo() {
         withContext(Dispatchers.IO) {
-            val userRes: UserInfoResponse = service.getUserInfo(
+            val userRes: UserInfoResponse = userService.getUserInfo(
                 authHeader = "Bearer ${ScoutifyClient.tokenManager.getToken() ?: ""}"
             )
 
@@ -49,7 +51,7 @@ class UserRepository(
     }
 
     suspend fun getAccessToken(code: String, verifier: String): TokenResponse {
-        return service.getAccessToken(
+        return loginService.getAccessToken(
             clientSecret = BuildConfig.CASDOOR_CLIENT_SECRET,
             clientId = BuildConfig.CASDOOR_CLIENT_ID,
             code = code,

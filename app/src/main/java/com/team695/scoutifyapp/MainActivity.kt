@@ -4,8 +4,9 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
-import com.team695.scoutifyapp.data.api.CasdoorClient
-import com.team695.scoutifyapp.data.api.ScoutifyClient
+import com.team695.scoutifyapp.data.api.client.CasdoorClient
+import com.team695.scoutifyapp.data.api.client.ScoutifyClient
+import com.team695.scoutifyapp.data.api.model.User
 import com.team695.scoutifyapp.data.api.service.LoginService
 import com.team695.scoutifyapp.data.api.service.MatchService
 import com.team695.scoutifyapp.ui.theme.ScoutifyTheme
@@ -15,8 +16,8 @@ import com.team695.scoutifyapp.data.repository.TaskRepository
 import com.team695.scoutifyapp.data.repository.UserRepository
 import com.team695.scoutifyapp.db.AppDatabase
 import com.team695.scoutifyapp.db.GameDetailsEntity
-import app.cash.sqldelight.ColumnAdapter
 import com.team695.scoutifyapp.data.api.service.GameDetailsService
+import com.team695.scoutifyapp.data.api.service.UserService
 import com.team695.scoutifyapp.data.intAdapter
 import com.team695.scoutifyapp.data.repository.GameDetailRepository
 class MainActivity : ComponentActivity() {
@@ -70,9 +71,15 @@ class MainActivity : ComponentActivity() {
         val taskService = TaskService(db = db)
         val matchService: MatchService = ScoutifyClient.matchService
         val loginService: LoginService = CasdoorClient.loginService
+        val userService: UserService = ScoutifyClient.userService
         val gameDetailsService: GameDetailsService = GameDetailsService()
 
-        val userRepository = UserRepository(service = loginService, db = db)
+        val userRepository = UserRepository(
+            loginService = loginService,
+            userService = userService,
+            db = db
+        )
+
         val taskRepository = TaskRepository(service = taskService, db = db)
         val matchRepository = MatchRepository(service = matchService, db = db)
         val gameDetailRepository = GameDetailRepository(service = gameDetailsService, db = db)
