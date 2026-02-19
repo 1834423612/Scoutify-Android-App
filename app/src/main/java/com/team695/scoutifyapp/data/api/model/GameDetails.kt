@@ -10,13 +10,14 @@ data class GameDetails(
     val startingLocation: Double? = null,
     val robotOnField: Boolean? = null,
     val robotPreloaded: Boolean? = null,
-
+    val pregameFlag: Boolean? = null,
     // Auton
     val autonPath: String? = null,
     val autonAttemptsClimb: Boolean? = null,
     val autonClimbSuccess: Boolean? = null,
     val autonClimbPosition: String? = null,
     val autonFuelCount: Int? = null,
+    val autonFlag: Boolean? = null,
 
     // Transition Shift
     val transitionCyclingTime: Int? = null,
@@ -61,16 +62,18 @@ data class GameDetails(
 
     // Teleop
     val teleopFuelCount: Int? = null,
-    val teleopShootAnywhere: Boolean? = null,
-    val teleopShootWhileMoving: Boolean? = null,
-    val teleopStockpileNeutral: Boolean? = null,
-    val teleopStockpileAlliance: Boolean? = null,
-    val teleopStockpileCrossCourt: Boolean? = null,
-    val teleopFeedOutpost: Boolean? = null,
-    val teleopReceiveOutpost: Boolean? = null,
-    val teleopUnderTrench: Boolean? = null,
-    val teleopOverTrench: Boolean? = null,
+    val teleopFlag: Boolean? = null,
 
+    val postgameShootWhileMoving: Boolean? = null,
+    val postgameStockpileNeutral: Boolean? = null,
+    val postgameStockpileAlliance: Boolean? = null,
+    val postgameStockpileCrossCourt: Boolean? = null,
+    val postgameFeedOutpost: Boolean? = null,
+    val postgameReceiveOutpost: Boolean? = null,
+    val postgameUnderTrench: Boolean? = null,
+    val postgameOverTrench: Boolean? = null,
+    val postgameShootAnywhere: Boolean? = null,
+    val postgameFlag: Boolean? = null,
     // Review
     val reviewMatchFlag: Boolean? = null
 )
@@ -135,23 +138,22 @@ fun GameDetailsEntity.createGameDetailsFromDb(): GameDetails {
         endgameClimbPosition = this.endgame_climb_position,
 
         // Teleop
-        teleopFuelCount = this.teleop_fuel_count,
-        teleopShootAnywhere = this.teleop_shoot_anywhere,
-        teleopShootWhileMoving = this.teleop_shoot_while_moving,
-        teleopStockpileNeutral = this.teleop_stockpile_neutral,
-        teleopStockpileAlliance = this.teleop_stockpile_alliance,
-        teleopStockpileCrossCourt = this.teleop_stockpile_cross_court,
-        teleopFeedOutpost = this.teleop_feed_outpost,
-        teleopReceiveOutpost = this.teleop_receive_outpost,
-        teleopUnderTrench = this.teleop_under_trench,
-        teleopOverTrench = this.teleop_over_trench,
+        postgameFuelCount = this.postgame_fuel_count,
+        postgameShootAnywhere = this.postgame_shoot_anywhere,
+        postgameShootWhileMoving = this.postgame_shoot_while_moving,
+        postgameStockpileNeutral = this.postgame_stockpile_neutral,
+        postgameStockpileAlliance = this.postgame_stockpile_alliance,
+        postgameStockpileCrossCourt = this.postgame_stockpile_cross_court,
+        postgameFeedOutpost = this.postgame_feed_outpost,
+        postgameReceiveOutpost = this.postgame_receive_outpost,
+        postgameUnderTrench = this.postgame_under_trench,
+        postgameOverTrench = this.postgame_over_trench,
 
         // Review
         reviewMatchFlag = this.review_match_flag
     )
 }
 
-/*
 fun GameDetails.toDbEntity(): GameDetailsEntity {
     return GameDetailsEntity(
         id = this.id,
@@ -210,16 +212,16 @@ fun GameDetails.toDbEntity(): GameDetailsEntity {
         endgame_climb_position = this.endgameClimbPosition,
 
         // Teleop
-        teleop_fuel_count = this.teleopFuelCount,
-        teleop_shoot_anywhere = this.teleopShootAnywhere,
-        teleop_shoot_while_moving = this.teleopShootWhileMoving,
-        teleop_stockpile_neutral = this.teleopStockpileNeutral,
-        teleop_stockpile_alliance = this.teleopStockpileAlliance,
-        teleop_stockpile_cross_court = this.teleopStockpileCrossCourt,
-        teleop_feed_outpost = this.teleopFeedOutpost,
-        teleop_receive_outpost = this.teleopReceiveOutpost,
-        teleop_under_trench = this.teleopUnderTrench,
-        teleop_over_trench = this.teleopOverTrench,
+        postgame_fuel_count = this.postgameFuelCount,
+        postgame_shoot_anywhere = this.postgameShootAnywhere,
+        postgame_shoot_while_moving = this.postgameShootWhileMoving,
+        postgame_stockpile_neutral = this.postgameStockpileNeutral,
+        postgame_stockpile_alliance = this.postgameStockpileAlliance,
+        postgame_stockpile_cross_court = this.postgameStockpileCrossCourt,
+        postgame_feed_outpost = this.postgameFeedOutpost,
+        postgame_receive_outpost = this.postgameReceiveOutpost,
+        postgame_under_trench = this.postgameUnderTrench,
+        postgame_over_trench = this.postgameOverTrench,
 
         // Review
         review_match_flag = this.reviewMatchFlag

@@ -36,6 +36,7 @@ data class PreloadState(
 }
 
 data class AutonState(
+    val yourState:
     val stringFields: Map<AutonStringField, String?> = AutonStringField.entries.associateWith { null },
     val boolFields: Map<AutonBoolField, Boolean?> = AutonBoolField.entries.associateWith { null },
     val intFields: Map<AutonIntField, Int?> = AutonIntField.entries.associateWith { null }
