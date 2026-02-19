@@ -1,7 +1,6 @@
 package com.team695.scoutifyapp.ui.screens.login
 
 import android.graphics.Bitmap
-import android.util.Base64
 import android.util.Log
 import android.view.ViewGroup
 import android.webkit.WebResourceError
@@ -10,51 +9,25 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.navigation.NavController
-import com.team695.scoutifyapp.data.api.CasdoorClient
-import com.team695.scoutifyapp.data.api.ScoutifyClient
-import com.team695.scoutifyapp.data.api.service.LoginService
+import com.team695.scoutifyapp.data.api.client.ScoutifyClient
 import com.team695.scoutifyapp.ui.viewModels.LoginViewModel
-import com.team695.scoutifyapp.ui.viewModels.ViewModelFactory
-import com.team695.scoutifyapp.ui.extensions.deviceId
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
-import org.json.JSONObject
-import java.net.HttpURLConnection
-import java.net.URL
-import java.security.MessageDigest
-import java.security.SecureRandom
 
 private const val TAG = "CasdoorLogin"
 
