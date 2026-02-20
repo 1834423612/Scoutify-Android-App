@@ -65,16 +65,14 @@ fun LoginScreen(
             CasdoorWebView(
                 url = loginState.loginUrl!!,
                 onCodeReceived = { code ->
-                    Log.d(TAG, "🚀 Auth Code Received: $code")
 
                     CoroutineScope(Dispatchers.IO).launch {
                         try {
                             loginViewModel.tokenExchange(code)
-                            Log.d(TAG, "✅ Token Received: ${loginState.acToken}")
 
                             loginViewModel.getUserInfo()
                         } catch (e: Exception) {
-                            Log.e(TAG, "❌ Login Error", e)
+                            Log.e(TAG, "Login error", e)
                         }
                     }
                 },
@@ -116,9 +114,8 @@ fun LoginScreen(
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp) // Adds a little gap between items
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Use .name instead of .displayName, and add your TextPrimary color
                 Text(
                     text = "Welcome, ${userInfo?.name}!",
                     color = TextPrimary
@@ -140,10 +137,7 @@ fun LoginScreen(
                 ) {
                     Button(
                         onClick = {
-                            // (Reminder to move this CoroutineScope to your ViewModel!)
-                            CoroutineScope(Dispatchers.IO).launch {
-                                loginViewModel.logout()
-                            }
+                            loginViewModel.logout()
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
                     ) {
@@ -189,10 +183,6 @@ fun CasdoorWebView(
                     "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.5672.136 Mobile Safari/537.36"
 
                 webViewClient = object : WebViewClient() {
-                    override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-                        Log.d(TAG, "⚡ Page Started: $url")
-                    }
-
                     override fun shouldOverrideUrlLoading(
                         view: WebView?,
                         request: WebResourceRequest?

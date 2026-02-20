@@ -10,6 +10,8 @@ import com.team695.scoutifyapp.data.api.client.ScoutifyClient
 import com.team695.scoutifyapp.data.api.model.User
 import com.team695.scoutifyapp.data.api.service.TokenResponse
 import com.team695.scoutifyapp.data.repository.UserRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -104,10 +106,12 @@ class LoginViewModel(private val repository: UserRepository): ViewModel() {
         repository.getUserInfo()
     }
 
-    suspend fun logout() {
-        _loginState.value = LoginStatus()
+    fun logout() {
+        viewModelScope.launch(Dispatchers.IO) {
+            _loginState.value = LoginStatus()
 
-        repository.logout()
+            repository.logout()
+        }
     }
 }
 
