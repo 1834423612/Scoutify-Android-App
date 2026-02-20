@@ -30,6 +30,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.webkit.WebSettingsCompat
+import androidx.webkit.WebViewFeature
 import com.team695.scoutifyapp.data.api.client.ScoutifyClient
 import com.team695.scoutifyapp.ui.theme.Gunmetal
 import com.team695.scoutifyapp.ui.theme.LightGunmetal
@@ -91,8 +93,8 @@ fun LoginScreen(
                             1.dp,
                             Border,
                             RoundedCornerShape(mediumCornerRadius)
-                        ) // Changed border to Border
-                        .background(DarkGunmetal) // Changed background to LightGunmetal
+                        )
+                        .background(DarkGunmetal)
                 ) {
                     Button(
                         onClick = {
@@ -128,9 +130,13 @@ fun LoginScreen(
 
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(smallCornerRadius))
-                        .border(1.dp, Border, RoundedCornerShape(smallCornerRadius))
-                        .background(LightGunmetal)
+                        .clip(RoundedCornerShape(mediumCornerRadius))
+                        .border(
+                            1.dp,
+                            Border,
+                            RoundedCornerShape(mediumCornerRadius)
+                        )
+                        .background(DarkGunmetal)
                 ) {
                     Button(
                         onClick = {
@@ -170,6 +176,15 @@ fun CasdoorWebView(
                 )
                 settings.javaScriptEnabled = true
                 settings.domStorageEnabled = true
+
+                /*
+                This force dark mode doesn't work for some reason
+
+                if (WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING)) {
+                    WebSettingsCompat.setAlgorithmicDarkeningAllowed(settings, true)
+                }
+                */
+
                 settings.userAgentString =
                     "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.5672.136 Mobile Safari/537.36"
 
@@ -198,7 +213,7 @@ fun CasdoorWebView(
                         request: WebResourceRequest?,
                         error: WebResourceError?
                     ) {
-                        Log.e(TAG, "⛔ WebView Error: ${error?.description}")
+                        Log.e(TAG, "Webview error: ${error?.description}")
                     }
                 }
                 loadUrl(url)
