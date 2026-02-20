@@ -97,6 +97,7 @@ fun Root(
                 onNavigateToUpload = { navController.navigate(route="upload") },
                 onNavigateToSettings = { navController.navigate(route="settings") },
                 onNavigateToLogin = { navController.navigate(route="login") },
+                userRepository = userRepository,
                 navController = navController
             )
 

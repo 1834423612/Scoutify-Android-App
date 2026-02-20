@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,22 +41,25 @@ import com.team695.scoutifyapp.ui.theme.TextPrimary
 import androidx.compose.runtime.getValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.team695.scoutifyapp.data.repository.UserRepository
 
 
 @Composable
 fun NavRail(
 
-onNavigateToHome: () -> Unit = {},
+    onNavigateToHome: () -> Unit = {},
     onNavigateToPitScouting: () -> Unit = {},
     onNavigateToUpload: () -> Unit = {},
     onNavigateToSettings: () -> Unit = {},
     onNavigateToLogin: () -> Unit = {},
-    navController: NavHostController
+    userRepository: UserRepository,
+    navController: NavHostController,
 ) {
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
+    val user by userRepository.currentUser.collectAsState(initial = null)
 
     val roundedShape = RoundedCornerShape(
         topStart = 0.dp,
@@ -130,7 +134,7 @@ onNavigateToHome: () -> Unit = {},
                             .graphicsLayer(
                                 translationY = -5f,
                             ),
-                        text="Clarence",
+                        text = user?.name ?: "",
                         color = TextPrimary,
                         fontSize = 9.sp)
                 }
