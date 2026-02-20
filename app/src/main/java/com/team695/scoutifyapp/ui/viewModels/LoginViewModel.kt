@@ -47,7 +47,7 @@ class LoginViewModel(private val repository: UserRepository): ViewModel() {
             .buildUpon()
             .appendQueryParameter("client_id", BuildConfig.CASDOOR_CLIENT_ID)
             .appendQueryParameter("response_type", "code")
-            .appendQueryParameter("scope", "profile")
+            .appendQueryParameter("scope", "profile+email+openid")
             .appendQueryParameter("state", BuildConfig.CASDOOR_APP_NAME)
             .appendQueryParameter("code_challenge_method", "S256")
             .appendQueryParameter("code_challenge", challenge)

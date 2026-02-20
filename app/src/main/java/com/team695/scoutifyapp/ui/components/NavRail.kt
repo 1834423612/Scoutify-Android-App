@@ -148,7 +148,7 @@ fun NavRail(
                     modifier = Modifier
                         .width(140.dp)
                         .graphicsLayer {
-                            translationX = -80f
+                            translationX = -40.dp.toPx()
                             translationY = 0f
                         }
                         .clip(
@@ -164,7 +164,7 @@ fun NavRail(
                         modifier = Modifier
                             .fillMaxWidth()
                             .graphicsLayer {
-                                translationX = 80f
+                                translationX = 40.dp.toPx()
                                 translationY = 0f
                             },
                         horizontalAlignment = Alignment.CenterHorizontally,
