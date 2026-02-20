@@ -1,6 +1,5 @@
-package com.team695.scoutifyapp.ui.modifier
+package com.team695.scoutifyapp.ui.components
 
-import android.graphics.drawable.shapes.Shape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.innerShadow

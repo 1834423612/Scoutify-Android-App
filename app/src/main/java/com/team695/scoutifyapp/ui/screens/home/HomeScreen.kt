@@ -23,7 +23,7 @@ fun HomeScreen(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Box(modifier = Modifier.weight(0.3f)) {
-            TasksCard(homeViewModel = homeViewModel, onPress = {navController.navigate(route = "data")})
+            TasksCard(homeViewModel = homeViewModel, onPress = {navController.navigate(route = "data/${it}")})
         }
         Box(modifier = Modifier.weight(0.7f)) {
             MatchSchedule(homeViewModel = homeViewModel, onCommentClicked = {navController.navigate("comments")})

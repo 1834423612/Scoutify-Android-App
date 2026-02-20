@@ -49,9 +49,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.team695.scoutifyapp.R
 import com.team695.scoutifyapp.data.api.model.Match
 import com.team695.scoutifyapp.ui.reusables.Pressable
-import com.team695.scoutifyapp.ui.reusables.BackgroundGradient
-import com.team695.scoutifyapp.ui.reusables.ImageBackground
-import com.team695.scoutifyapp.ui.modifier.buttonHighlight
+import com.team695.scoutifyapp.ui.components.BackgroundGradient
+import com.team695.scoutifyapp.ui.components.ImageBackground
+import com.team695.scoutifyapp.ui.components.buttonHighlight
 import com.team695.scoutifyapp.ui.theme.Accent
 import com.team695.scoutifyapp.ui.theme.BadgeBackground
 import com.team695.scoutifyapp.ui.theme.BadgeContent

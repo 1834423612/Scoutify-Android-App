@@ -40,8 +40,6 @@ import com.team695.scoutifyapp.ui.theme.TextPrimary
 import androidx.compose.runtime.getValue
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.team695.scoutifyapp.ui.reusables.BackgroundGradient
-import com.team695.scoutifyapp.ui.reusables.ImageBackground
 
 
 @Composable
