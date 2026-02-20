@@ -41,11 +41,9 @@ class UserRepository(
 
     suspend fun getUserInfo() {
         withContext(Dispatchers.IO) {
-            println("HERE!")
             val userRes: UserInfoResponse = userService.getUserInfo(
                 authHeader = "Bearer ${ScoutifyClient.tokenManager.getToken() ?: ""}"
             )
-            println("HERE2")
 
             db.userQueries.insertUser(
                 name = userRes.name,
@@ -68,6 +66,7 @@ class UserRepository(
 
     suspend fun logout() {
         withContext(Dispatchers.IO) {
+            db.userQueries.deleteUser()
             ScoutifyClient.tokenManager.saveToken("")
 
             CookieManager.getInstance().removeAllCookies(null)

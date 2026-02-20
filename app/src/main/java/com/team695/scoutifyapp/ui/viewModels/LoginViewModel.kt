@@ -1,6 +1,8 @@
 package com.team695.scoutifyapp.ui.viewModels
 
+import android.net.Uri
 import android.util.Base64
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.team695.scoutifyapp.BuildConfig
@@ -41,15 +43,20 @@ class LoginViewModel(private val repository: UserRepository): ViewModel() {
     fun generateLoginURL(): String {
         val verifier = generateCodeVerifier()
         val challenge = generateCodeChallenge(verifier)
+        val loginUrl = "${BuildConfig.CASDOOR_ENDPOINT}/login/oauth/authorize".toUri()
+            .buildUpon()
+            .appendQueryParameter("client_id", BuildConfig.CASDOOR_CLIENT_ID)
+            .appendQueryParameter("response_type", "code")
+            .appendQueryParameter("scope", "profile")
+            .appendQueryParameter("state", BuildConfig.CASDOOR_APP_NAME)
+            .appendQueryParameter("code_challenge_method", "S256")
+            .appendQueryParameter("code_challenge", challenge)
+            .appendQueryParameter("redirect_uri", BuildConfig.CASDOOR_REDIRECT_URI)
+            .build()
+            .toString()
 
-        val loginUrl = "${BuildConfig.CASDOOR_ENDPOINT}/login/oauth/authorize?" +
-                "client_id=${BuildConfig.CASDOOR_CLIENT_ID}" +
-                "&response_type=code" +
-                "&scope=profile email openid" +
-                "&state=${BuildConfig.CASDOOR_APP_NAME}" +
-                "&code_challenge_method=S256" +
-                "&code_challenge=$challenge" +
-                "&redirect_uri=${BuildConfig.CASDOOR_REDIRECT_URI}"
+
+        println("Safely encoded URL: $loginUrl")
 
         _loginState.value = LoginStatus(
             verifier = verifier,
