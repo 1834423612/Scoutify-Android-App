@@ -250,7 +250,7 @@ private fun ListContent(
                                 .padding(10.dp,0.dp,10.dp,0.dp)
                         ) {
                             Text(
-                                text = section.name.toString().lowercase().replaceFirstChar { it.uppercase() },
+                                text = section.name,
                                 color = TextPrimary,
                                 fontSize = 20.sp,
                             )

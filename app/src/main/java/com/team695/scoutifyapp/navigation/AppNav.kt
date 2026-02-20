@@ -9,6 +9,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.frc.scouting.ScoutingAppScreen
 import com.team695.scoutifyapp.ui.InputScreen
 import com.team695.scoutifyapp.ui.screens.CommentsScreen
 import com.team695.scoutifyapp.ui.screens.home.HomeScreen
@@ -67,7 +68,7 @@ fun AppNav(
                 ) }
             )
 
-            DataScreen(navController = navController, dataViewModel = dataViewModel)
+            ScoutingAppScreen()
         }
         composable(route = "comments") {
             CommentsScreen()
