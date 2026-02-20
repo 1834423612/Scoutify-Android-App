@@ -132,9 +132,9 @@ fun NavRail(
                     Text(
                         modifier = Modifier
                             .graphicsLayer(
-                                translationY = -5f,
+                                translationY = -4f,
                             ),
-                        text = user?.name ?: "",
+                        text = (user?.name ?: "Log In").take(8),
                         color = TextPrimary,
                         fontSize = 9.sp)
                 }
