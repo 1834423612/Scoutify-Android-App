@@ -1,0 +1,22 @@
+CREATE TABLE event_teams_user_assignment (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    sm_year INTEGER NOT NULL,
+    cm_event_code TEXT NOT NULL,
+    tm_number INTEGER NOT NULL,
+    um_id INTEGER NOT NULL,
+    user_tm_number INTEGER NOT NULL
+);
+
+deleteAllEventTeamsUserAssignment:
+DELETE FROM event_teams_user_assignment;
+
+insertOrReplaceEventTeamsUserAssignment:
+INSERT OR REPLACE INTO event_teams_user_assignment (
+    id,
+    sm_year,
+    cm_event_code,
+    tm_number,
+    um_id,
+    user_tm_number
+)
+VALUES (?, ?, ?, ?, ?, ?);

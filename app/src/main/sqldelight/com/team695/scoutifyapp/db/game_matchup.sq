@@ -1,0 +1,37 @@
+CREATE TABLE game_matchup (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+
+    frc_season_master_sm_year INTEGER NOT NULL,
+    competition_master_cm_event_code TEXT NOT NULL,
+    gm_game_type TEXT NOT NULL,
+    gm_number INTEGER NOT NULL,
+    gm_alliance TEXT NOT NULL,
+    gm_alliance_position INTEGER NOT NULL,
+    team_master_tm_number INTEGER NOT NULL,
+    gm_value TEXT,
+    gm_timestamp INTEGER NOT NULL,
+    cm_event_code TEXT NOT NULL
+);
+
+
+selectAllMatches:
+SELECT * FROM game_matchup
+ORDER BY gm_timestamp ASC;
+
+insertMatch:
+INSERT OR REPLACE INTO game_matchup (
+    frc_season_master_sm_year,
+    competition_master_cm_event_code,
+    gm_game_type,
+    gm_number,
+    gm_alliance,
+    gm_alliance_position,
+    team_master_tm_number,
+    gm_value,
+    gm_timestamp,
+    cm_event_code
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteAllMatches:
+DELETE FROM game_matchup;

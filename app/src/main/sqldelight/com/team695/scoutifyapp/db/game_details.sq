@@ -1,0 +1,51 @@
+CREATE TABLE game_details (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    task_id INTEGER NOT NULL UNIQUE,
+
+    frc_season_master_sm_year INTEGER NOT NULL,
+    competition_master_cm_event_code TEXT NOT NULL,
+    game_matchup_gm_game_type TEXT NOT NULL,
+    game_matchup_gm_number INTEGER NOT NULL,
+    game_matchup_gm_alliance TEXT NOT NULL,
+    game_matchup_gm_alliance_position INTEGER NOT NULL,
+    game_element_group_geg_grp_key TEXT NOT NULL,
+    game_element_ge_key TEXT NOT NULL,
+    gd_value TEXT,
+    gd_score INTEGER,
+    gd_um_id INTEGER,
+    gd_auton_path TEXT,
+
+    FOREIGN KEY (task_id) REFERENCES taskEntity(id) ON DELETE CASCADE
+);
+
+selectDetailsForTask:
+SELECT * FROM game_details
+WHERE task_id = ?;
+
+selectDetailsById:
+SELECT * FROM game_details
+WHERE id = ?;
+
+deleteDetails:
+DELETE FROM game_details
+WHERE id = ?;
+
+insertOrReplaceGameDetails:
+INSERT OR REPLACE INTO game_details (
+    id,
+    task_id,
+    frc_season_master_sm_year,
+    competition_master_cm_event_code,
+    game_matchup_gm_game_type,
+    game_matchup_gm_number,
+    game_matchup_gm_alliance,
+    game_matchup_gm_alliance_position,
+    game_element_group_geg_grp_key,
+    game_element_ge_key,
+    gd_value,
+    gd_score,
+    gd_um_id,
+    gd_auton_path
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+

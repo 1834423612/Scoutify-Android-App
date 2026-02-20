@@ -1,0 +1,31 @@
+CREATE TABLE event_task_tracker (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    sm_year INTEGER NOT NULL,
+    cm_event_code TEXT NOT NULL,
+    tm_number INTEGER NOT NULL,
+    um_id INTEGER NOT NULL,
+    user_tm_number INTEGER NOT NULL,
+    gm_number INTEGER NOT NULL,
+    checkin_task TEXT NOT NULL,
+    task_completed INTEGER NOT NULL,
+    gm_game_type TEXT NOT NULL,
+    task_id INTEGER NOT NULL
+);
+deleteAllEventTaskTracker:
+DELETE FROM event_task_tracker;
+
+insert_event_task_tracker :
+INSERT OR REPLACE INTO event_task_tracker (
+    id,
+    sm_year,
+    cm_event_code,
+    tm_number,
+    um_id,
+    user_tm_number,
+    gm_number,
+    checkin_task,
+    task_completed,
+    gm_game_type,
+    task_id
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);

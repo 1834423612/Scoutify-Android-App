@@ -1,0 +1,30 @@
+CREATE TABLE game_comments (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    frc_season_master_sm_year INTEGER NOT NULL,
+    competition_master_cm_event_code TEXT NOT NULL,
+    game_matchup_gm_game_type TEXT NOT NULL,
+    game_matchup_gm_number INTEGER NOT NULL,
+    game_matchup_gm_alliance TEXT NOT NULL,
+    game_matchup_gm_alliance_position INTEGER NOT NULL,
+    gc_comment TEXT,
+    gc_um_id INTEGER,
+    gc_ts TEXT NOT NULL
+);
+
+deleteAllGameComments:
+DELETE FROM game_comments;
+
+insertOrReplaceGameComment:
+INSERT OR REPLACE INTO game_comments (
+    id,
+    frc_season_master_sm_year,
+    competition_master_cm_event_code,
+    game_matchup_gm_game_type,
+    game_matchup_gm_number,
+    game_matchup_gm_alliance,
+    game_matchup_gm_alliance_position,
+    gc_comment,
+    gc_um_id,
+    gc_ts
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
