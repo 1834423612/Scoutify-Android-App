@@ -36,6 +36,9 @@ import com.team695.scoutifyapp.ui.theme.LightGunmetal
 import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.theme.smallCornerRadius
 import com.team695.scoutifyapp.ui.theme.Border // Import Border color
+import com.team695.scoutifyapp.ui.theme.BorderSecondary
+import com.team695.scoutifyapp.ui.theme.DarkGunmetal
+import com.team695.scoutifyapp.ui.theme.mediumCornerRadius
 import com.team695.scoutifyapp.ui.viewModels.LoginViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -83,13 +86,13 @@ fun LoginScreen(
             ) {
                 Box(
                     modifier = Modifier
-                        .clip(RoundedCornerShape(smallCornerRadius))
+                        .clip(RoundedCornerShape(mediumCornerRadius))
                         .border(
                             1.dp,
                             Border,
-                            RoundedCornerShape(smallCornerRadius)
+                            RoundedCornerShape(mediumCornerRadius)
                         ) // Changed border to Border
-                        .background(LightGunmetal) // Changed background to LightGunmetal
+                        .background(DarkGunmetal) // Changed background to LightGunmetal
                 ) {
                     Button(
                         onClick = {
@@ -97,7 +100,7 @@ fun LoginScreen(
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
                     ) {
-                        Text(text = "Login with Casdoor", color = TextPrimary)
+                        Text(text = "Sign in with Casdoor", color = TextPrimary)
                     }
                 }
             }
