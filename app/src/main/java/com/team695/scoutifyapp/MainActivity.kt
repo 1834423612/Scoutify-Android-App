@@ -16,6 +16,7 @@ import com.team695.scoutifyapp.data.repository.TaskRepository
 import com.team695.scoutifyapp.data.repository.UserRepository
 import com.team695.scoutifyapp.db.AppDatabase
 import com.team695.scoutifyapp.db.GameDetailsEntity
+import com.team695.scoutifyapp.db.CommentsEntity
 import com.team695.scoutifyapp.data.api.service.GameDetailsService
 import com.team695.scoutifyapp.data.api.service.UserService
 import com.team695.scoutifyapp.data.intAdapter
@@ -63,6 +64,11 @@ class MainActivity : ComponentActivity() {
                 endgame_defending_timeAdapter = intAdapter,
                 endgame_broken_timeAdapter = intAdapter,
                 teleop_fuel_countAdapter = intAdapter,
+            ),
+            commentsEntityAdapter = CommentsEntity.Adapter(
+                match_numberAdapter = intAdapter,
+                team_numberAdapter  = intAdapter,
+                alliance_positionAdapter = intAdapter,
             )
         )
         db.taskQueries.seedData() //to add default data

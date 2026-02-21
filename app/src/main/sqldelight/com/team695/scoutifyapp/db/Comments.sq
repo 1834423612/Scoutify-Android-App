@@ -1,4 +1,35 @@
-CREATE TABLE comments (
+import kotlin.Int;
+
+CREATE TABLE commentsEntity (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    match_number INTEGER AS Int NOT NULL UNIQUE, --number for the corresponding match
+
+    team_number INTEGER AS Int,
+    alliance TEXT, --R, B
+    alliance_position INTEGER AS Int, --1, 2, 3
+    timestamp INTEGER,
     comment TEXT
 );
+
+--queries
+selectCommentsByMatchNumber:
+SELECT * FROM commentsEntity
+WHERE match_number = ?;
+
+selectCommentsById:
+SELECT * FROM commentsEntity
+WHERE id = ?;
+
+insertComments:
+INSERT OR REPLACE INTO commentsEntity(
+        match_number,
+        team_number,
+        alliance,
+        alliance_position,
+        timestamp,
+        comment
+        )
+        VALUES(
+        ?,?,?,?,?,?
+        );
+
