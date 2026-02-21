@@ -1,6 +1,8 @@
 package com.team695.scoutifyapp.ui.viewModels
 
+import android.net.Uri
 import android.util.Base64
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.team695.scoutifyapp.BuildConfig
@@ -8,6 +10,8 @@ import com.team695.scoutifyapp.data.api.client.ScoutifyClient
 import com.team695.scoutifyapp.data.api.model.User
 import com.team695.scoutifyapp.data.api.service.TokenResponse
 import com.team695.scoutifyapp.data.repository.UserRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -41,15 +45,20 @@ class LoginViewModel(private val repository: UserRepository): ViewModel() {
     fun generateLoginURL(): String {
         val verifier = generateCodeVerifier()
         val challenge = generateCodeChallenge(verifier)
+        val loginUrl = "${BuildConfig.CASDOOR_ENDPOINT}/login/oauth/authorize".toUri()
+            .buildUpon()
+            .appendQueryParameter("client_id", BuildConfig.CASDOOR_CLIENT_ID)
+            .appendQueryParameter("response_type", "code")
+            .appendQueryParameter("scope", "profile+email+openid")
+            .appendQueryParameter("state", BuildConfig.CASDOOR_APP_NAME)
+            .appendQueryParameter("code_challenge_method", "S256")
+            .appendQueryParameter("code_challenge", challenge)
+            .appendQueryParameter("redirect_uri", BuildConfig.CASDOOR_REDIRECT_URI)
+            .build()
+            .toString()
 
-        val loginUrl = "${BuildConfig.CASDOOR_ENDPOINT}/login/oauth/authorize?" +
-                "client_id=${BuildConfig.CASDOOR_CLIENT_ID}" +
-                "&response_type=code" +
-                "&scope=profile email openid" +
-                "&state=${BuildConfig.CASDOOR_APP_NAME}" +
-                "&code_challenge_method=S256" +
-                "&code_challenge=$challenge" +
-                "&redirect_uri=${BuildConfig.CASDOOR_REDIRECT_URI}"
+
+        println("Safely encoded URL: $loginUrl")
 
         _loginState.value = LoginStatus(
             verifier = verifier,
@@ -97,10 +106,12 @@ class LoginViewModel(private val repository: UserRepository): ViewModel() {
         repository.getUserInfo()
     }
 
-    suspend fun logout() {
-        _loginState.value = LoginStatus()
+    fun logout() {
+        viewModelScope.launch(Dispatchers.IO) {
+            _loginState.value = LoginStatus()
 
-        repository.logout()
+            repository.logout()
+        }
     }
 }
 
