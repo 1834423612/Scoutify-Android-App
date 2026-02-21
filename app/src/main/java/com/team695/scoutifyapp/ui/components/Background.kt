@@ -21,7 +21,7 @@ import com.team695.scoutifyapp.ui.theme.PaneColor
 
 @Composable
 fun ImageBackground(x: Float, y: Float) {
-    val fadeBrush = Brush.horizontalGradient(
+    /*val fadeBrush = Brush.horizontalGradient(
         0.0f to Color(0x99000000),   // Start fully visible
         0.6f to Color(0x99000000),
         1.0f to Color.Transparent // Fade to transparent at the 100% mark
@@ -52,12 +52,12 @@ fun ImageBackground(x: Float, y: Float) {
 
             contentScale = ContentScale.Crop
         )
-    }
+    }*/
 }
 
 @Composable
 fun BackgroundGradient() {
-    Box(
+    /*Box(
         modifier = Modifier
             .wrapContentWidth(unbounded = true)
             .fillMaxSize()
@@ -72,5 +72,5 @@ fun BackgroundGradient() {
                     1.0f to PaneColor
                 )
             )
-    )
+    )*/
 }
