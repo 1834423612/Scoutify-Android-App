@@ -16,9 +16,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.team695.scoutifyapp.ui.reusables.BackgroundGradient
-import com.team695.scoutifyapp.ui.reusables.ImageBackground
-import com.team695.scoutifyapp.ui.modifier.buttonHighlight
+import com.team695.scoutifyapp.ui.components.BackgroundGradient
+import com.team695.scoutifyapp.ui.components.ImageBackground
+import com.team695.scoutifyapp.ui.components.buttonHighlight
 import com.team695.scoutifyapp.ui.theme.*
 import com.team695.scoutifyapp.ui.reusables.Pressable
 

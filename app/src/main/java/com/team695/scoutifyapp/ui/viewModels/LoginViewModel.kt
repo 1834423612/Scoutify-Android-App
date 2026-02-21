@@ -1,19 +1,14 @@
 package com.team695.scoutifyapp.ui.viewModels
 
-import android.content.Context
+import android.net.Uri
 import android.util.Base64
-import android.util.Log
-import androidx.compose.runtime.currentRecomposeScope
+import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.team695.scoutifyapp.BuildConfig
-import com.team695.scoutifyapp.data.api.CasdoorClient
-import com.team695.scoutifyapp.data.api.ScoutifyClient
-import com.team695.scoutifyapp.data.api.model.LoginBody
+import com.team695.scoutifyapp.data.api.client.ScoutifyClient
 import com.team695.scoutifyapp.data.api.model.User
-import com.team695.scoutifyapp.data.api.service.LoginService
 import com.team695.scoutifyapp.data.api.service.TokenResponse
-import com.team695.scoutifyapp.data.api.service.UserInfoResponse
 import com.team695.scoutifyapp.data.repository.UserRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,8 +18,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import org.json.JSONObject
 import java.security.MessageDigest
 import java.security.SecureRandom
 
@@ -52,15 +45,20 @@ class LoginViewModel(private val repository: UserRepository): ViewModel() {
     fun generateLoginURL(): String {
         val verifier = generateCodeVerifier()
         val challenge = generateCodeChallenge(verifier)
+        val loginUrl = "${BuildConfig.CASDOOR_ENDPOINT}/login/oauth/authorize".toUri()
+            .buildUpon()
+            .appendQueryParameter("client_id", BuildConfig.CASDOOR_CLIENT_ID)
+            .appendQueryParameter("response_type", "code")
+            .appendQueryParameter("scope", "profile+email+openid")
+            .appendQueryParameter("state", BuildConfig.CASDOOR_APP_NAME)
+            .appendQueryParameter("code_challenge_method", "S256")
+            .appendQueryParameter("code_challenge", challenge)
+            .appendQueryParameter("redirect_uri", BuildConfig.CASDOOR_REDIRECT_URI)
+            .build()
+            .toString()
 
-        val loginUrl = "${BuildConfig.CASDOOR_ENDPOINT}/login/oauth/authorize?" +
-                "client_id=${BuildConfig.CASDOOR_CLIENT_ID}" +
-                "&response_type=code" +
-                "&scope=profile email openid" +
-                "&state=${BuildConfig.CASDOOR_APP_NAME}" +
-                "&code_challenge_method=S256" +
-                "&code_challenge=$challenge" +
-                "&redirect_uri=${BuildConfig.CASDOOR_REDIRECT_URI}"
+
+        println("Safely encoded URL: $loginUrl")
 
         _loginState.value = LoginStatus(
             verifier = verifier,
@@ -72,18 +70,26 @@ class LoginViewModel(private val repository: UserRepository): ViewModel() {
 
     suspend fun tokenExchange(code: String) {
         try {
-            val tokenRes: TokenResponse = repository.getAccessToken(
-                code = code,
-                verifier = loginState.value.verifier!!
-            )
-
-            _loginState.update {
-                it.copy(
-                    acToken = tokenRes.accessToken
+            if (loginState.value.verifier != null) {
+                val tokenRes: TokenResponse = repository.getAccessToken(
+                    code = code,
+                    verifier = loginState.value.verifier!!
                 )
-            }
 
-            ScoutifyClient.tokenManager.saveToken(tokenRes.accessToken)
+                _loginState.update {
+                    it.copy(
+                        acToken = tokenRes.accessToken
+                    )
+                }
+
+                ScoutifyClient.tokenManager.saveToken(tokenRes.accessToken)
+            } else {
+                _loginState.update {
+                    it.copy(
+                        error = "No verifier found"
+                    )
+                }
+            }
 
         } catch (e: Exception) {
             _loginState.update {
@@ -100,17 +106,21 @@ class LoginViewModel(private val repository: UserRepository): ViewModel() {
         repository.getUserInfo()
     }
 
-    suspend fun logout() {
-        ScoutifyClient.tokenManager.saveToken("")
-        _loginState.value = LoginStatus()
+    fun logout() {
+        viewModelScope.launch(Dispatchers.IO) {
+            _loginState.value = LoginStatus()
+
+            repository.logout()
+        }
     }
 }
 
 data class LoginStatus(
     val verifier: String? = null,
-    val error: String? = null,
     val acToken: String? = null,
+    val displayName: String? = null,
     val loginUrl: String? = null,
+    val error: String? = null,
 )
 
 fun generateCodeVerifier(): String {

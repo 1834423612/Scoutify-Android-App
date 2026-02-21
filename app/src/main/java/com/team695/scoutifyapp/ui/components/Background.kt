@@ -1,4 +1,4 @@
-package com.team695.scoutifyapp.ui.reusables
+package com.team695.scoutifyapp.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -21,7 +21,7 @@ import com.team695.scoutifyapp.ui.theme.PaneColor
 
 @Composable
 fun ImageBackground(x: Float, y: Float) {
-    val fadeBrush = Brush.horizontalGradient(
+    /*val fadeBrush = Brush.horizontalGradient(
         0.0f to Color(0x99000000),   // Start fully visible
         0.6f to Color(0x99000000),
         1.0f to Color.Transparent // Fade to transparent at the 100% mark
@@ -52,23 +52,25 @@ fun ImageBackground(x: Float, y: Float) {
 
             contentScale = ContentScale.Crop
         )
-    }
+    }*/
 }
 
 @Composable
 fun BackgroundGradient() {
-        Box(
-            modifier = Modifier
-                .wrapContentWidth(unbounded = true)
-                .fillMaxSize()
-                .width(2000.dp)
-                .background(Brush.verticalGradient(
-                    colors = listOf(
-                        PaneColor,
-                        PaneColor.copy(alpha=0.8f)
-                    )
-                ))
-
-        ) {
-        }
+    /*Box(
+        modifier = Modifier
+            .wrapContentWidth(unbounded = true)
+            .fillMaxSize()
+            .width(2000.dp)
+            .background(
+                Brush.verticalGradient(
+                    0.0f to PaneColor,
+                    0.49f to PaneColor,
+                    0.70f to PaneColor.copy(alpha = 0.7f),
+                    0.80f to PaneColor.copy(alpha = 0.30f),
+                    0.93f to PaneColor,
+                    1.0f to PaneColor
+                )
+            )
+    )*/
 }

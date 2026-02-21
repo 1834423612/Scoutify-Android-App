@@ -74,4 +74,18 @@ class TaskRepository(
             }
         }
     }
+
+    suspend fun getTaskById(taskId: Int): Result<Task> {
+
+        return withContext(Dispatchers.IO) {
+            val taskList: List<TaskEntity> = db.taskQueries.selectTaskById(taskId.toLong())
+                .executeAsList()
+
+            if (taskList.isNotEmpty()) {
+                return@withContext Result.success(taskList[0].createTaskFromDb())
+            } else {
+                return@withContext Result.failure(Exception("Could not find task for id = $taskId"))
+            }
+        }
+    }
 }

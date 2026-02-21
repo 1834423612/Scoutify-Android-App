@@ -34,7 +34,6 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -43,9 +42,9 @@ import com.team695.scoutifyapp.data.api.model.Task
 import com.team695.scoutifyapp.data.api.model.TaskType
 import com.team695.scoutifyapp.ui.components.progressBorder
 import com.team695.scoutifyapp.ui.reusables.Pressable
-import com.team695.scoutifyapp.ui.reusables.BackgroundGradient
-import com.team695.scoutifyapp.ui.reusables.ImageBackground
-import com.team695.scoutifyapp.ui.modifier.buttonHighlight
+import com.team695.scoutifyapp.ui.components.BackgroundGradient
+import com.team695.scoutifyapp.ui.components.ImageBackground
+import com.team695.scoutifyapp.ui.components.buttonHighlight
 import com.team695.scoutifyapp.ui.theme.BadgeBackground
 import com.team695.scoutifyapp.ui.theme.BadgeContent
 import com.team695.scoutifyapp.ui.theme.Background
@@ -63,7 +62,7 @@ import com.team695.scoutifyapp.ui.viewModels.HomeViewModel
 @Composable
 fun TasksCard(
     homeViewModel: HomeViewModel,
-    onPress: () -> Unit,
+    onPress: (taskId: Int) -> Unit,
 ) {
     val tabState by homeViewModel.tabState.collectAsStateWithLifecycle()
     val tabs = arrayOf("Incomplete", "Complete")
@@ -143,7 +142,7 @@ fun TasksCard(
                 val tasks = if (tabState.selectedTab == 0) incompleteTasks else completeTasks
                 if(tasks != null) {
                     items(tasks) { task ->
-                        TaskItem(task = task, onPress = onPress)
+                        TaskItem(task = task, onPress = {onPress.invoke(task.id)})
                     }
                 }
             }
@@ -171,95 +170,4 @@ fun TaskItemPreview() {
     val dummyTask: Task = Task(id=0, type = TaskType.SCOUTING, matchNum = 0, teamNum = "test", time = 0L, progress = 0f, isDone = false)
 
     TaskItem(task = dummyTask, onPress = {})
-}
-
-@Composable
-fun TaskItem(task: Task, onPress: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(45.dp)
-            .progressBorder(progress=task.progress)
-            .background(color = DarkGunmetal, shape = RoundedCornerShape(mediumCornerRadius))
-            .clip(RoundedCornerShape(mediumCornerRadius))
-            .buttonHighlight(
-                corner = smallCornerRadius
-            )
-            .padding(horizontal = 8.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .fillMaxHeight()
-                .clip(RoundedCornerShape(smallCornerRadius))
-                .background(DarkishGunmetal)
-                .width(80.dp)
-                .buttonHighlight(
-                    corner = smallCornerRadius
-                )
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.edit),
-                colorFilter = ColorFilter.tint(Deselected),
-                contentDescription = "Edit",
-                modifier = Modifier.size(16.dp)
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text("Q${task.matchNum}", color = Deselected)
-        }
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .fillMaxHeight()
-                .clip(RoundedCornerShape(smallCornerRadius))
-                .background(DarkishGunmetal)
-                .width(60.dp)
-                .buttonHighlight(
-                    corner = smallCornerRadius
-                )
-        ) {
-            Text(task.teamNum, color = Deselected)
-        }
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-            modifier = Modifier
-                .fillMaxHeight()
-                .clip(RoundedCornerShape(smallCornerRadius))
-                .background(DarkishGunmetal)
-                .width(110.dp)
-                .buttonHighlight(
-                    corner = smallCornerRadius
-                )
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.clock),
-                contentDescription = "Time",
-                modifier = Modifier
-                    .size(16.dp)
-            )
-            Spacer(modifier = Modifier.width(10.dp))
-            Text(task.time.toString(), color = Deselected)
-        }
-
-        Pressable (
-            onClick = {onPress()},
-            corner = smallCornerRadius,
-            text = "",
-            modifier = Modifier
-                .fillMaxHeight()
-                .width(30.dp)
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.right_arrow),
-                contentDescription = "Go",
-                colorFilter = ColorFilter.tint(Deselected),
-                modifier = Modifier.size(25.dp)
-            )
-        }
-    }
 }

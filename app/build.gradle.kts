@@ -89,7 +89,8 @@ dependencies {
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.navigation.compose)
-    implementation(libs.accompanist.systemuicontroller) // Control status bar color
+    implementation(libs.accompanist.systemuicontroller)
+    implementation(libs.androidx.webkit)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -102,6 +103,7 @@ dependencies {
     // SQL Delight
     implementation(libs.sqldelight.android)
     implementation(libs.sqldelight.coroutines)
+    implementation(libs.sqldelight.primitive.adapters)
     implementation(libs.androidx.security.crypto)
     // datastore
     implementation(libs.androidx.datastore)
