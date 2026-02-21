@@ -126,10 +126,17 @@ fun TasksCard(
                                     containerColor = BadgeBackground,
                                     modifier = Modifier
                                         .graphicsLayer {
-                                            translationX = -10f
-                                            translationY = -10f
+                                            translationX = 0F
+                                            translationY = 0F
                                         }
-                                ) { Text(text=if(index==0) incompleteTasks?.size.toString() else completeTasks?.size.toString() , color = BadgeContent) }
+                                ) {
+                                    val text = (if (index==0) incompleteTasks?.size
+                                        else completeTasks?.size)
+                                            .toString()
+
+                                    Text(
+                                        text=text, color = BadgeContent)
+                                }
                             }
                         }
                     }

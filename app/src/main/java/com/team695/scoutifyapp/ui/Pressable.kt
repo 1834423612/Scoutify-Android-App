@@ -12,28 +12,33 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import com.team695.scoutifyapp.ui.components.buttonHighlight
 import com.team695.scoutifyapp.ui.theme.DarkishGunmetal
 import com.team695.scoutifyapp.ui.theme.TextPrimary
 
 @Composable
-fun Pressable(modifier: Modifier = Modifier, corner: Dp, text: String, onClick: () -> Unit, content: @Composable () -> Unit) {
-
+fun Pressable(
+    modifier: Modifier = Modifier,
+    corner: Dp,
+    text: String,
+    onClick: () -> Unit,
+    content: @Composable () -> Unit
+) {
     Surface(
-        modifier = modifier
-            .clip(RoundedCornerShape(corner))
-            .clickable {onClick()},
+        modifier = modifier,
+        shape = RoundedCornerShape(corner),
+        color = Color.Transparent
     ) {
         Row(
             modifier = Modifier
                 .fillMaxSize()
+                .clickable { onClick() }
                 .background(DarkishGunmetal)
-                .clip(RoundedCornerShape(corner))
                 .buttonHighlight(corner),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center
-            
         ) {
             Text(
                 text = text,

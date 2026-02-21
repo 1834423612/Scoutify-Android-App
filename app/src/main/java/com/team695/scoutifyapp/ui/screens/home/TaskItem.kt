@@ -24,12 +24,14 @@ import com.team695.scoutifyapp.R
 import com.team695.scoutifyapp.data.api.model.Task
 import com.team695.scoutifyapp.ui.components.buttonHighlight
 import com.team695.scoutifyapp.ui.components.progressBorder
+import com.team695.scoutifyapp.ui.extensions.minDiffFromNow
 import com.team695.scoutifyapp.ui.reusables.Pressable
 import com.team695.scoutifyapp.ui.theme.DarkGunmetal
 import com.team695.scoutifyapp.ui.theme.DarkishGunmetal
 import com.team695.scoutifyapp.ui.theme.Deselected
 import com.team695.scoutifyapp.ui.theme.mediumCornerRadius
 import com.team695.scoutifyapp.ui.theme.smallCornerRadius
+import java.util.Locale
 
 @Composable
 fun TaskItem(task: Task, onPress: () -> Unit) {
@@ -101,7 +103,14 @@ fun TaskItem(task: Task, onPress: () -> Unit) {
                     .size(16.dp)
             )
             Spacer(modifier = Modifier.width(10.dp))
-            Text(task.time.toString(), color = Deselected)
+
+            val txt = String.format(
+                Locale.US,
+                "%02d",
+                task.time.minDiffFromNow()
+            ) + 'm'
+
+            Text(txt, color = Deselected)
         }
 
         Pressable (
