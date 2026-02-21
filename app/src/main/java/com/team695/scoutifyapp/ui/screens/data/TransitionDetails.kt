@@ -137,7 +137,7 @@ fun TransitionDetails(
                 ),
                 onButtonPressed = {
                     //warn user if transition shift is not close to ending
-                    if(abs(formState.teleopTotalMilliseconds - TRANSITION_END_TIME) < TELEOP_TIME_THRESHOLD) {
+                    if(abs(formState.teleopTotalMilliseconds - TRANSITION_END_TIME) > TELEOP_TIME_THRESHOLD) {
                         dataViewModel.toggleWarningModal(title = "Are you sure?", text = "The transition period isn't over yet")
                     }
                     else {
