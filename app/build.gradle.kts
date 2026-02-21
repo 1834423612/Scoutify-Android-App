@@ -102,6 +102,7 @@ dependencies {
     // SQL Delight
     implementation(libs.sqldelight.android)
     implementation(libs.sqldelight.coroutines)
+    implementation(libs.sqldelight.primitive.adapters)
     implementation(libs.androidx.security.crypto)
     // datastore
     implementation(libs.androidx.datastore)

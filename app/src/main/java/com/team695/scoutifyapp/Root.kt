@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -87,7 +88,7 @@ fun Root(
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(8.dp),
+                .safeContentPadding(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
 

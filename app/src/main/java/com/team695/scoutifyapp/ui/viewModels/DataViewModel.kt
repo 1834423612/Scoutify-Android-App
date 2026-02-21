@@ -58,8 +58,7 @@ class DataViewModel(
             .debounce(2000L)
             .distinctUntilChanged() // Only save if the state actually changed
             .onEach { currentFormState: GameFormState ->
-                //When saving works, use this!
-                //gameDetailRepository.updateDbFromGameDetails(convertFormToGameDetails(currentFormState))
+                gameDetailRepository.updateDbFromGameDetails(_formState.value.gameDetails)
             }
             .launchIn(viewModelScope) // Run this in the background tied to the ViewModel's lifecycle
     }
@@ -72,5 +71,94 @@ class DataViewModel(
         }
     }
 
+    fun toggleWarningModal(title: String, text: String) {
+        _formState.update {
+            it.copy(
+                showWarningModal = !it.showWarningModal,
+                warningModalTitle = title,
+                warningModalText = text,
+            )
+        }
+    }
 
+    //deltaTime is in milliseconds
+    fun updateTime(deltaTime: Int) {
+        _formState.update {
+            it.copy(
+                teleopTotalMilliseconds = it.teleopTotalMilliseconds + deltaTime,
+                teleopCachedMilliseconds = it.teleopCachedMilliseconds + deltaTime,
+            )
+        }
+    }
+
+    fun resetCacheTime() {
+        _formState.update {
+            it.copy(
+                teleopCachedMilliseconds = 0
+            )
+        }
+    }
+
+    //resets all teleop data and starts teleop
+    fun startTeleop() {
+        _formState.update {
+            it.copy(
+                teleopRunning = true,
+                teleopSection = TeleopSection.TRANSITION,
+                teleopTotalMilliseconds = 0,
+                teleopCachedMilliseconds = 0,
+                gameDetails = it.gameDetails.copy(
+                    //transition
+                    transitionCyclingTime = null,
+                    transitionStockpilingTime = null,
+                    transitionDefendingTime = null,
+                    transitionBrokenTime = null,
+                    transitionFirstActive = null,
+
+                    // 1st Shift
+                    shift1CyclingTime = null,
+                    shift1StockpilingTime = null,
+                    shift1DefendingTime = null,
+                    shift1BrokenTime = null,
+
+                    // 2nd Shift
+                    shift2CyclingTime = null,
+                    shift2StockpilingTime = null,
+                    shift2DefendingTime = null,
+                    shift2BrokenTime = null,
+
+                    // 3rd Shift
+                    shift3CyclingTime = null,
+                    shift3StockpilingTime = null,
+                    shift3DefendingTime = null,
+                    shift3BrokenTime = null,
+
+                    // 4th Shift
+                    shift4CyclingTime = null,
+                    shift4StockpilingTime = null,
+                    shift4DefendingTime = null,
+                    shift4BrokenTime = null,
+
+                    // Endgame
+                    endgameCyclingTime = null,
+                    endgameStockpilingTime = null,
+                    endgameDefendingTime = null,
+                    endgameBrokenTime = null,
+
+                    endgameAttemptsClimb = null,
+                    endgameClimbSuccess = null,
+                    endgameClimbPosition = null,
+                )
+            )
+        }
+    }
+
+    fun setTeleopSection(teleopSection: TeleopSection, teleopTotalMilliseconds: Int) {
+        _formState.update {
+            it.copy(
+                teleopSection = teleopSection,
+                teleopTotalMilliseconds = teleopTotalMilliseconds
+            )
+        }
+    }
 }

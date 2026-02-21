@@ -9,7 +9,6 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.frc.scouting.ScoutingAppScreen
 import com.team695.scoutifyapp.ui.InputScreen
 import com.team695.scoutifyapp.ui.screens.CommentsScreen
 import com.team695.scoutifyapp.ui.screens.home.HomeScreen
@@ -56,11 +55,16 @@ fun AppNav(
             )
         ) { navBackStackEntry ->
 
+            val dataScreenOwner: ViewModelStoreOwner = LocalViewModelStoreOwner.current
+                ?: throw IllegalStateException("Root must be attached to a ViewModelStoreOwner")
+
             val taskId = navBackStackEntry.arguments?.getInt("taskId")
                 ?: return@composable navController.navigate("home")
 
+            println("TASK ID: " + taskId)
+
             val dataViewModel: DataViewModel = viewModel(
-                viewModelStoreOwner = owner,
+                viewModelStoreOwner = dataScreenOwner,
                 factory = ViewModelFactory { DataViewModel(
                     gameDetailRepository = gameDetailRepository,
                     taskRepository = taskRepository,
@@ -68,7 +72,7 @@ fun AppNav(
                 ) }
             )
 
-            ScoutingAppScreen()
+            DataScreen(navController = navController, dataViewModel = dataViewModel)
         }
         composable(route = "comments") {
             CommentsScreen()

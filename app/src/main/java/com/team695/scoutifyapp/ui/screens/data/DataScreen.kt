@@ -1,6 +1,7 @@
 package com.team695.scoutifyapp.ui.screens.data
 
 import android.os.Parcelable
+import android.webkit.RenderProcessGoneDetail
 import androidx.compose.animation.AnimatedVisibilityScope
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,22 +19,20 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
@@ -45,41 +44,45 @@ import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
 import androidx.compose.material3.adaptive.navigation.BackNavigationBehavior
 import androidx.compose.material3.adaptive.navigation.NavigableListDetailPaneScaffold
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.team695.scoutifyapp.R
-import com.team695.scoutifyapp.data.api.model.GameDetails
+import com.team695.scoutifyapp.data.types.ENDGAME_END_TIME
 import com.team695.scoutifyapp.data.types.GameFormState
+import com.team695.scoutifyapp.data.types.GameSection
+import com.team695.scoutifyapp.data.types.SHIFT1_END_TIME
+import com.team695.scoutifyapp.data.types.SHIFT2_END_TIME
+import com.team695.scoutifyapp.data.types.SHIFT3_END_TIME
+import com.team695.scoutifyapp.data.types.SHIFT4_END_TIME
+import com.team695.scoutifyapp.data.types.SectionType
+import com.team695.scoutifyapp.data.types.TRANSITION_END_TIME
+import com.team695.scoutifyapp.data.types.TeleopSection
 import com.team695.scoutifyapp.ui.components.progressBorder
 import com.team695.scoutifyapp.ui.components.buttonHighlight
 import com.team695.scoutifyapp.ui.components.BackgroundGradient
 import com.team695.scoutifyapp.ui.components.ImageBackground
 import com.team695.scoutifyapp.ui.theme.DarkGunmetal
 import com.team695.scoutifyapp.ui.theme.DarkishGunmetal
+import com.team695.scoutifyapp.ui.theme.Deselected
 import com.team695.scoutifyapp.ui.theme.LightGunmetal
 import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.theme.mediumCornerRadius
 import com.team695.scoutifyapp.ui.theme.smallCornerRadius
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
 
-enum class SectionType {
-    PREGAME, AUTON, TELEOP, POSTGAME
-}
 
-@Parcelize
-data class GameSection(
-    val type: SectionType,
-    var progress: Float = 0f,
-) : Parcelable {
-    val name: String get() = type.name.lowercase().replaceFirstChar { it.uppercase() }
-}
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
 @Composable
@@ -108,6 +111,18 @@ fun DataScreen(
     )
     val scope = rememberCoroutineScope()
 
+    LaunchedEffect(formState.teleopRunning) {
+        var startTime: Long = withFrameMillis { it }
+
+        while(formState.teleopRunning) {
+            withFrameMillis { frameTimeMillis ->
+                dataViewModel.updateTime(deltaTime = (frameTimeMillis-startTime).toInt())
+                startTime = frameTimeMillis
+            }
+        }
+    }
+
+
 
     Row(
         modifier = Modifier
@@ -132,6 +147,7 @@ fun DataScreen(
                             animatedVisibilityScope = this@AnimatedPane,
                             sharedTransitionScope = this@SharedTransitionLayout,
                             formState = formState,
+                            dataViewModel = dataViewModel
                         )
                     }
                 },
@@ -144,11 +160,13 @@ fun DataScreen(
                             onClosePane = {
                                 scope.launch {
                                     navigator.navigateBack(
-                                        backNavigationBehavior = BackNavigationBehavior.PopUntilScaffoldValueChange
+                                        backNavigationBehavior = BackNavigationBehavior.PopUntilScaffoldValueChange,
                                     )
 
                                 }
-                            }
+                            },
+                            formState = formState,
+                            dataViewModel = dataViewModel
                         )
                     }
                 }
@@ -165,7 +183,8 @@ private fun ListContent(
     modifier: Modifier = Modifier,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
-    formState: GameFormState
+    formState: GameFormState,
+    dataViewModel: DataViewModel
 ) {
     Box(
         modifier = Modifier
@@ -180,17 +199,36 @@ private fun ListContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Top
         ) {
 
-            Text(
-                text = "Game Sections",
-                color = TextPrimary,
-                fontSize = 20.sp,
-            )
+            //Game Section top text
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(60.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+
+                Text(
+                    text = "Game Sections",
+                    color = TextPrimary,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(Modifier.height(8.dp))
+
+            HorizontalDivider(color = Deselected, thickness = 1.dp)
+
+            Spacer(Modifier.height(16.dp))
+
 
             LazyColumn(
-                contentPadding = PaddingValues(vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = modifier.selectableGroup()
             ) {
@@ -200,16 +238,16 @@ private fun ListContent(
 
                     when(section.type) {
                         SectionType.PREGAME -> {
-                            isFlagged = formState.gameDetails.pregameFlag ?: false
+                            isFlagged = formState.gameDetails.pregameFlag == true //use == because flag could be null
                         }
                         SectionType.AUTON -> {
-                            isFlagged = formState.gameDetails.autonFlag ?: false
+                            isFlagged = formState.gameDetails.autonFlag == true
                         }
                         SectionType.TELEOP -> {
-                            isFlagged = formState.gameDetails.teleopFlag ?: false
+                            isFlagged = formState.gameDetails.teleopFlag == true
                         }
                         SectionType.POSTGAME -> {
-                            isFlagged = formState.gameDetails.postgameFlag ?: false
+                            isFlagged = formState.gameDetails.postgameFlag == true
                         }
                     }
 
@@ -232,7 +270,11 @@ private fun ListContent(
                             .buttonHighlight(
                                 corner = smallCornerRadius
                             )
-                            .padding(horizontal = 8.dp, vertical = 8.dp),
+                            .padding(horizontal = 8.dp, vertical = 8.dp)
+                            .clickable {
+                                onSectionClick(section)
+                            }
+                        ,
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
@@ -259,6 +301,31 @@ private fun ListContent(
                                 contentDescription = "Time",
                                 modifier = Modifier
                                     .size(32.dp)
+                                    .clickable {
+                                        //use != because flag could be null
+                                        when(section.type) {
+                                            SectionType.PREGAME -> {
+                                                dataViewModel.formEvent(
+                                                    gameDetails = formState.gameDetails.copy(pregameFlag = formState.gameDetails.pregameFlag != true)
+                                                )
+                                            }
+                                            SectionType.AUTON -> {
+                                                dataViewModel.formEvent(
+                                                    gameDetails = formState.gameDetails.copy(autonFlag = formState.gameDetails.autonFlag != true)
+                                                )
+                                            }
+                                            SectionType.TELEOP -> {
+                                                dataViewModel.formEvent(
+                                                    gameDetails = formState.gameDetails.copy(teleopFlag = formState.gameDetails.teleopFlag != true)
+                                                )
+                                            }
+                                            SectionType.POSTGAME -> {
+                                                dataViewModel.formEvent(
+                                                    gameDetails = formState.gameDetails.copy(postgameFlag = formState.gameDetails.postgameFlag != true)
+                                                )
+                                            }
+                                        }
+                                    }
                             )
                         }
                     }
@@ -275,6 +342,8 @@ private fun DetailContent(
     modifier: Modifier = Modifier,
     sharedTransitionScope: SharedTransitionScope,
     animatedVisibilityScope: AnimatedVisibilityScope,
+    formState: GameFormState,
+    dataViewModel: DataViewModel,
     onClosePane: () -> Unit
 ) {
 
@@ -284,26 +353,110 @@ private fun DetailContent(
             .fillMaxWidth()
             .background(Color(0xFF000000))
             .clip(RoundedCornerShape(smallCornerRadius))
-            .border(1.dp, LightGunmetal, RoundedCornerShape(smallCornerRadius))
+            .border(1.dp, LightGunmetal, RoundedCornerShape(smallCornerRadius)),
+        verticalArrangement = Arrangement.Top
 
     ) {
         ImageBackground(x = -1350f, y = 355f)
         BackgroundGradient()
 
-        if (section != null) {
-            IconButton(
-                modifier =  Modifier.align(Alignment.End).padding(16.dp),
-                onClick = onClosePane
-            ) {
-                Icon(Icons.Default.Close, contentDescription = "Close")
-            }
+        WarningModal (
+            visible   = formState.showWarningModal,
 
+            onContinue = {
+                dataViewModel.toggleWarningModal(title = "", text = "")
+                when(formState.teleopSection) {
+                    TeleopSection.STOPPED -> {
+                        dataViewModel.startTeleop()
+                    }
+                    TeleopSection.TRANSITION -> {
+                        dataViewModel.setTeleopSection(teleopSection = TeleopSection.SHIFT1, teleopTotalMilliseconds = TRANSITION_END_TIME)
+                    }
+                    TeleopSection.SHIFT1 -> {
+                        dataViewModel.setTeleopSection(teleopSection = TeleopSection.SHIFT2, teleopTotalMilliseconds = SHIFT1_END_TIME)
+                    }
+                    TeleopSection.SHIFT2 -> {
+                        dataViewModel.setTeleopSection(teleopSection = TeleopSection.SHIFT3, teleopTotalMilliseconds = SHIFT2_END_TIME)
+                    }
+                    TeleopSection.SHIFT3 -> {
+                        dataViewModel.setTeleopSection(teleopSection = TeleopSection.SHIFT4, teleopTotalMilliseconds = SHIFT3_END_TIME)
+                    }
+                    TeleopSection.SHIFT4 -> {
+                        dataViewModel.setTeleopSection(teleopSection = TeleopSection.ENDGAME, teleopTotalMilliseconds = SHIFT4_END_TIME)
+                    }
+                    TeleopSection.ENDGAME -> {
+                        dataViewModel.startTeleop()
+                    }
+                }
+            },
+
+            onCancel = {
+                dataViewModel.toggleWarningModal(title = "", text = "")
+            },
+
+            formState = formState
+        )
+
+        if (section != null) {
             with(sharedTransitionScope) {
                 //animated stuff goes here
-                Text(
-                    text = section.name,
-                    style = MaterialTheme.typography.headlineMedium
-                )
+                when(section.type) {
+                    SectionType.PREGAME -> {
+
+                    }
+                    SectionType.AUTON -> {
+
+                    }
+                    SectionType.TELEOP -> {
+                        when(formState.teleopSection) {
+                            TeleopSection.STOPPED -> {
+                                StoppedDetails(
+                                    dataViewModel = dataViewModel,
+                                    formState = formState
+                                )
+                            }
+                            TeleopSection.TRANSITION -> {
+                                TransitionDetails(
+                                    dataViewModel = dataViewModel,
+                                    formState = formState
+                                )
+                            }
+                            TeleopSection.SHIFT1 -> {
+                                Shift1Details(
+                                    dataViewModel = dataViewModel,
+                                    formState = formState
+                                )
+                            }
+                            TeleopSection.SHIFT2 -> {
+                                Shift2Details(
+                                    dataViewModel = dataViewModel,
+                                    formState = formState
+                                )
+                            }
+                            TeleopSection.SHIFT3 -> {
+                                Shift3Details(
+                                    dataViewModel = dataViewModel,
+                                    formState = formState
+                                )
+                            }
+                            TeleopSection.SHIFT4 -> {
+                                Shift4Details(
+                                    dataViewModel = dataViewModel,
+                                    formState = formState
+                                )
+                            }
+                            TeleopSection.ENDGAME -> {
+                                EndgameDetails(
+                                    dataViewModel = dataViewModel,
+                                    formState = formState
+                                )
+                            }
+                        }
+                    }
+                    SectionType.POSTGAME -> {
+
+                    }
+                }
             }
 
 
@@ -315,3 +468,4 @@ private fun DetailContent(
         }
     }
 }
+
