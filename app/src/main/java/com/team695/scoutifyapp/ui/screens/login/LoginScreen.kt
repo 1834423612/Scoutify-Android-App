@@ -27,25 +27,25 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
-import com.team695.scoutifyapp.data.api.client.ScoutifyClient
-import com.team695.scoutifyapp.ui.theme.Gunmetal
-import com.team695.scoutifyapp.ui.theme.LightGunmetal
+import com.team695.scoutifyapp.ui.extensions.androidID
 import com.team695.scoutifyapp.ui.theme.TextPrimary
-import com.team695.scoutifyapp.ui.theme.smallCornerRadius
-import com.team695.scoutifyapp.ui.theme.Border // Import Border color
-import com.team695.scoutifyapp.ui.theme.BorderSecondary
+import com.team695.scoutifyapp.ui.theme.Border
 import com.team695.scoutifyapp.ui.theme.DarkGunmetal
 import com.team695.scoutifyapp.ui.theme.mediumCornerRadius
+import com.team695.scoutifyapp.ui.viewModels.LoginError
 import com.team695.scoutifyapp.ui.viewModels.LoginViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private const val TAG = "CasdoorLogin"
 
@@ -55,18 +55,70 @@ fun LoginScreen(
     loginViewModel: LoginViewModel,
 ) {
 
-    //println("DEVICE ID: ${LocalContext.current.androidID}")
     val loginState by loginViewModel.loginState.collectAsState()
     val userInfo by loginViewModel.userState.collectAsState()
-    val coroutineScope = rememberCoroutineScope()
+    val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
 
-    if (loginState.acToken == null) {
+    if (loginState.error == LoginError.ANDROID_ID || userInfo?.androidID == "WRONG_USER") {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(32.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(mediumCornerRadius))
+                    .border(
+                        1.dp,
+                        Border,
+                        RoundedCornerShape(mediumCornerRadius)
+                    )
+                    .background(DarkGunmetal)
+                    .padding(24.dp)
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Text(
+                        text = "Device Mismatch",
+                        color = TextPrimary,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                        fontSize = 18.sp
+                    )
+
+                    Text(
+                        text = "This tablet is not assigned to your account. Please use your designated device to log in.",
+                        color = TextPrimary,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                    )
+
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(mediumCornerRadius))
+                            .border(1.dp, Border, RoundedCornerShape(mediumCornerRadius))
+                    ) {
+                        Button(
+                            onClick = {
+                                loginViewModel.logout()
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent)
+                        ) {
+                            Text(text = "Go Back", color = TextPrimary)
+                        }
+                    }
+                }
+            }
+        }
+    } else if (loginState.acToken == null) {
         if (loginState.loginUrl != null) {
             CasdoorWebView(
                 url = loginState.loginUrl!!,
                 onCodeReceived = { code ->
 
-                    CoroutineScope(Dispatchers.IO).launch {
+                    coroutineScope.launch {
                         try {
                             loginViewModel.tokenExchange(code)
 
@@ -105,6 +157,39 @@ fun LoginScreen(
                 }
             }
         }
+    } else if (userInfo == null) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(mediumCornerRadius))
+                    .border(1.dp, Border, RoundedCornerShape(mediumCornerRadius))
+                    .background(DarkGunmetal)
+                    .padding(32.dp)
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    androidx.compose.material3.CircularProgressIndicator(
+                        color = TextPrimary
+                    )
+
+                    Text(
+                        text = "Loading profile...",
+                        color = TextPrimary
+                    )
+
+                    LaunchedEffect(loginState.acToken) {
+                        delay(10*1000)
+                        loginViewModel.logout()
+                    }
+                }
+            }
+        }
     } else {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -117,7 +202,7 @@ fun LoginScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Text(
-                    text = "Welcome, ${userInfo?.name}!",
+                    text = "Welcome, ${userInfo?.displayName}!",
                     color = TextPrimary
                 )
                 Text(
@@ -145,11 +230,6 @@ fun LoginScreen(
                     }
                 }
             }
-
-            LaunchedEffect(loginState.verifier) {
-                delay(3000)
-                navController.navigate("home")
-            }
         }
     }
 }
@@ -170,14 +250,6 @@ fun CasdoorWebView(
                 )
                 settings.javaScriptEnabled = true
                 settings.domStorageEnabled = true
-
-                /*
-                This force dark mode doesn't work for some reason
-
-                if (WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING)) {
-                    WebSettingsCompat.setAlgorithmicDarkeningAllowed(settings, true)
-                }
-                */
 
                 settings.userAgentString =
                     "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.5672.136 Mobile Safari/537.36"

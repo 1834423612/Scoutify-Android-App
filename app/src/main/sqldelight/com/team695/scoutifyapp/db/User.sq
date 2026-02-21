@@ -2,9 +2,8 @@ CREATE TABLE userEntity (
     id INTEGER NOT NULL PRIMARY KEY DEFAULT 0,
     name TEXT,
     display_name TEXT,
-    preferred_username TEXT,
-    picture TEXT,
-    email TEXT
+    email TEXT,
+    android_id TEXT
 );
 
 selectUser:
@@ -13,9 +12,8 @@ FROM userEntity
 WHERE id = 0;
 
 insertUser:
-INSERT OR REPLACE INTO userEntity(id, name, display_name, preferred_username, picture, email)
-VALUES (0, ?, ?, ?, ?, ?);
-
+INSERT OR REPLACE INTO userEntity(id, name, display_name, email, android_id)
+VALUES (0, ?, ?, ?, ?);
 
 deleteUser:
 DELETE FROM userEntity

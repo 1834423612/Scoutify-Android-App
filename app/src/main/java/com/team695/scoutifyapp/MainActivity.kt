@@ -77,7 +77,8 @@ class MainActivity : ComponentActivity() {
         val userRepository = UserRepository(
             loginService = loginService,
             userService = userService,
-            db = db
+            db = db,
+            context = applicationContext
         )
 
         val taskRepository = TaskRepository(service = taskService, db = db)
