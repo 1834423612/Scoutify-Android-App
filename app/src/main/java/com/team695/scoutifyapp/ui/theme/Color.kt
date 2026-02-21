@@ -13,7 +13,7 @@ val AccentPrimary = Color(0xFF4a9eff)
 
 val BgPrimary = Color(0xFF0a1628)
 val BgSecondary = Color(0xFF0f2035)
-val AccentDanger = Color(0xFFef4444)
+val AccentDanger = Color(0xFFF87171)
 val BorderColor = Color(0xFF2a4a6a)
 val BgTertiary = Color(0xFF162a42)
 val BgCard = Color(0xFF1a3148)
@@ -22,37 +22,37 @@ val BgCard = Color(0xFF1a3148)
 
 val Accent = Color(0xFFEFDC70)
 
+val AccentWarning = Color(0xFFEFDC70)//just copied accent
 val AccentSecondary = Color(0xFF00B2D6)
-val AccentGreen = Color(0xFFA3E635)
 
+val AccentGreen = Color(0xFFA3E635)
 val Deselected = Color(0xFFB7B8B9)
 val LightGunmetal = Color(0xFF434343)
 val Gunmetal = Color(0xFF2D3142)
 val DarkishGunmetal = Color(0xFF242832)
 val ProgressGreen = Color(0x962FEDAE)
-val DarkGunmetal = Color(0xFF16181D)
 
+val DarkGunmetal = Color(0xFF16181D)
 val PaneColor = Color(0xFF08090B)
 val TextPrimary = Color.White
-val TextSecondary = Color.Gray
 
+val TextSecondary = Color.Gray
 val RedAlliance = Color(0xFFF87171)
 val BlueAlliance = Color(0xFF60A5FA)
+
 val DarkGreen = Color(0x70244A2A)
-
 val SelectedItem = Color(0xFF333333)
+
 val UnSelectedItem = Color.Transparent
-
 val Border = Color(0xFF444444)
-val BorderSecondary = Color.DarkGray
 
+val BorderSecondary = Color.DarkGray
 val BadgeBackground = Color.LightGray
 val BadgeContent = Color.Black
+
 val BadgeBackgroundSecondary = Color.Black
 
 val TextFieldBackground = Color.Black.copy(alpha = 0.5f)
 
 val CommentButtonBackground = Color(0xFF444444)
-
-val AccentWarning = Color(0xFFEFDC70)//just copied accent
 val TextMuted = Color(0xFFEFDC70)//just copied accent
