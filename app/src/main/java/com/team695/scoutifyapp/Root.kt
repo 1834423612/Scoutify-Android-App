@@ -5,38 +5,29 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import app.cash.sqldelight.driver.android.AndroidSqliteDriver
-import com.team695.scoutifyapp.data.api.CasdoorClient
-import com.team695.scoutifyapp.data.api.ScoutifyClient
-import com.team695.scoutifyapp.data.api.service.LoginService
-import com.team695.scoutifyapp.data.api.service.MatchService
 import com.team695.scoutifyapp.navigation.AppNav
 import com.team695.scoutifyapp.ui.components.NavRail
-import com.team695.scoutifyapp.data.api.service.TaskService
+import com.team695.scoutifyapp.data.repository.GameDetailRepository
 import com.team695.scoutifyapp.data.repository.MatchRepository
 import com.team695.scoutifyapp.data.repository.TaskRepository
 import com.team695.scoutifyapp.data.repository.UserRepository
 //import com.team695.scoutifyapp.ui.theme.*
-import com.team695.scoutifyapp.db.AppDatabase
 import com.team695.scoutifyapp.ui.theme.Background
-import com.team695.scoutifyapp.ui.theme.ScoutifyTheme
-import kotlin.math.log
 
 @Composable
 fun Root(
     taskRepository: TaskRepository,
     matchRepository: MatchRepository,
-    userRepository: UserRepository
+    userRepository: UserRepository,
+    gameDetailRepository: GameDetailRepository,
 ) {
     val context = LocalContext.current
 
@@ -97,7 +88,7 @@ fun Root(
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(8.dp),
+                .safeContentPadding(),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
 
@@ -121,6 +112,7 @@ fun Root(
                         taskRepository = taskRepository,
                         matchRepository = matchRepository,
                         userRepository = userRepository,
+                        gameDetailRepository = gameDetailRepository,
                     )
                 }
             }

@@ -1,4 +1,4 @@
-package com.team695.scoutifyapp.data.api
+package com.team695.scoutifyapp.data.api.client
 
 import com.team695.scoutifyapp.data.api.service.LoginService
 import retrofit2.Retrofit
