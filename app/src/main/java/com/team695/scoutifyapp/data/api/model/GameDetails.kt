@@ -1,7 +1,11 @@
 package com.team695.scoutifyapp.data.api.model
 
+import com.team695.scoutifyapp.data.api.model.GameConstants
 import com.team695.scoutifyapp.db.GameDetailsEntity
 import kotlin.Double
+import kotlin.reflect.KProperty1
+import kotlin.reflect.full.memberProperties
+
 
 data class GameDetails(
     val id: Int? = null,
@@ -223,4 +227,146 @@ fun GameDetailsEntity.createGameDetailsFromDb(): GameDetails {
         postgameOverBump = this.postgame_over_bump,
         postgameFlag = this.postgame_flag,
         )
+}
+
+data class GameDetailsActions(
+    val frc_season_master_sm_year: Int,
+    val competition_master_cm_event_code: String,
+    val game_matchup_gm_game_type: Char,
+    val game_matchup_gm_number: Int,
+    val game_matchup_gm_alliance: Char,
+    val game_matchup_gm_alliance_position: Int,
+    val game_element_group_geg_grp_key: Int,
+    val game_element_ge_key: Int,
+    val gd_value: Int,
+    val gd_score: Int,
+    val gd_um_id: String,
+    val gd_auton_path : String
+)
+
+data class Decuple<A, B, C, D, E, F, G, H, I, J>(
+    val first: A,
+    val second: B,
+    val third: C,
+    val fourth: D,
+    val fifth: E,
+    val sixth: F,
+    val seventh: G,
+    val eighth: H,
+    val ninth: I,
+    val tenth: J
+)
+val gameElementDefinitions = arrayOf(
+    Decuple(2026, 1, 1001, "Starting Location", 1, "float", 0, 100, "", "% based on user selection"),
+    Decuple(2026, 1, 1002, "Robot is on the field", 2, "int", 0, 1, "", "0 = No 1 = Yes"),
+    Decuple(2026, 1, 1003, "Robot is preloaded", 3, "int", 0, 1, "", "0 = No 1 = Yes"),
+
+    Decuple(2026, 2, 2001, "AutonPath", 1, "string", 0, 0, "", ""),
+    Decuple(2026, 2, 2101, "Robot attempts climb in Auton", 2, "int", 0, 1, "", "0 = No 1 = Yes"),
+    Decuple(2026, 2, 2103, "Robot climbs successful in Auton", 3, "int", 0, 1, "", "0 = No 1 = Yes"),
+    Decuple(2026, 2, 2104, "Robot climb position in Auton", 4, "string", 0, 0, "", ""),
+    Decuple(2026, 2, 2201, "Auton Fuel Count", 5, "int", 0, 0, "", "This is the calculated auton fuel count shot by the team"),
+
+    Decuple(2026, 3, 3001, "Transition Shift - Cycling Time", 1, "int", 0, 0, "", "Time in seconds"),
+    Decuple(2026, 3, 3002, "Transition Shift - Stockpiling Time", 2, "int", 0, 0, "", "Time in seconds"),
+    Decuple(2026, 3, 3003, "Transition Shift - Defending Time", 3, "int", 0, 0, "", "Time in seconds"),
+    Decuple(2026, 3, 3004, "Transition Shift - Broken Time", 4, "int", 0, 0, "", "Time in seconds"),
+    Decuple(2026, 3, 3000, "1st Active", 5, "int", 0, 1, "", "0 = No 1 = Yes"),
+
+    Decuple(2026, 3, 3101, "1st Shift - Cycling Time", 6, "int", 0, 0, "", "Time in seconds"),
+    Decuple(2026, 3, 3102, "1st Shift - Stockpiling Time", 7, "int", 0, 0, "", "Time in seconds"),
+    Decuple(2026, 3, 3103, "1st Shift - Defending Time", 8, "int", 0, 0, "", "Time in seconds"),
+    Decuple(2026, 3, 3104, "1st Shift - Broken Time", 9, "int", 0, 0, "", "Time in seconds"),
+
+    Decuple(2026, 3, 3201, "2nd Shift - Cycling Time", 10, "int", 0, 0, "", "Time in seconds"),
+    Decuple(2026, 3, 3202, "2nd Shift - Stockpiling Time", 11, "int", 0, 0, "", "Time in seconds"),
+    Decuple(2026, 3, 3203, "2nd Shift - Defending Time", 12, "int", 0, 0, "", "Time in seconds"),
+    Decuple(2026, 3, 3204, "2nd Shift - Broken Time", 13, "int", 0, 0, "", "Time in seconds"),
+
+    Decuple(2026, 3, 3301, "3rd Shift - Cycling Time", 14, "int", 0, 0, "", "Time in seconds"),
+    Decuple(2026, 3, 3302, "3rd Shift - Stockpiling Time", 15, "int", 0, 0, "", "Time in seconds"),
+    Decuple(2026, 3, 3303, "3rd Shift - Defending Time", 16, "int", 0, 0, "", "Time in seconds"),
+    Decuple(2026, 3, 3304, "3rd Shift - Broken Time", 17, "int", 0, 0, "", "Time in seconds"),
+
+    Decuple(2026, 3, 3401, "4th Shift - Cycling Time", 18, "int", 0, 0, "", "Time in seconds"),
+    Decuple(2026, 3, 3402, "4th Shift - Stockpiling Time", 19, "int", 0, 0, "", "Time in seconds"),
+    Decuple(2026, 3, 3403, "4th Shift - Defending Time", 20, "int", 0, 0, "", "Time in seconds"),
+    Decuple(2026, 3, 3404, "4th Shift - Broken Time", 21, "int", 0, 0, "", "Time in seconds"),
+
+    Decuple(2026, 3, 3501, "End Game - Cycling Time", 22, "int", 0, 0, "", "Time in seconds"),
+    Decuple(2026, 3, 3502, "End Game - Stockpiling Time", 23, "int", 0, 0, "", "Time in seconds"),
+    Decuple(2026, 3, 3503, "End Game - Defending Time", 24, "int", 0, 0, "", "Time in seconds"),
+    Decuple(2026, 3, 3504, "End Game - Broken Time", 25, "int", 0, 0, "", "Time in seconds"),
+
+    Decuple(2026, 4, 4101, "Robot attempts climb in Endgame", 2, "int", 0, 1, "", "0 = No 1 = Yes"),
+    Decuple(2026, 4, 4102, "Robot climbs successful in Endgame", 3, "int", 0, 1, "", "0 = No 1 = Yes"),
+    Decuple(2026, 4, 4103, "Robot climb position in Endgame", 4, "string", 0, 0, "", ""),
+
+    Decuple(2026, 4, 4200, "Teleop Fuel Count", 1, "int", 0, 0, "", "This is the calculated auton fuel count shot by the team"),
+
+    Decuple(2026, 4, 4201, "Robot shoot from anywhere", 1, "int", 0, 1, "", "0 = No, 1 - Yes"),
+    Decuple(2026, 4, 4202, "Robot shoot while moving", 1, "int", 0, 1, "", "0 = No, 1 - Yes"),
+    Decuple(2026, 4, 4203, "Robot stockpiling from neutral zone", 1, "int", 0, 1, "", "0 = No, 1 - Yes"),
+    Decuple(2026, 4, 4204, "Robot stockpiling from alliance zone", 1, "int", 0, 1, "", "0 = No, 1 - Yes"),
+    Decuple(2026, 4, 4205, "Robot stockpiling from cross court", 1, "int", 0, 1, "", "0 = No, 1 - Yes"),
+    Decuple(2026, 4, 4206, "Robot feed fuel to outpost", 1, "int", 0, 1, "", "0 = No, 1 - Yes"),
+    Decuple(2026, 4, 4207, "Robot receive fuel from outpost", 1, "int", 0, 1, "", "0 = No, 1 - Yes"),
+    Decuple(2026, 4, 4208, "Robot drive under trench", 1, "int", 0, 1, "", "0 = No, 1 - Yes"),
+    Decuple(2026, 4, 4209, "Robot go over trench", 1, "int", 0, 1, "", "0 = No, 1 - Yes"),
+    Decuple(2026, 4, 4210, "Review match flag", 1, "int", 0, 1, "", "0 = No, 1 - Yes")
+)
+
+fun GameDetailsEntity.convertToList(game_matchup_gm_game_type: Char, game_matchup_gm_number:Int,game_matchup_gm_alliance:Char,game_matchup_gm_alliance_position: Int, user: String): List<GameDetailsActions> {
+    fun calculateScore(ge: Int, gdv: Int): Int {
+        return when {
+            // leave start area during auton
+            ge == 2103 && gdv == 1 -> 15
+
+            // auton fuel
+            ge == 2201 && gdv != 0 -> gdv * 1
+
+            // teleop fuel
+            ge == 4200 && gdv != 0 -> gdv * 1
+
+            // climb scoring
+            ge == 4103 && gdv == 1 -> 10
+            ge == 4103 && gdv == 2 -> 20
+            ge == 4103 && gdv == 3 -> 30
+
+            // default
+            else -> 0
+        }
+    }
+
+
+    val list = mutableListOf<GameDetailsActions>()
+    var index = 0
+
+    for (prop in this::class.memberProperties) {
+        if (index >= gameElementDefinitions.size) break
+
+        val value = (prop as KProperty1<GameDetailsEntity, *>).get(this)
+        val def = gameElementDefinitions[index]
+
+        list.add(
+            GameDetailsActions(
+                frc_season_master_sm_year= GameConstants.frc_season_master_sm_year,
+                competition_master_cm_event_code= GameConstants.competition_master_cm_event_code,
+                game_matchup_gm_game_type=game_matchup_gm_game_type,
+                game_matchup_gm_number= game_matchup_gm_number,
+                game_matchup_gm_alliance= game_matchup_gm_alliance,//
+                game_matchup_gm_alliance_position= game_matchup_gm_alliance_position,//
+                game_element_group_geg_grp_key= def.second,
+                game_element_ge_key=def.third,
+                gd_value = value?.toString()?.toIntOrNull() ?: 0,
+                gd_score= calculateScore(def.third,value?.toString()?.toIntOrNull() ?: 0),
+                gd_um_id= user,
+                gd_auton_path = ""
+            )
+        )
+
+        index++
+    }
+
+    return list
 }
