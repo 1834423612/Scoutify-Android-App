@@ -159,19 +159,6 @@ fun TasksCard(
     }
 }
 
-fun borderGradient(progress: Float): Brush {
-    val before = (progress - 0.1f).coerceIn(0f, 1f)
-    val after = (progress + 0.1f).coerceIn(0f, 1f)
-
-    return Brush.linearGradient(
-        colorStops = arrayOf(
-            0f to ProgressGreen,
-            before to ProgressGreen,
-            after to DarkGunmetal,
-            1f to DarkishGunmetal,
-        )
-    )
-}
 
 @Preview(showBackground = true, widthDp = 200)
 @Composable

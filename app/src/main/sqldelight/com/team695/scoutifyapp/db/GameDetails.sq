@@ -71,7 +71,7 @@ CREATE TABLE gameDetailsEntity (
     postgame_feed_outpost INTEGER AS Boolean,
     postgame_receive_outpost INTEGER AS Boolean,
     postgame_under_trench INTEGER AS Boolean,
-    postgame_over_trench INTEGER AS Boolean,
+    postgame_over_bump INTEGER AS Boolean,
     postgame_flag INTEGER AS Boolean,
 
     FOREIGN KEY (task_id) REFERENCES taskEntity(id) ON DELETE CASCADE
@@ -139,7 +139,7 @@ INSERT OR REPLACE INTO gameDetailsEntity(
     postgame_feed_outpost,
     postgame_receive_outpost,
     postgame_under_trench,
-    postgame_over_trench,
+    postgame_over_bump,
     postgame_flag
 )
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);

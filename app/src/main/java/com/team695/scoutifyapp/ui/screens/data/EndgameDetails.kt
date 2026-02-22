@@ -20,37 +20,20 @@ import com.team695.scoutifyapp.data.types.ENDGAME_END_TIME
 import com.team695.scoutifyapp.data.types.GameFormState
 import com.team695.scoutifyapp.ui.theme.AccentGreen
 import com.team695.scoutifyapp.ui.theme.BlueAlliance
+import com.team695.scoutifyapp.ui.theme.Border
+import com.team695.scoutifyapp.ui.theme.DarkGunmetal
+import com.team695.scoutifyapp.ui.theme.Gunmetal
+import com.team695.scoutifyapp.ui.theme.ProgressGreen
 import com.team695.scoutifyapp.ui.theme.RedAlliance
 import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.viewModels.DataViewModel
 import kotlinx.coroutines.delay
-
-// ─── Color Palette ──────────────────────────────────────────────────────────
-
-private val Background    = Color(0xFF0D0D0F)
-private val SurfaceDark   = Color(0xFF161618)
-private val SurfaceMid    = Color(0xFF1E1E22)
-private val SurfaceLight  = Color(0xFF2A2A30)
-private val AccentOrange  = Color(0xFFFF6B35)
-private val AccentBlue    = Color(0xFF4DAFFF)
-private val AccentGreen   = Color(0xFF3DDC84)
-private val TextPrimary   = Color(0xFFEEEEF0)
-private val TextSecondary = Color(0xFF888899)
-private val BadgeRed      = Color(0xFFE53935)
-private val BorderColor   = Color(0xFF2E2E36)
-
-// ─── Root Composable ────────────────────────────────────────────────────────
 
 @Composable
 fun EndgameDetails(
     dataViewModel: DataViewModel,
     formState: GameFormState
 ) {
-    var timerRunning by remember { mutableStateOf(false) }
-    var elapsedSeconds by remember { mutableStateOf(0) }
-    var attemptedClimb by remember { mutableStateOf(true) }
-    var succeededClimb by remember { mutableStateOf(true) }
-
 
     val timers = listOf(
         Timer(
@@ -118,7 +101,6 @@ fun EndgameDetails(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Background)
             .padding(16.dp)
     ) {
         Column (
@@ -126,13 +108,13 @@ fun EndgameDetails(
             verticalArrangement = Arrangement.Top
         ) {
 
-            TeleopTopBar(
+            TopbarWithButton(
                 title = "Teleop (Endgame)",
                 buttonLabel = "Restart Teleop",
                 buttonColor = lerp(
                     start = RedAlliance,
                     stop = AccentGreen,
-                    fraction = formState.teleopCachedMilliseconds.toFloat() / ENDGAME_END_TIME
+                    fraction = formState.teleopTotalMilliseconds.toFloat() / ENDGAME_END_TIME
                 ),
                 onButtonPressed = {
                     //warn user if starting teleop will reset their progress
@@ -161,10 +143,8 @@ fun EndgameDetails(
 
                 // ── Right panel ──
                 EndgamePanel(
-                    attemptedClimb = attemptedClimb,
-                    succeededClimb = succeededClimb,
-                    onAttemptedChange = { attemptedClimb = it },
-                    onSucceededChange = { succeededClimb = it }
+                    formState = formState,
+                    dataViewModel = dataViewModel
                 )
             }
         }
@@ -175,10 +155,8 @@ fun EndgameDetails(
 
 @Composable
 private fun EndgamePanel(
-    attemptedClimb: Boolean,
-    succeededClimb: Boolean,
-    onAttemptedChange: (Boolean) -> Unit,
-    onSucceededChange: (Boolean) -> Unit
+    formState: GameFormState,
+    dataViewModel: DataViewModel
 ) {
     Column(
         modifier = Modifier
@@ -193,7 +171,7 @@ private fun EndgamePanel(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(10.dp))
-                .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
+                .border(1.dp, Border, RoundedCornerShape(10.dp))
                 .padding(vertical = 10.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -205,32 +183,43 @@ private fun EndgamePanel(
             )
         }
 
-        CheckboxRow(
+
+
+        CheckboxRow (
             label = "Did Robot attempt climb?",
-            checked = attemptedClimb,
-            onCheckedChange = onAttemptedChange
+            isChecked = formState.gameDetails.endgameAttemptsClimb,
+            onCheckedChange = { isChecked: Boolean? ->
+                val nextState: Boolean = when (isChecked) {
+                    null -> false
+                    true -> false
+                    false -> true
+                }
+
+                dataViewModel.formEvent(
+                    gameDetails = formState.gameDetails.copy(
+                        endgameAttemptsClimb = nextState
+                    )
+                )
+            }
         )
 
         CheckboxRow(
             label = "Did Robot succeed climb?",
-            checked = succeededClimb,
-            onCheckedChange = onSucceededChange
-        )
+            isChecked = formState.gameDetails.endgameClimbSuccess,
+            onCheckedChange = { isChecked: Boolean? ->
+                val nextState: Boolean = when (isChecked) {
+                    null -> false
+                    true -> false
+                    false -> true
+                }
 
-        // Repeated label (matches screenshot)
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(10.dp))
-                .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
-                .padding(horizontal = 12.dp, vertical = 10.dp)
-        ) {
-            Text(
-                text = "Did Robot succeed climb?",
-                color = TextSecondary,
-                fontSize = 13.sp
-            )
-        }
+                dataViewModel.formEvent(
+                    gameDetails = formState.gameDetails.copy(
+                        endgameClimbSuccess = nextState
+                    )
+                )
+            }
+        )
 
         // Field map placeholder
         Box(
@@ -238,8 +227,8 @@ private fun EndgamePanel(
                 .fillMaxWidth()
                 .weight(1f)
                 .clip(RoundedCornerShape(14.dp))
-                .background(SurfaceMid)
-                .border(1.dp, BorderColor, RoundedCornerShape(14.dp)),
+                .background(DarkGunmetal)
+                .border(1.dp, Border, RoundedCornerShape(14.dp)),
             contentAlignment = Alignment.Center
         ) {
             FieldDiagram()
@@ -247,48 +236,6 @@ private fun EndgamePanel(
     }
 }
 
-@Composable
-private fun CheckboxRow(
-    label: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(10.dp))
-            .border(1.dp, BorderColor, RoundedCornerShape(10.dp))
-            .clickable { onCheckedChange(!checked) }
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = label,
-            color = TextSecondary,
-            fontSize = 13.sp,
-            modifier = Modifier.weight(1f)
-        )
-
-        val checkBg by animateColorAsState(
-            targetValue = if (checked) AccentGreen else SurfaceLight,
-            animationSpec = tween(200),
-            label = "check_bg"
-        )
-
-        Box(
-            modifier = Modifier
-                .size(28.dp)
-                .clip(RoundedCornerShape(6.dp))
-                .background(checkBg),
-            contentAlignment = Alignment.Center
-        ) {
-            if (checked) {
-                Text("✓", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-            }
-        }
-    }
-}
 
 // ─── Field Diagram ───────────────────────────────────────────────────────────
 
@@ -352,7 +299,7 @@ private fun FieldDiagram() {
 private fun FieldPositionButton() {
     var selected by remember { mutableStateOf(false) }
     val bg by animateColorAsState(
-        targetValue = if (selected) AccentOrange else SurfaceLight,
+        targetValue = if (selected) ProgressGreen else Gunmetal,
         animationSpec = tween(150),
         label = "pos_bg"
     )
@@ -361,7 +308,7 @@ private fun FieldPositionButton() {
             .size(28.dp)
             .clip(RoundedCornerShape(6.dp))
             .background(bg)
-            .border(1.dp, BorderColor, RoundedCornerShape(6.dp))
+            .border(1.dp, Border, RoundedCornerShape(6.dp))
             .clickable { selected = !selected }
     )
 }
@@ -373,22 +320,5 @@ private fun VerticalDivider() {
             .fillMaxHeight()
             .width(1.dp)
             .background(Color(0xFF2A5A6A))
-    )
-}
-
-// ─── Theme Wrapper ───────────────────────────────────────────────────────────
-
-@Composable
-fun ScoutingAppTheme(content: @Composable () -> Unit) {
-    MaterialTheme(
-        colorScheme = darkColorScheme(
-            background = Background,
-            surface = SurfaceDark,
-            primary = AccentGreen,
-            secondary = AccentBlue,
-            onBackground = TextPrimary,
-            onSurface = TextPrimary
-        ),
-        content = content
     )
 }

@@ -72,7 +72,7 @@ data class GameDetails(
     val postgameFeedOutpost: Boolean? = null,
     val postgameReceiveOutpost: Boolean? = null,
     val postgameUnderTrench: Boolean? = null,
-    val postgameOverTrench: Boolean? = null,
+    val postgameOverBump: Boolean? = null,
     val postgameShootAnywhere: Boolean? = null,
     val postgameFlag: Boolean? = null,
     // Review
@@ -220,7 +220,7 @@ fun GameDetailsEntity.createGameDetailsFromDb(): GameDetails {
         postgameFeedOutpost = this.postgame_feed_outpost,
         postgameReceiveOutpost = this.postgame_receive_outpost,
         postgameUnderTrench = this.postgame_under_trench,
-        postgameOverTrench = this.postgame_over_trench,
+        postgameOverBump = this.postgame_over_bump,
         postgameFlag = this.postgame_flag,
         )
 }

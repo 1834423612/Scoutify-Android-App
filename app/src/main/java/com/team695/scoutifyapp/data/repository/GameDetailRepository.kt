@@ -103,7 +103,7 @@ class GameDetailRepository(
                 postgame_feed_outpost = details.postgameFeedOutpost,
                 postgame_receive_outpost = details.postgameReceiveOutpost,
                 postgame_under_trench = details.postgameUnderTrench,
-                postgame_over_trench = details.postgameOverTrench,
+                postgame_over_bump = details.postgameOverBump,
                 postgame_flag = details.postgameFlag,
             )
         }
