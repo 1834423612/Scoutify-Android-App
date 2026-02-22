@@ -18,6 +18,7 @@ import com.team695.scoutifyapp.ui.viewModels.LoginStatus
 import com.team695.scoutifyapp.utility.displayTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
@@ -41,6 +42,7 @@ class UserRepository(
                 androidID = entity.android_id
             )
         }
+        .flowOn(Dispatchers.IO)
 
     suspend fun getUserInfo(): Boolean {
         return withContext(Dispatchers.IO) {
@@ -91,6 +93,9 @@ class UserRepository(
     suspend fun logout() {
         withContext(Dispatchers.IO) {
             db.userQueries.deleteUser()
+            //db.taskQueries.clearAllTasks()
+            db.matchQueries.deleteAllMatches()
+
             ScoutifyClient.tokenManager.saveToken("")
 
             CookieManager.getInstance().removeAllCookies(null)

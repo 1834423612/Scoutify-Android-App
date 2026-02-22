@@ -15,6 +15,7 @@ import com.team695.scoutifyapp.db.TaskEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
@@ -33,6 +34,8 @@ class TaskRepository(
                 entity.createTaskFromDb()
             }
         }
+        .flowOn(Dispatchers.IO)
+
 
 
     suspend fun pushTasks(): List<ServerFormatTask> {
@@ -53,30 +56,32 @@ class TaskRepository(
 
     }
 
-    private fun updateDbFromTaskList(tasks: List<Task>) {
-        db.transaction {
-            tasks.forEach {
-                db.taskQueries.insertTask(
-                    id = it.id.toLong(),
-                    type = it.type.toString(),
-                    matchNum = it.matchNum.toLong(),
-                    teamNum = it.teamNum,
-                    time = it.time,
-                    progress = it.progress.toDouble(),
-                    isDone = if (it.isDone) 1L else 0L
-                )
+    suspend private fun updateDbFromTaskList(tasks: List<Task>) {
+        withContext(Dispatchers.IO) {
+            db.transaction {
+                tasks.forEach {
+                    db.taskQueries.insertTask(
+                        id = it.id.toLong(),
+                        type = it.type.toString(),
+                        matchNum = it.matchNum.toLong(),
+                        teamNum = it.teamNum,
+                        time = it.time,
+                        progress = it.progress.toDouble(),
+                        isDone = if (it.isDone) 1L else 0L
+                    )
+                }
             }
         }
     }
 
     suspend fun fetchTasks(): Result<List<Task>> {
-        val oldTasks = db.taskQueries.selectAllTasks()
-            .executeAsList()
-            .map { entity ->
-                entity.createTaskFromDb()
-            }
-
         return withContext(Dispatchers.IO) {
+            val oldTasks = db.taskQueries.selectAllTasks()
+                .executeAsList()
+                .map { entity ->
+                    entity.createTaskFromDb()
+                }
+
             try {
                 val apiTasks: List<Task> = service.getTasks()
 

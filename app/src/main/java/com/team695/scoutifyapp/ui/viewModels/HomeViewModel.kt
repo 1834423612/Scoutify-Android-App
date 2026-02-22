@@ -11,6 +11,7 @@ import com.team695.scoutifyapp.data.api.service.MatchService
 import com.team695.scoutifyapp.data.api.service.TaskService
 import com.team695.scoutifyapp.data.repository.MatchRepository
 import com.team695.scoutifyapp.data.repository.TaskRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -48,7 +49,13 @@ class HomeViewModel(
 
 
     init {
+        viewModelScope.launch(Dispatchers.IO) {
+            val matches = matchState.value
 
+            if (matches == null || matches.isEmpty()) {
+                matchRepository.fetchMatches()
+            }
+        }
     }
 
     fun selectTab(index: Int) {
