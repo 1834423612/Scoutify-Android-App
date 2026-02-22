@@ -2,8 +2,11 @@ package com.team695.scoutifyapp.data.repository
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import com.team695.scoutifyapp.data.api.model.GameConstants
 import com.team695.scoutifyapp.data.api.model.GameDetails
+import com.team695.scoutifyapp.data.api.model.Task
 import com.team695.scoutifyapp.data.api.model.createGameDetailsFromDb
+import com.team695.scoutifyapp.data.api.model.createTaskFromDb
 import com.team695.scoutifyapp.data.api.service.GameDetailsService
 import com.team695.scoutifyapp.db.AppDatabase
 import com.team695.scoutifyapp.db.GameDetailsEntity
@@ -108,8 +111,17 @@ class GameDetailRepository(
             )
         }
     }
-
-
+    suspend fun setGameConstants(): Result<GameConstants> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val result = service.setGameConstants()
+                Result.success(result)
+            } catch (e: Exception) {
+                println("Error when trying to fetch gameConstants: $e")
+                Result.failure(e)
+            }
+        }
+    }
     /*suspend fun fetchGameDetails(): Result<List<Match>> {
 
     }*/
