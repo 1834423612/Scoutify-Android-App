@@ -350,8 +350,8 @@ fun GameDetailsEntity.convertToList(game_matchup_gm_game_type: Char, game_matchu
 
         list.add(
             GameDetailsActions(
-                frc_season_master_sm_year= GameConstants.frc_season_master_sm_year,
-                competition_master_cm_event_code= GameConstants.competition_master_cm_event_code,
+                frc_season_master_sm_year= gameConstantsInitial.frc_season_master_sm_year,
+                competition_master_cm_event_code= gameConstantsInitial.competition_master_cm_event_code,
                 game_matchup_gm_game_type=game_matchup_gm_game_type,
                 game_matchup_gm_number= game_matchup_gm_number,
                 game_matchup_gm_alliance= game_matchup_gm_alliance,//
