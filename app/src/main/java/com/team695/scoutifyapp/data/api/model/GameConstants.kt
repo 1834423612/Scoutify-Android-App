@@ -7,7 +7,14 @@ data class GameConstants (
     @SerializedName(value="event_code")
     public val competition_master_cm_event_code: String
 )
-object gameConstantsInitial{
-    public val frc_season_master_sm_year = 2026
-    public val competition_master_cm_event_code = "mnwi"
+
+object GameConstantsStore {
+    public var _constants: GameConstants? = null
+
+    val constants: GameConstants
+        get() = _constants ?: error("GameConstants not initialized")
+
+    fun set(value: GameConstants) {
+        _constants = value
+    }
 }

@@ -1,6 +1,4 @@
 package com.team695.scoutifyapp.data.api.model
-
-import com.team695.scoutifyapp.data.api.model.GameConstants
 import com.team695.scoutifyapp.db.GameDetailsEntity
 import kotlin.Double
 import kotlin.reflect.KProperty1
@@ -316,7 +314,7 @@ val gameElementDefinitions = arrayOf(
     Decuple(2026, 4, 4210, "Review match flag", 1, "int", 0, 1, "", "0 = No, 1 - Yes")
 )
 
-fun GameDetailsEntity.convertToList(game_matchup_gm_game_type: Char, game_matchup_gm_number:Int,game_matchup_gm_alliance:Char,game_matchup_gm_alliance_position: Int, user: String): List<GameDetailsActions> {
+fun GameDetailsEntity.convertToList(gameConstants: GameConstants,game_matchup_gm_game_type: Char, game_matchup_gm_number:Int,game_matchup_gm_alliance:Char,game_matchup_gm_alliance_position: Int, user: String): List<GameDetailsActions> {
     fun calculateScore(ge: Int, gdv: Int): Int {
         return when {
             // leave start area during auton
@@ -350,8 +348,8 @@ fun GameDetailsEntity.convertToList(game_matchup_gm_game_type: Char, game_matchu
 
         list.add(
             GameDetailsActions(
-                frc_season_master_sm_year= gameConstantsInitial.frc_season_master_sm_year,
-                competition_master_cm_event_code= gameConstantsInitial.competition_master_cm_event_code,
+                frc_season_master_sm_year= gameConstants.frc_season_master_sm_year,
+                competition_master_cm_event_code= gameConstants.competition_master_cm_event_code,
                 game_matchup_gm_game_type=game_matchup_gm_game_type,
                 game_matchup_gm_number= game_matchup_gm_number,
                 game_matchup_gm_alliance= game_matchup_gm_alliance,//

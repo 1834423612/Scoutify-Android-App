@@ -2,8 +2,11 @@ package com.team695.scoutifyapp.data.repository
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import com.team695.scoutifyapp.data.api.model.GameConstantsStore
+import com.team695.scoutifyapp.data.api.model.ServerFormatTask
 import com.team695.scoutifyapp.data.api.model.Task
 import com.team695.scoutifyapp.data.api.model.TaskType
+import com.team695.scoutifyapp.data.api.model.convertToServerFormat
 import com.team695.scoutifyapp.data.api.model.createTaskFromDb
 import com.team695.scoutifyapp.data.api.service.LoginService
 import com.team695.scoutifyapp.data.api.service.TaskService
@@ -16,6 +19,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Locale
+import kotlin.text.first
 
 class TaskRepository(
     private val service: TaskService,
@@ -31,8 +35,22 @@ class TaskRepository(
         }
 
 
-    suspend fun pushTasks() {
-        //service.pushTasks(tasks.first())
+    suspend fun pushTasks(): List<ServerFormatTask> {
+        fun convert(Task: TaskEntity): ServerFormatTask{
+            val gameConstants = GameConstantsStore.constants   // non-null
+
+            val matchNumber = Task.matchNum
+            val teamNumber = Task.teamNum.toLong()
+            val gameType = db.matchQueries
+                .selectMatchByNumberAndTeam(matchNumber, teamNumber)
+                .executeAsOne().gameType
+            val user: String = db.userQueries.selectUser().executeAsOne().name ?: ""
+            return Task.convertToServerFormat(gameConstants,teamNumber.toInt(),user,695,gameType[0])
+        }
+        return db.taskQueries.selectAllTasks().executeAsList().map {
+            convert(it)
+        }
+
     }
 
     private fun updateDbFromTaskList(tasks: List<Task>) {

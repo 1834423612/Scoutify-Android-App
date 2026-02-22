@@ -9,6 +9,8 @@ CREATE TABLE taskEntity (
     isDone INTEGER NOT NULL DEFAULT 0
 );
 
+
+
 -- 2. Select All
 selectAllTasks:
 SELECT *

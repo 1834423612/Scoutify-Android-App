@@ -3,13 +3,17 @@ package com.team695.scoutifyapp.data.repository
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.team695.scoutifyapp.data.api.model.GameConstants
+import com.team695.scoutifyapp.data.api.model.GameConstantsStore
 import com.team695.scoutifyapp.data.api.model.GameDetails
+import com.team695.scoutifyapp.data.api.model.GameDetailsActions
 import com.team695.scoutifyapp.data.api.model.Task
+import com.team695.scoutifyapp.data.api.model.convertToList
 import com.team695.scoutifyapp.data.api.model.createGameDetailsFromDb
 import com.team695.scoutifyapp.data.api.model.createTaskFromDb
 import com.team695.scoutifyapp.data.api.service.GameDetailsService
 import com.team695.scoutifyapp.db.AppDatabase
 import com.team695.scoutifyapp.db.GameDetailsEntity
+import com.team695.scoutifyapp.db.MatchEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 
@@ -36,6 +40,57 @@ class GameDetailRepository(
             updateDbFromGameDetails(newDetails)
             return@withContext newDetails
         }
+    }
+
+    suspend fun pushGameDetails(): List<GameDetailsActions> {
+
+        fun findTeamField(match: MatchEntity, team: Long): String? {
+            return when (team) {
+                match.r1.toLong() -> "r1"
+                match.r2.toLong() -> "r2"
+                match.r3.toLong() -> "r3"
+                match.b1.toLong() -> "b1"
+                match.b2.toLong() -> "b2"
+                match.b3.toLong() -> "b3"
+                else -> null
+            }
+        }
+
+        val gameDetails = db.gameDetailsQueries.selectAllGameDetails().executeAsList()
+        val gameDetailsConverted = mutableListOf<GameDetailsActions>()
+
+        for (i in gameDetails) {
+
+            val gameConstants = GameConstantsStore.constants   // non-null
+
+            val task = db.taskQueries.selectTaskById(i.task_id.toLong()).executeAsOne()
+            val matchNumber = task.matchNum
+            val teamNumber = task.teamNum.toLong()
+
+            val match = db.matchQueries
+                .selectMatchByNumberAndTeam(matchNumber, teamNumber)
+                .executeAsOne()
+
+            val field = findTeamField(match, teamNumber)
+
+            val alliance: Char = field?.first() ?: ' '          // Char
+            val alliancePosition: Int = field?.last()?.digitToInt() ?: 0
+
+            val user: String = db.userQueries.selectUser().executeAsOne().name ?: ""
+
+            gameDetailsConverted.addAll(
+                i.convertToList(
+                    gameConstants,
+                    match.gameType[0],
+                    matchNumber.toInt(),
+                    alliance,
+                    alliancePosition,
+                    user
+                )
+            )
+        }
+
+        return gameDetailsConverted
     }
 
     suspend fun updateDbFromGameDetails(details: GameDetails) {
@@ -111,17 +166,25 @@ class GameDetailRepository(
             )
         }
     }
-    suspend fun setGameConstants(): Result<GameConstants> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val result = service.setGameConstants()
-                Result.success(result)
-            } catch (e: Exception) {
-                println("Error when trying to fetch gameConstants: $e")
-                Result.failure(e)
-            }
+
+suspend fun setGameConstants(): Result<GameConstants> {
+    return withContext(Dispatchers.IO) {
+        try {
+            val result = service.setGameConstants()
+
+            // store globally
+            GameConstantsStore.set(result)
+
+            Result.success(result)
+        } catch (e: Exception) {
+            println("Error when trying to fetch gameConstants: $e")
+            Result.failure(e)
         }
     }
+}
+
+
+
     /*suspend fun fetchGameDetails(): Result<List<Match>> {
 
     }*/
