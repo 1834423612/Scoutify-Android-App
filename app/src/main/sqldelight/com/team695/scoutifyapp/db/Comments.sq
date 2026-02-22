@@ -8,7 +8,8 @@ CREATE TABLE commentsEntity (
     alliance TEXT, --R, B
     alliance_position INTEGER AS Int, --1, 2, 3
     timestamp INTEGER,
-    comment TEXT
+    comment TEXT,
+    submitted BOOLEAN
 );
 
 --queries
@@ -20,16 +21,22 @@ selectCommentsById:
 SELECT * FROM commentsEntity
 WHERE id = ?;
 
-insertComments:
+insertComment:
 INSERT OR REPLACE INTO commentsEntity(
+        id,
         match_number,
         team_number,
         alliance,
         alliance_position,
         timestamp,
-        comment
+        comment,
+        submitted
         )
         VALUES(
-        ?,?,?,?,?,?
+        ?,?,?,?,?,?,?,?
         );
 
+seedComments:
+INSERT OR REPLACE INTO commentsEntity(
+    0,
+)

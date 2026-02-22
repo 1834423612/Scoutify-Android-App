@@ -136,8 +136,11 @@ fun CommentsContent() {
 
                 Spacer(modifier = Modifier.weight(.1f))
 
+                // Call API
                 Pressable (
-                    onClick = {},
+                    onClick = {
+                        //uploadComments()
+                    },
                     corner = 4.dp,
                     text = "Submit",
                     modifier = Modifier
@@ -209,6 +212,7 @@ fun AllianceColumn(
         )
     }
 }
+
 
 @Composable
 fun CommentField(label: String, value: String, onValueChange: (String) -> Unit) {
