@@ -146,7 +146,9 @@ fun TasksCard(
             }
             Spacer(modifier = Modifier.height(16.dp))
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                val tasks = if (tabState.selectedTab == 0) incompleteTasks else completeTasks
+                val tasks = (if (tabState.selectedTab == 0) incompleteTasks else completeTasks)
+                    ?.sorted()
+
                 if(tasks != null) {
                     items(tasks) { task ->
                         TaskItem(task = task, onPress = {onPress.invoke(task.id)})
