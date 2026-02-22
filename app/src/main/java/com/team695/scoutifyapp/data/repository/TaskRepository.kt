@@ -68,6 +68,7 @@ class TaskRepository(
 
                 return@withContext Result.success(apiTasks)
             } catch(e: Exception) {
+
                 println("Error when trying to fetch tasks: $e")
                 updateDbFromTaskList(oldTasks)
                 return@withContext Result.failure(e)

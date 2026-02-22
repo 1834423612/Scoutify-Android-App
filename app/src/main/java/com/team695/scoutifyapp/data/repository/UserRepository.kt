@@ -61,6 +61,8 @@ class UserRepository(
 
                     return@withContext true
                 } else {
+                    println("CONTEXT: ${context.androidID}")
+
                     db.userQueries.insertUser(
                         name = "WRONG_USER",
                         display_name = "WRONG_USER",
@@ -72,7 +74,7 @@ class UserRepository(
                 }
             } catch (e: Exception) {
                 println("Error when trying to get user info: $e")
-                return@withContext false
+                return@withContext true
             }
         }
     }

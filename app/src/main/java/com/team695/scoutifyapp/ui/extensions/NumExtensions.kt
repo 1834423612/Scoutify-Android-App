@@ -5,5 +5,5 @@ fun Long.minDiffFromNow(): Long {
 
     println("DIFFERENCE: $diff, ${System.currentTimeMillis()}, ${this}")
 
-    return ((diff / 1000) / 60).coerceAtMost(99L)
+    return ((diff / 1000) / 60).coerceIn(-99L, 99L)
 }
