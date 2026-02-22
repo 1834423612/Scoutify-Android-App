@@ -24,6 +24,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -68,8 +69,13 @@ fun TasksCard(
     val tabs = arrayOf("Incomplete", "Complete")
 
     val tasksState by homeViewModel.tasksState.collectAsStateWithLifecycle()
-    val incompleteTasks = tasksState?.filter { it -> !it.isDone }
-    val completeTasks = tasksState?.filter { it -> it.isDone }
+
+    val incompleteTasks = remember(tasksState) {
+        tasksState?.filter { !it.isDone }?.sorted()
+    }
+    val completeTasks = remember(tasksState) {
+        tasksState?.filter { it.isDone }?.sorted()
+    }
 
     Box(
         modifier = Modifier
@@ -147,7 +153,6 @@ fun TasksCard(
             Spacer(modifier = Modifier.height(16.dp))
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 val tasks = (if (tabState.selectedTab == 0) incompleteTasks else completeTasks)
-                    ?.sorted()
 
                 if(tasks != null) {
                     items(tasks) { task ->

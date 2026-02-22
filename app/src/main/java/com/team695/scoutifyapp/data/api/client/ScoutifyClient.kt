@@ -4,6 +4,7 @@ import android.content.Context
 import com.team695.scoutifyapp.data.api.TokenManager
 import com.team695.scoutifyapp.data.api.service.GameDetailsService
 import com.team695.scoutifyapp.data.api.service.MatchService
+import com.team695.scoutifyapp.data.api.service.TaskService
 import com.team695.scoutifyapp.data.api.service.UserService
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
@@ -55,4 +56,8 @@ object ScoutifyClient {
         retrofit.create(GameDetailsService::class.java)
     }
 
+
+    val taskService: TaskService by lazy {
+        retrofit.create(TaskService::class.java)
+    }
 }
