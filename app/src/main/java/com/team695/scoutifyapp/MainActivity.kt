@@ -78,7 +78,7 @@ class MainActivity : ComponentActivity() {
         val matchService: MatchService = ScoutifyClient.matchService
         val loginService: LoginService = CasdoorClient.loginService
         val userService: UserService = ScoutifyClient.userService
-        val gameDetailsService: GameDetailsService = ScoutifyClient.GameDetailsService
+        val gameDetailsService: GameDetailsService = ScoutifyClient.gameDetailsService
 
         val userRepository = UserRepository(
             loginService = loginService,
