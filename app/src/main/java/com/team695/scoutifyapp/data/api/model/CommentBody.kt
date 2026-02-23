@@ -5,14 +5,14 @@ import com.google.gson.annotations.SerializedName
 data class CommentBody (
     @SerializedName("game_matchup_gm_number")
     val match_number: Int,
-    val team_number: Int,
+    val team_number: Int?,
     @SerializedName("game_matchup_gm_alliance")
-    val alliance: String, // B/R
+    val alliance: String?, // B/R
     @SerializedName("game_matchup_gm_alliance_position")
-    val alliance_position: Int, // 1, 2, 3
+    val alliance_position: Int?, // 1, 2, 3
     @SerializedName("gc_comment")
-    val comment: String,
+    val comment: String?,
     @SerializedName("gc_ts")
-    val timestamp: Long,
-    val submitted: Boolean = false
+    val timestamp: Long?,
+    val submitted: Int? = 0 // 0-false, 1-true
 )

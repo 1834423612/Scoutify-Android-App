@@ -1,12 +1,14 @@
 package com.team695.scoutifyapp
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.team695.scoutifyapp.data.api.client.CasdoorClient
 import com.team695.scoutifyapp.data.api.client.ScoutifyClient
 import com.team695.scoutifyapp.data.api.model.User
+import com.team695.scoutifyapp.data.api.service.CommentService
 import com.team695.scoutifyapp.data.api.service.LoginService
 import com.team695.scoutifyapp.data.api.service.MatchService
 import com.team695.scoutifyapp.ui.theme.ScoutifyTheme
@@ -20,7 +22,10 @@ import com.team695.scoutifyapp.db.CommentsEntity
 import com.team695.scoutifyapp.data.api.service.GameDetailsService
 import com.team695.scoutifyapp.data.api.service.UserService
 import com.team695.scoutifyapp.data.intAdapter
+import com.team695.scoutifyapp.data.repository.CommentRepository
 import com.team695.scoutifyapp.data.repository.GameDetailRepository
+import kotlinx.coroutines.runBlocking
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,10 +74,22 @@ class MainActivity : ComponentActivity() {
                 match_numberAdapter = intAdapter,
                 team_numberAdapter  = intAdapter,
                 alliance_positionAdapter = intAdapter,
+                submittedAdapter = intAdapter
             )
         )
         db.taskQueries.seedData() //to add default data
         db.matchQueries.seedData() //to add default data
+
+        //db.commentsQueries.seedData() //to add default data
+        /*
+        runBlocking {
+            val commentRepository: CommentRepository = CommentRepository(db = db)
+            commentRepository.printAllComments()
+        }
+        */
+
+
+
 
         val taskService = TaskService(db = db)
         val matchService: MatchService = ScoutifyClient.matchService
@@ -90,6 +107,8 @@ class MainActivity : ComponentActivity() {
         val taskRepository = TaskRepository(service = taskService, db = db)
         val matchRepository = MatchRepository(service = matchService, db = db)
         val gameDetailRepository = GameDetailRepository(service = gameDetailsService, db = db)
+        val commentRepository = CommentRepository(db = db)
+
 
 
         setContent {
@@ -99,6 +118,7 @@ class MainActivity : ComponentActivity() {
                     matchRepository = matchRepository,
                     userRepository = userRepository,
                     gameDetailRepository = gameDetailRepository,
+                    commentRepository = commentRepository
                 )
             }
         }

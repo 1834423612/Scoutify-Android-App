@@ -1,5 +1,6 @@
 package com.team695.scoutifyapp.ui.screens
 
+import android.R.color.white
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -21,10 +22,20 @@ import com.team695.scoutifyapp.ui.components.ImageBackground
 import com.team695.scoutifyapp.ui.components.buttonHighlight
 import com.team695.scoutifyapp.ui.theme.*
 import com.team695.scoutifyapp.ui.reusables.Pressable
-
-@Preview
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CommentsScreen() {
+fun CommentsScreen(viewModel: CommentsViewModel) {
+    val selectedMatch by viewModel.selectedMatch
+    val red1Comment by viewModel.red1Comment
+    val red2Comment by viewModel.red2Comment
+    val red3Comment by viewModel.red3Comment
+    val blue1Comment by viewModel.blue1Comment
+    val blue2Comment by viewModel.blue2Comment
+    val blue3Comment by viewModel.blue3Comment
+
+    val autoSaved by viewModel.autoSaved
+    val isSubmitted by viewModel.isSubmitted
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Background
@@ -35,26 +46,44 @@ fun CommentsScreen() {
                 .padding(16.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            CommentsContent()
+            CommentsContent(
+                selectedMatch = selectedMatch,
+                red1Comment = red1Comment,
+                red2Comment = red2Comment,
+                red3Comment = red3Comment,
+                blue1Comment = blue1Comment,
+                blue2Comment = blue2Comment,
+                blue3Comment = blue3Comment,
+                onMatchSelected = { match -> viewModel.onMatchSelected(match) },
+                onCommentChanged = { alliance, position, comment -> viewModel.onCommentChanged(alliance, position, comment) },
+                isSubmitted = isSubmitted,
+                autoSaved = autoSaved,
+                onSubmit = { viewModel.setCommentsAsSubmitted() },
+                printDB = { viewModel.printDB() }
+            )
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CommentsContent() {
-    var selectedMatch by remember { mutableStateOf("") }
-    var expanded by remember { mutableStateOf(false) }
-
-    // State for comments
-    var red1Comment by remember { mutableStateOf("") }
-    var red2Comment by remember { mutableStateOf("") }
-    var red3Comment by remember { mutableStateOf("") }
-    var blue1Comment by remember { mutableStateOf("") }
-    var blue2Comment by remember { mutableStateOf("") }
-    var blue3Comment by remember { mutableStateOf("") }
-
+fun CommentsContent(
+    selectedMatch: String,
+    red1Comment: String,
+    red2Comment: String,
+    red3Comment: String,
+    blue1Comment: String,
+    blue2Comment: String,
+    blue3Comment: String,
+    onMatchSelected: (String) -> Unit,
+    onCommentChanged: (String, Int, String) -> Unit,
+    isSubmitted: Boolean,
+    autoSaved: Boolean,
+    onSubmit: () -> Unit,
+    printDB: () -> Unit
+) {
     val matches = (1..64).map { it.toString() }
+    var expanded by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
 
     Box(
@@ -86,6 +115,13 @@ fun CommentsContent() {
                     fontWeight = FontWeight.Bold
                 )
 
+                Text(
+                    text = if (isSubmitted) "Submitted: true" else "Submitted: false"
+                )
+                Text(
+                    text = if (autoSaved) "Autosaved: true" else "Autosaved: false"
+                )
+
                 Spacer(modifier = Modifier.weight(1f))
 
                 Box(
@@ -93,7 +129,6 @@ fun CommentsContent() {
                         .background(DarkishGunmetal)
                         .buttonHighlight(4.dp)
                 ) {
-
                     ExposedDropdownMenuBox(
                         expanded = expanded,
                         onExpandedChange = { expanded = !expanded },
@@ -124,7 +159,7 @@ fun CommentsContent() {
                                 DropdownMenuItem(
                                     text = { Text("Match $match", color = TextPrimary) },
                                     onClick = {
-                                        selectedMatch = match
+                                        onMatchSelected(match)
                                         expanded = false
                                     },
                                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
@@ -136,11 +171,8 @@ fun CommentsContent() {
 
                 Spacer(modifier = Modifier.weight(.1f))
 
-                // Call API
-                Pressable (
-                    onClick = {
-                        //uploadComments()
-                    },
+                Pressable(
+                    onClick = onSubmit,
                     corner = 4.dp,
                     text = "Submit",
                     modifier = Modifier
@@ -148,6 +180,14 @@ fun CommentsContent() {
                         .height(55.dp)
                 ) {}
 
+                Pressable(
+                    onClick = printDB,
+                    corner = 4.dp,
+                    text = "PrintDB (Debug)",
+                    modifier = Modifier
+                        .width(150.dp)
+                        .height(55.dp)
+                ) {}
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -163,14 +203,15 @@ fun CommentsContent() {
                     horizontalArrangement = Arrangement.spacedBy(32.dp)
                 ) {
                     // Red Alliance Column
+                    // Red Alliance Column
                     AllianceColumn(
                         title = "Red Alliance",
                         titleColor = RedAlliance,
                         modifier = Modifier.weight(1f)
                     ) {
-                        CommentField("Red 1", red1Comment) { red1Comment = it }
-                        CommentField("Red 2", red2Comment) { red2Comment = it }
-                        CommentField("Red 3", red3Comment) { red3Comment = it }
+                        CommentField("Red 1", red1Comment) { onCommentChanged("Red", 1, it) }
+                        CommentField("Red 2", red2Comment) { onCommentChanged("Red", 2, it) }
+                        CommentField("Red 3", red3Comment) { onCommentChanged("Red", 3, it) }
                     }
 
                     // Blue Alliance Column
@@ -179,9 +220,9 @@ fun CommentsContent() {
                         titleColor = BlueAlliance,
                         modifier = Modifier.weight(1f)
                     ) {
-                        CommentField("Blue 1", blue1Comment) { blue1Comment = it }
-                        CommentField("Blue 2", blue2Comment) { blue2Comment = it }
-                        CommentField("Blue 3", blue3Comment) { blue3Comment = it }
+                        CommentField("Blue 1", blue1Comment) { onCommentChanged("Blue", 1, it) }
+                        CommentField("Blue 2", blue2Comment) { onCommentChanged("Blue", 2, it) }
+                        CommentField("Blue 3", blue3Comment) { onCommentChanged("Blue", 3, it) }
                     }
                 }
             }
@@ -212,7 +253,6 @@ fun AllianceColumn(
         )
     }
 }
-
 
 @Composable
 fun CommentField(label: String, value: String, onValueChange: (String) -> Unit) {
@@ -250,6 +290,7 @@ fun CommentField(label: String, value: String, onValueChange: (String) -> Unit) 
     }
 }
 
+/*
 @Preview(showBackground = true, widthDp = 1280, heightDp = 800)
 @Composable
 fun CommentsScreenPreview() {
@@ -257,3 +298,4 @@ fun CommentsScreenPreview() {
         CommentsScreen()
     }
 }
+*/
