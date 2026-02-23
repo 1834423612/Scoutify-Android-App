@@ -2,6 +2,7 @@ package com.team695.scoutifyapp.data.repository
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import com.team695.scoutifyapp.data.api.NetworkMonitor
 import com.team695.scoutifyapp.data.api.TokenManager
 import com.team695.scoutifyapp.data.api.client.ScoutifyClient
 import com.team695.scoutifyapp.data.api.model.Match
@@ -10,6 +11,7 @@ import com.team695.scoutifyapp.data.api.model.createMatchFromDb
 import com.team695.scoutifyapp.data.api.model.createTaskFromDb
 import com.team695.scoutifyapp.data.api.service.ApiResponse
 import com.team695.scoutifyapp.data.api.service.MatchService
+import com.team695.scoutifyapp.data.api.service.NetworkService
 import com.team695.scoutifyapp.data.api.service.TaskService
 import com.team695.scoutifyapp.data.extensions.convertIsoToUnix
 import com.team695.scoutifyapp.db.AppDatabase
@@ -23,6 +25,7 @@ class MatchRepository(
     private val service: MatchService,
     private val db: AppDatabase,
 ) {
+
     val matches: Flow<List<Match>> = db.matchQueries.selectAllMatches()
         .asFlow()
         .mapToList(Dispatchers.IO)

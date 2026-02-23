@@ -4,9 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.team695.scoutifyapp.data.api.NetworkMonitor
 import com.team695.scoutifyapp.data.repository.TaskRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.minutes
 
 
@@ -18,12 +20,12 @@ class TasksViewModel(
 ) : ViewModel() {
 
     init {
-        // start monitoring internet
-        networkMonitor.startMonitoring()
+        /*
+        start a coroutine which will perform the
+         fetchTasks() logic
+         */
 
-        // start a coroutine which will perform the
-        // fetchTasks() logic
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             while (isActive) {
                 if (networkMonitor.isConnected.value) {
                     retryFetchUntilSuccess()
@@ -35,10 +37,13 @@ class TasksViewModel(
     }
 
     private suspend fun retryFetchUntilSuccess() {
-        while (true) {
-            val result = repository.fetchTasks()
-            if (result.isSuccess) return
-            delay(10000) // wait 10 seconds before retry
+        withContext(Dispatchers.IO) {
+            var result = repository.fetchTasks()
+
+            while (result.isFailure) {
+                delay(10*1000)
+                result = repository.fetchTasks()
+            }
         }
     }
 
