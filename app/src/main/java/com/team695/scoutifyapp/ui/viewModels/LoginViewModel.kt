@@ -58,7 +58,6 @@ class LoginViewModel(private val repository: UserRepository): ViewModel() {
             .build()
             .toString()
 
-
         _loginState.value = LoginStatus(
             verifier = verifier,
             loginUrl = loginUrl

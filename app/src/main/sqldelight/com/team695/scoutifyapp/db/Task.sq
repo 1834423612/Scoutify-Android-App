@@ -9,6 +9,8 @@ CREATE TABLE taskEntity (
     isDone INTEGER NOT NULL DEFAULT 0
 );
 
+
+
 -- 2. Select All
 selectAllTasks:
 SELECT *
@@ -56,5 +58,5 @@ VALUES
 (1, 'SCOUTING', 42, '254', 1771721971000, 0.5, 0),  -- Example Timestamps
 (2, 'PIT', 0, '1678', 1771722331000, 1.0, 1),
 (3, 'SCOUTING', 12, '695', 1771722691000, 0.0, 0),
-(4, 'PIT', 13, '695', 1771723771000, 0.0, 0);
+(4, 'PIT', 13, '695', 1771723771098000, 0.0, 0);
 

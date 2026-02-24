@@ -2,6 +2,7 @@ package com.team695.scoutifyapp.data.api.model
 
 
 data class User(
+    //TODO: add teamnumber
     val name: String? = null,
     val displayName: String? = null,
     val email: String? = null,
