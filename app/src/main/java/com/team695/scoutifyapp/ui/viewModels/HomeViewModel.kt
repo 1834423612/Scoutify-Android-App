@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
@@ -35,7 +36,7 @@ class HomeViewModel(
     private val matchRepository: MatchRepository,
     private val networkMonitor: NetworkMonitor,
 
-): ViewModel() {
+    ) : ViewModel() {
     private val _tabState = MutableStateFlow(TabState())
     val tabState: StateFlow<TabState> = _tabState
 
@@ -55,12 +56,9 @@ class HomeViewModel(
     val matchState: StateFlow<List<Match>?> = _matchState
 
     init {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             while (isActive) {
-                if (networkMonitor.isConnected.value) {
-                    retryFetchUntilSuccess()
-                }
-
+                retryFetchUntilSuccess()
                 delay(5.minutes)
             }
         }
@@ -71,8 +69,12 @@ class HomeViewModel(
             var matchResult = matchRepository.fetchMatches()
             var taskResult = taskRepository.fetchTasks()
 
+            var duration = 10.seconds
+
             while (matchResult.isFailure || taskResult.isFailure) {
-                delay(10.seconds)
+                networkMonitor.isConnected.first { it }
+
+                delay(duration)
 
                 if (matchResult.isFailure) {
                     matchResult = matchRepository.fetchMatches()
@@ -81,6 +83,8 @@ class HomeViewModel(
                 if (taskResult.isFailure) {
                     taskResult = taskRepository.fetchTasks()
                 }
+
+                duration = duration.coerceAtMost(40.seconds)
             }
         }
     }
