@@ -18,6 +18,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.team695.scoutifyapp.data.types.ENDGAME_END_TIME
 import com.team695.scoutifyapp.data.types.GameFormState
+import com.team695.scoutifyapp.data.types.SHIFT3_END_TIME
+import com.team695.scoutifyapp.data.types.SHIFT4_END_TIME
 import com.team695.scoutifyapp.ui.theme.AccentGreen
 import com.team695.scoutifyapp.ui.theme.BlueAlliance
 import com.team695.scoutifyapp.ui.theme.Border
@@ -28,12 +30,15 @@ import com.team695.scoutifyapp.ui.theme.RedAlliance
 import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.viewModels.DataViewModel
 import kotlinx.coroutines.delay
+import kotlin.math.min
 
 @Composable
 fun EndgameDetails(
     dataViewModel: DataViewModel,
     formState: GameFormState
 ) {
+    val currentTimer = min(formState.teleopTotalMilliseconds - SHIFT4_END_TIME, formState.teleopCachedMilliseconds)
+    val previousTimer = formState.teleopCachedMilliseconds - currentTimer
 
     val timers = listOf(
         Timer(
@@ -54,7 +59,8 @@ fun EndgameDetails(
             onClick = {
                 dataViewModel.formEvent(
                     gameDetails = formState.gameDetails.copy(
-                        endgameCyclingTime = (formState.gameDetails.endgameCyclingTime ?: 0) + formState.teleopCachedMilliseconds
+                        endgameCyclingTime = (formState.gameDetails.endgameCyclingTime ?: 0) + currentTimer,
+                        shift4CyclingTime = (formState.gameDetails.shift4CyclingTime ?: 0) + previousTimer
                     )
                 )
                 dataViewModel.resetCacheTime()
@@ -66,7 +72,8 @@ fun EndgameDetails(
             onClick = {
                 dataViewModel.formEvent(
                     gameDetails = formState.gameDetails.copy(
-                        endgameStockpilingTime = (formState.gameDetails.endgameStockpilingTime ?: 0) + formState.teleopCachedMilliseconds
+                        endgameStockpilingTime = (formState.gameDetails.endgameStockpilingTime ?: 0) + currentTimer,
+                        shift4StockpilingTime = (formState.gameDetails.shift4StockpilingTime ?: 0) + previousTimer
                     )
                 )
                 dataViewModel.resetCacheTime()
@@ -78,7 +85,8 @@ fun EndgameDetails(
             onClick = {
                 dataViewModel.formEvent(
                     gameDetails = formState.gameDetails.copy(
-                        endgameDefendingTime = (formState.gameDetails.endgameDefendingTime ?: 0) + formState.teleopCachedMilliseconds
+                        endgameDefendingTime = (formState.gameDetails.endgameDefendingTime ?: 0) + currentTimer,
+                        shift4DefendingTime = (formState.gameDetails.shift4DefendingTime ?: 0) + previousTimer,
                     )
                 )
                 dataViewModel.resetCacheTime()
@@ -90,7 +98,8 @@ fun EndgameDetails(
             onClick = {
                 dataViewModel.formEvent(
                     gameDetails = formState.gameDetails.copy(
-                        endgameBrokenTime = (formState.gameDetails.endgameBrokenTime ?: 0) + formState.teleopCachedMilliseconds
+                        endgameBrokenTime = (formState.gameDetails.endgameBrokenTime ?: 0) + previousTimer,
+                        shift4BrokenTime = (formState.gameDetails.shift4BrokenTime ?: 0) + currentTimer,
                     )
                 )
                 dataViewModel.resetCacheTime()
