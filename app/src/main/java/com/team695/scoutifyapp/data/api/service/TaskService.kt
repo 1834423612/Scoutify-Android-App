@@ -1,5 +1,6 @@
 package com.team695.scoutifyapp.data.api.service
 
+import com.google.gson.annotations.SerializedName
 import com.team695.scoutifyapp.BuildConfig
 import com.team695.scoutifyapp.db.AppDatabase
 import com.team695.scoutifyapp.data.api.model.Task
@@ -16,6 +17,20 @@ interface TaskService {
         @Query("smYear") year: Int = 2025,
         @Query("eventCode") eventCode: String = "ohcl",
         @Query("gameType") gameType: Char = 'Q',
-    ): ApiResponseWithRows<List<Task>>
+    ): ApiResponseWithRows<List<TaskResponse>>
 }
 
+data class TaskResponse(
+    @SerializedName("task_id")
+    val taskId: Long,
+    @SerializedName("tm_number")
+    val tmNumber: Int,
+    @SerializedName("gm_number")
+    val gmNumber: Int,
+    @SerializedName("checkin_task")
+    val checkinTask: String,
+    @SerializedName("task_completed")
+    val taskCompleted: Int,
+    @SerializedName("ett_ts")
+    val time: String
+)

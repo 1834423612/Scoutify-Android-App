@@ -12,7 +12,7 @@ class Task(
     val time: Long,
     val progress: Float, // 0.0 to 1.0
     val isDone: Boolean = false,
-): Comparable<Task> {
+    ) : Comparable<Task> {
     override fun compareTo(other: Task): Int {
         if (time != other.time) {
             return if ((time - other.time) > 0) 1 else -1
@@ -46,20 +46,26 @@ data class ServerFormatTask(
     val checkin_task: String,
     val task_completed: Int,
     val gm_game_type: Char,
-    val task_id:Int,
+    val task_id: Int,
 )
 
-fun TaskEntity.convertToServerFormat(gameConstants: GameConstants, tm_number:Int,um_id:String,user_tm_number:Int=695,gm_game_type:Char): ServerFormatTask{
+fun TaskEntity.convertToServerFormat(
+    gameConstants: GameConstants,
+    tm_number: Int,
+    um_id: String,
+    user_tm_number: Int = 695,
+    gm_game_type: Char
+): ServerFormatTask {
     return ServerFormatTask(
-        sm_year=gameConstants.frc_season_master_sm_year ,
-        cm_event_code= gameConstants.competition_master_cm_event_code,
-        tm_number= tm_number,
+        sm_year = gameConstants.frc_season_master_sm_year,
+        cm_event_code = gameConstants.competition_master_cm_event_code,
+        tm_number = tm_number,
         um_id = um_id,
-        user_tm_number= user_tm_number,
-        gm_number= this.matchNum.toInt(),
-        checkin_task= TaskType.valueOf(this.type).toString(),
-        task_completed= (this.isDone == 1L).toString().toInt(),
-        gm_game_type= gm_game_type,
-        task_id=this.id.toInt(),
+        user_tm_number = user_tm_number,
+        gm_number = this.matchNum.toInt(),
+        checkin_task = TaskType.valueOf(this.type).toString(),
+        task_completed = (this.isDone == 1L).toString().toInt(),
+        gm_game_type = gm_game_type,
+        task_id = this.id.toInt(),
     )
 }
