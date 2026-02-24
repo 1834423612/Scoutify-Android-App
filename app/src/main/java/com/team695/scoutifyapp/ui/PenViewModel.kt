@@ -7,40 +7,54 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
 
+sealed class Stroke {
+    data class Path(val points: List<Offset>) : Stroke()
+    data class Labeled(val points: Pair<Offset, String>) : Stroke()
+}
+
 class PenViewModel : ViewModel() {
+    var lastDragPosition: Offset? = null
 
     var utensil by mutableStateOf("path")
         public set
 
-    var currentPath by mutableStateOf<List<Offset>>(emptyList())
+    var currentStroke : Stroke? by mutableStateOf(null)
         private set
     var justUndid by mutableStateOf(false)
         private set
-    var paths by mutableStateOf<List<List<Offset>>>(emptyList())
+    var paths by mutableStateOf<List<Stroke>>(emptyList())
         private set
 
-    var undoTree by mutableStateOf<List<List<Offset>>>(emptyList())
+    var undoTree by mutableStateOf<List<Stroke>>(emptyList())
         private set
 
-    // Start a new stroke
-    fun startStroke(offset: Offset) {
-        currentPath = listOf(offset)
+    // PATH MODE
+    fun startPath(offset: Offset) {
+        currentStroke = Stroke.Path(listOf(offset))
     }
-
-    // Add a point to the current stroke
-    fun addPoint(offset: Offset) {
-        currentPath = currentPath + offset
+    fun addPathPoint(offset: Offset) {
+        val stroke = currentStroke as? Stroke.Path ?: return
+        currentStroke = stroke.copy(points = stroke.points + offset)
     }
+    fun endPath() {
+        val stroke = currentStroke as? Stroke.Path ?: return
 
-    // Finish the stroke and commit it
-    fun endStroke() {
-        if (currentPath.isNotEmpty()) {
-            paths = paths + listOf(currentPath)
-            currentPath = emptyList()
-            if(justUndid){ undoTree=emptyList() }
+        paths = paths + stroke
+        currentStroke = null
 
+        if (justUndid) {
+            undoTree = emptyList()
         }
     }
+    // LABELED MODE
+    fun addLabeledPoint(offset: Offset, label: String) {
+        val stroke = Stroke.Labeled(offset to label)
+        paths = paths + stroke
+        if (justUndid) {
+            undoTree = emptyList()
+        }
+    }
+
 
     // Undo last stroke
     fun undo() {
