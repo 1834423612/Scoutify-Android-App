@@ -1,13 +1,17 @@
 package com.team695.scoutifyapp.data.repository
 
+import android.util.Log
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import com.team695.scoutifyapp.data.api.client.ScoutifyClient
 import com.team695.scoutifyapp.data.api.model.GameConstantsStore
 import com.team695.scoutifyapp.data.api.model.ServerFormatTask
 import com.team695.scoutifyapp.data.api.model.Task
 import com.team695.scoutifyapp.data.api.model.TaskType
 import com.team695.scoutifyapp.data.api.model.convertToServerFormat
 import com.team695.scoutifyapp.data.api.model.createTaskFromDb
+import com.team695.scoutifyapp.data.api.service.ApiResponse
+import com.team695.scoutifyapp.data.api.service.ApiResponseWithRows
 import com.team695.scoutifyapp.data.api.service.LoginService
 import com.team695.scoutifyapp.data.api.service.TaskService
 import com.team695.scoutifyapp.db.AppDatabase
@@ -74,7 +78,7 @@ class TaskRepository(
         }
     }
 
-    suspend fun fetchTasks(): Result<List<Task>> {
+    suspend fun fetchTasks(): Result<List<Task>?> {
         return withContext(Dispatchers.IO) {
             val oldTasks = db.taskQueries.selectAllTasks()
                 .executeAsList()
@@ -83,16 +87,17 @@ class TaskRepository(
                 }
 
             try {
-                val apiTasks: List<Task> = service.getTasks()
+                val apiTasks: ApiResponseWithRows<List<Task>> = service.getTasks(
+                    acToken = ScoutifyClient.tokenManager.getToken() ?: ""
+                )
 
-                if (apiTasks.isNotEmpty()) {
-                    updateDbFromTaskList(apiTasks)
+                if (apiTasks.data.rows != null) {
+                    updateDbFromTaskList(apiTasks.data.rows)
                 }
 
-                return@withContext Result.success(apiTasks)
+                return@withContext Result.success(apiTasks.data.rows)
             } catch(e: Exception) {
-
-                println("Error when trying to fetch tasks: $e")
+                Log.e("TASK", "Error when trying to fetch tasks: $e")
                 updateDbFromTaskList(oldTasks)
                 return@withContext Result.failure(e)
             }

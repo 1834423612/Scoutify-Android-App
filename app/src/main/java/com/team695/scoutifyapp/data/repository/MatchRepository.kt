@@ -67,9 +67,7 @@ class MatchRepository(
 
             try {
                 val apiMatches: ApiResponse<List<Match>> = service.listMatches(
-                    acToken = ScoutifyClient.tokenManager.getToken() ?: "",
-                    acKey = "abc0465e-b460-4c0a-b728-3b0af0e8872a",
-                    secret = "2ec98190-26e7-43fe-b57d-4a4a13cff64d"
+                    acToken = ScoutifyClient.tokenManager.getToken() ?: ""
                 )
 
                 if (apiMatches.data != null) {

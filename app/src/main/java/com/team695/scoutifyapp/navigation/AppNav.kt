@@ -9,6 +9,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.team695.scoutifyapp.data.api.NetworkMonitor
 import com.team695.scoutifyapp.ui.InputScreen
 import com.team695.scoutifyapp.ui.screens.CommentsScreen
 import com.team695.scoutifyapp.ui.screens.home.HomeScreen
@@ -33,6 +34,7 @@ fun AppNav(
     matchRepository: MatchRepository,
     userRepository: UserRepository,
     gameDetailRepository: GameDetailRepository,
+    networkMonitor: NetworkMonitor,
 ) {
     val owner: ViewModelStoreOwner = LocalViewModelStoreOwner.current
         ?: throw IllegalStateException("Root must be attached to a ViewModelStoreOwner")
@@ -45,7 +47,11 @@ fun AppNav(
             ) {
                 val homeViewModel: HomeViewModel = viewModel(
                     viewModelStoreOwner = owner,
-                    factory = ViewModelFactory { HomeViewModel(taskRepository, matchRepository) }
+                    factory = ViewModelFactory { HomeViewModel(
+                        taskRepository = taskRepository,
+                        matchRepository = matchRepository,
+                        networkMonitor = networkMonitor,
+                    ) }
                 )
 
                 HomeScreen(navController = navController, homeViewModel = homeViewModel)

@@ -63,8 +63,6 @@ class UserRepository(
 
                     return@withContext true
                 } else {
-                    println("CONTEXT: ${context.androidID}")
-
                     db.userQueries.insertUser(
                         name = "WRONG_USER",
                         display_name = "WRONG_USER",

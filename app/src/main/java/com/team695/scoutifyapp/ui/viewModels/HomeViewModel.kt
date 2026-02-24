@@ -86,6 +86,8 @@ class HomeViewModel(
 
                 duration = duration.coerceAtMost(40.seconds)
             }
+
+            Log.d("HOME", "Fetched data successfully!")
         }
     }
 

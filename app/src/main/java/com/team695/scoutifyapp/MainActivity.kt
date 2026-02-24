@@ -1,9 +1,11 @@
 package com.team695.scoutifyapp
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
+import com.team695.scoutifyapp.data.api.NetworkMonitor
 import com.team695.scoutifyapp.data.api.client.CasdoorClient
 import com.team695.scoutifyapp.data.api.client.ScoutifyClient
 import com.team695.scoutifyapp.data.api.model.User
@@ -21,9 +23,11 @@ import com.team695.scoutifyapp.data.api.service.GameDetailsService
 import com.team695.scoutifyapp.data.api.service.UserService
 import com.team695.scoutifyapp.data.intAdapter
 import com.team695.scoutifyapp.data.repository.GameDetailRepository
+import com.team695.scoutifyapp.ui.extensions.androidID
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+        Log.d("MAIN", "Android ID: ${applicationContext.androidID}")
 
         ScoutifyClient.initialize(applicationContext)
 
@@ -87,11 +91,13 @@ class MainActivity : ComponentActivity() {
             db = db,
             context = applicationContext
         )
-
         val taskRepository = TaskRepository(service = taskService, db = db)
         val matchRepository = MatchRepository(service = matchService, db = db)
         val gameDetailRepository = GameDetailRepository(service = gameDetailsService, db = db)
 
+        println("GOT HERE 1")
+        val networkMonitor = NetworkMonitor(applicationContext)
+        println("GOT HERE 2")
 
         setContent {
             ScoutifyTheme {
@@ -100,10 +106,11 @@ class MainActivity : ComponentActivity() {
                     matchRepository = matchRepository,
                     userRepository = userRepository,
                     gameDetailRepository = gameDetailRepository,
+                    networkMonitor = networkMonitor,
                 )
             }
         }
 
-
+        super.onCreate(savedInstanceState)
     }
 }
