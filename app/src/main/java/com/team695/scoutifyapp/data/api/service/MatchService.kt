@@ -13,7 +13,8 @@ interface MatchService {
     @GET("scoutify/game-matchups")
     suspend fun listMatches(
         @Query("bearerAuth") acToken: String,
-        @Query("apiKeyAuth") acKey: String = BuildConfig.API_AC_KEY,
+        @Query("apiKeyAuth") acKey: String
+            = BuildConfig.API_AC_KEY,
         @Query("apiSecretAuth") secret: String
             = BuildConfig.API_AC_SECRET,
         @Query("smYear") year: Int

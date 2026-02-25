@@ -4,12 +4,15 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.team695.scoutifyapp.data.api.NetworkMonitor
+import com.team695.scoutifyapp.data.api.model.GameConstants
+import com.team695.scoutifyapp.data.api.model.GameConstantsStore
 import com.team695.scoutifyapp.data.api.model.Task
 import com.team695.scoutifyapp.data.api.model.Match
 import com.team695.scoutifyapp.data.api.model.TaskType
 import com.team695.scoutifyapp.data.api.model.User
 import com.team695.scoutifyapp.data.api.service.MatchService
 import com.team695.scoutifyapp.data.api.service.TaskService
+import com.team695.scoutifyapp.data.repository.GameDetailRepository
 import com.team695.scoutifyapp.data.repository.MatchRepository
 import com.team695.scoutifyapp.data.repository.TaskRepository
 import kotlinx.coroutines.Dispatchers
@@ -34,6 +37,7 @@ data class TabState(
 class HomeViewModel(
     private val taskRepository: TaskRepository,
     private val matchRepository: MatchRepository,
+    private val gameDetailRepository: GameDetailRepository,
     private val networkMonitor: NetworkMonitor,
 
     ) : ViewModel() {
@@ -57,6 +61,8 @@ class HomeViewModel(
 
     init {
         viewModelScope.launch {
+            gameDetailRepository.isReady.first{ it }
+
             while (isActive) {
                 retryFetchUntilSuccess()
                 delay(5.minutes)

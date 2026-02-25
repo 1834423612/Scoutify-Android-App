@@ -2,6 +2,7 @@ package com.team695.scoutifyapp.data.repository
 
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import com.team695.scoutifyapp.data.api.client.ScoutifyClient
 import com.team695.scoutifyapp.data.api.model.GameConstants
 import com.team695.scoutifyapp.data.api.model.GameConstantsStore
 import com.team695.scoutifyapp.data.api.model.GameDetails
@@ -10,12 +11,15 @@ import com.team695.scoutifyapp.data.api.model.Task
 import com.team695.scoutifyapp.data.api.model.convertToList
 import com.team695.scoutifyapp.data.api.model.createGameDetailsFromDb
 import com.team695.scoutifyapp.data.api.model.createTaskFromDb
+import com.team695.scoutifyapp.data.api.service.ApiResponse
 import com.team695.scoutifyapp.data.api.service.GameDetailsService
 import com.team695.scoutifyapp.db.AppDatabase
 import com.team695.scoutifyapp.db.GameDetailsEntity
 import com.team695.scoutifyapp.db.MatchEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -26,7 +30,9 @@ class GameDetailRepository(
     private val db: AppDatabase,
 ) {
 
-    private var pulledConstants = true
+    val isReady: MutableStateFlow<Boolean> = MutableStateFlow(false)
+    var pulledConstants = false
+        private set
 
     suspend fun getGameDetailsByTaskId(taskId: Int): GameDetails {
         return withContext(Dispatchers.IO) {
@@ -169,27 +175,36 @@ class GameDetailRepository(
         }
     }
 
-suspend fun setGameConstants(): Result<GameConstants> {
-    if (pulledConstants) return Result.failure(Exception("already pulled game constants"))
+    suspend fun setGameConstants(): Result<GameConstants> {
+        if (pulledConstants) return Result.failure(Exception("already pulled game constants"))
 
-    return withContext(Dispatchers.IO) {
-        try {
-            val result = service.setGameConstants()
+        pulledConstants = true
 
-            // store globally
-            GameConstantsStore.set(result)
+        return withContext(Dispatchers.IO) {
+            try {
+                val result: ApiResponse<GameConstants> = service.setGameConstants(
+                    acToken = ScoutifyClient.tokenManager.getToken()!!
+                )
 
-            pulledConstants = true
 
-            Result.success(result)
-        } catch (e: Exception) {
-            println("Error when trying to fetch gameConstants: $e")
-            Result.failure(e)
+                if (result.data != null) {
+                    isReady.value = true
+
+                    // store globally
+                    GameConstantsStore.set(result.data)
+
+                    Result.success(result.data)
+                } else {
+                    pulledConstants = false
+                    return@withContext Result.failure(Exception("Game constants are empty"))
+                }
+            } catch (e: Exception) {
+                pulledConstants = false
+                println("Error when trying to fetch gameConstants: $e")
+                Result.failure(e)
+            }
         }
     }
-}
-
-
 
     /*suspend fun fetchGameDetails(): Result<List<Match>> {
 

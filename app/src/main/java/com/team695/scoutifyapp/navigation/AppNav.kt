@@ -51,6 +51,7 @@ fun AppNav(
                     factory = ViewModelFactory { HomeViewModel(
                         taskRepository = taskRepository,
                         matchRepository = matchRepository,
+                        gameDetailRepository = gameDetailRepository,
                         networkMonitor = networkMonitor,
                     ) }
                 )
