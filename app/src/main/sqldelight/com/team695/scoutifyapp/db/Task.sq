@@ -13,9 +13,9 @@ selectAllTasks:
 SELECT *
 FROM taskEntity;
 
--- 3. Insert Task
+-- 3. Insert Task (Only if it doesn't already exist!)
 insertTask:
-INSERT OR REPLACE INTO taskEntity(id, type, matchNum, teamNum, time, progress)
+INSERT OR IGNORE INTO taskEntity(id, type, matchNum, teamNum, time, progress)
 VALUES (?, ?, ?, ?, ?, ?);
 
 -- 4. Update Progress
@@ -47,12 +47,3 @@ selectTaskById:
 SELECT *
 FROM taskEntity
 WHERE taskEntity.id = ?;
-
--- 9. Dummy Data (Using Milliseconds)
-seedData:
-INSERT OR REPLACE INTO taskEntity (id, type, matchNum, teamNum, time, progress)
-VALUES
-(1, 'SCOUTING', 42, 254, 1771721971000, 50),
-(2, 'PIT', 0, 1678, 1771722331000, 100),
-(3, 'SCOUTING', 12, 695, 1771722691000, 0),
-(4, 'PIT', 13, 695, 1771723771098000, 0);

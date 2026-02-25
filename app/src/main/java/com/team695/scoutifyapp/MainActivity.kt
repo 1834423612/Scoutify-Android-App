@@ -76,9 +76,6 @@ class MainActivity : ComponentActivity() {
             )
         )
 
-        db.taskQueries.seedData() //to add default data
-        db.matchQueries.seedData() //to add default data
-
         val taskService = ScoutifyClient.taskService
         val matchService: MatchService = ScoutifyClient.matchService
         val loginService: LoginService = CasdoorClient.loginService
