@@ -26,6 +26,8 @@ class GameDetailRepository(
     private val db: AppDatabase,
 ) {
 
+    private var pulledConstants = true
+
     suspend fun getGameDetailsByTaskId(taskId: Int): GameDetails {
         return withContext(Dispatchers.IO) {
             val gameEntityList: List<GameDetailsEntity> = db.gameDetailsQueries
@@ -168,12 +170,16 @@ class GameDetailRepository(
     }
 
 suspend fun setGameConstants(): Result<GameConstants> {
+    if (pulledConstants) return Result.failure(Exception("already pulled game constants"))
+
     return withContext(Dispatchers.IO) {
         try {
             val result = service.setGameConstants()
 
             // store globally
             GameConstantsStore.set(result)
+
+            pulledConstants = true
 
             Result.success(result)
         } catch (e: Exception) {

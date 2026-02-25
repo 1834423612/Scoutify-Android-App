@@ -19,8 +19,6 @@ class Task(
             return if ((time - other.time) > 0) 1 else -1
         }
 
-        println("${type.ordinal}, ${other.type.ordinal}, type: ${type.toString()} ")
-
         return type.ordinal - other.type.ordinal
     }
 }

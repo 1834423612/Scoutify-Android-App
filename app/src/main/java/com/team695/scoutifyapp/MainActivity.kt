@@ -92,9 +92,7 @@ class MainActivity : ComponentActivity() {
         val matchRepository = MatchRepository(service = matchService, db = db)
         val gameDetailRepository = GameDetailRepository(service = gameDetailsService, db = db)
 
-        println("GOT HERE 1")
         val networkMonitor = NetworkMonitor(applicationContext)
-        println("GOT HERE 2")
 
         setContent {
             ScoutifyTheme {

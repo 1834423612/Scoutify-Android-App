@@ -6,6 +6,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.navigation.NavController
 import com.team695.scoutifyapp.data.api.model.User
+import com.team695.scoutifyapp.data.repository.GameDetailRepository
 import com.team695.scoutifyapp.data.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -14,12 +15,15 @@ import kotlinx.coroutines.withContext
 fun AuthGuard(
     userRepository: UserRepository,
     navController: NavController,
+    gameDetailRepository: GameDetailRepository,
     content: @Composable () -> Unit
 ) {
 
-    val user by userRepository.currentUser.collectAsState(initial = User(
-        name = "LOADING"
-    ))
+    val user by userRepository.currentUser.collectAsState(
+        initial = User(
+            name = "LOADING"
+        )
+    )
 
     if (user?.name == "WRONG_USER" || user == null) {
         return navController.navigate("login") {
@@ -28,6 +32,11 @@ fun AuthGuard(
     }
 
     if (user != null && user?.name != "LOADING") {
-        content()
+
+        LaunchedEffect(Unit) {
+            gameDetailRepository.setGameConstants()
+        }
     }
+
+    content()
 }

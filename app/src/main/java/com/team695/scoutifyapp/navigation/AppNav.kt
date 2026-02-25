@@ -43,6 +43,7 @@ fun AppNav(
         composable("home") {
             AuthGuard(
                 userRepository = userRepository,
+                gameDetailRepository = gameDetailRepository,
                 navController = navController,
             ) {
                 val homeViewModel: HomeViewModel = viewModel(
@@ -66,6 +67,7 @@ fun AppNav(
             AuthGuard(
                 userRepository = userRepository,
                 navController = navController,
+                gameDetailRepository = gameDetailRepository
             ) {
                 val dataScreenOwner: ViewModelStoreOwner = LocalViewModelStoreOwner.current
                     ?: throw IllegalStateException("Root must be attached to a ViewModelStoreOwner")
@@ -91,6 +93,7 @@ fun AppNav(
             AuthGuard(
                 userRepository = userRepository,
                 navController = navController,
+                gameDetailRepository = gameDetailRepository
             ) {
                 CommentsScreen()
             }
@@ -99,6 +102,7 @@ fun AppNav(
             AuthGuard(
                 userRepository = userRepository,
                 navController = navController,
+                gameDetailRepository = gameDetailRepository
             ) {
                 PitScoutingScreen()
             }
@@ -107,6 +111,7 @@ fun AppNav(
             AuthGuard(
                 userRepository = userRepository,
                 navController = navController,
+                gameDetailRepository = gameDetailRepository
             ) {
                 InputScreen(navController = navController)
             }
@@ -115,6 +120,7 @@ fun AppNav(
             AuthGuard(
                 userRepository = userRepository,
                 navController = navController,
+                gameDetailRepository = gameDetailRepository
             ) {
                 FormScreen()
             }
