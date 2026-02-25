@@ -27,6 +27,8 @@ import com.team695.scoutifyapp.ui.extensions.androidID
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
         Log.d("MAIN", "Android ID: ${applicationContext.androidID}")
 
         ScoutifyClient.initialize(applicationContext)
@@ -106,6 +108,5 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        super.onCreate(savedInstanceState)
     }
 }

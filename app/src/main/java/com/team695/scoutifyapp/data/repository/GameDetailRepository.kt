@@ -186,7 +186,6 @@ class GameDetailRepository(
                     acToken = ScoutifyClient.tokenManager.getToken()!!
                 )
 
-
                 if (result.data != null) {
                     isReady.value = true
 
