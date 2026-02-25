@@ -68,10 +68,9 @@ class TaskRepository(
                         id = it.id.toLong(),
                         type = it.type.toString(),
                         matchNum = it.matchNum.toLong(),
-                        teamNum = it.teamNum,
+                        teamNum = it.teamNum.toLong(),
                         time = it.time,
-                        progress = it.progress.toDouble(),
-                        isDone = if (it.isDone) 1L else 0L
+                        progress = it.progress.toLong(),
                     )
                 }
             }
@@ -87,15 +86,18 @@ class TaskRepository(
                 }
 
             try {
-                val apiTasks: ApiResponseWithRows<List<Task>> = service.getTasks(
+                val apiTasks: ApiResponseWithRows<List<ServerFormatTask>> = service.getTasks(
                     acToken = ScoutifyClient.tokenManager.getToken() ?: ""
                 )
 
                 if (apiTasks.data.rows != null) {
-                    updateDbFromTaskList(apiTasks.data.rows)
+                    val taskList: List<Task> = apiTasks.data.rows.map { it.convertToAppFormat() }
+                    updateDbFromTaskList(taskList)
+
+                    return@withContext Result.success(taskList)
                 }
 
-                return@withContext Result.success(apiTasks.data.rows)
+                return@withContext Result.success(emptyList())
             } catch(e: Exception) {
                 Log.e("TASK", "Error when trying to fetch tasks: $e")
                 updateDbFromTaskList(oldTasks)

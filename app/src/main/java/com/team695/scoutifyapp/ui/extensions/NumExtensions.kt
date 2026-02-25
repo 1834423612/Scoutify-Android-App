@@ -17,6 +17,14 @@ fun Long.convertUnixToMilitaryTime(): String {
 
     val localTime = instant.atZone(ZoneId.systemDefault())
 
-
     return localTime.format(formatter)
+}
+
+fun Long.convertUnixToIso(): String {
+    return try {
+        Instant.ofEpochMilli(this).toString()
+    } catch (e: Exception) {
+        // println("Error converting unix to ISO string: $e")
+        ""
+    }
 }

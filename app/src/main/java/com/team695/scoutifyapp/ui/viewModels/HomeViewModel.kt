@@ -84,7 +84,7 @@ class HomeViewModel(
                     taskResult = taskRepository.fetchTasks()
                 }
 
-                duration = duration.coerceAtMost(40.seconds)
+                duration = (duration + 10.seconds).coerceAtMost(40.seconds)
             }
 
             Log.d("HOME", "Fetched data successfully!")

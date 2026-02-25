@@ -244,7 +244,7 @@ fun MatchSchedule(homeViewModel: HomeViewModel, modifier: Modifier = Modifier, o
                     items(filteredMatches!!) {
                         MatchItem(
                             matchNum = it.matchNumber,
-                            time = it.unixTime,
+                            time = it.time.toLong(),
                             redAlliance = it.redAlliance,
                             blueAlliance = it.blueAlliance,
                             showHighlight = showMatchHighlight(it),
@@ -271,7 +271,6 @@ fun TeamNumber(number: String) {
             .buttonHighlight(
                 corner = smallCornerRadius
             )
-
     ) {
         Text(
             text = number,

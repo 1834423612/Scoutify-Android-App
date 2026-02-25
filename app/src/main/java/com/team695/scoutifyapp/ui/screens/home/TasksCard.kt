@@ -71,10 +71,10 @@ fun TasksCard(
     val tasksState by homeViewModel.tasksState.collectAsStateWithLifecycle()
 
     val incompleteTasks = remember(tasksState) {
-        tasksState?.filter { !it.isDone }?.sorted()
+        tasksState?.filter { it.progress != 100 }?.sorted()
     }
     val completeTasks = remember(tasksState) {
-        tasksState?.filter { it.isDone }?.sorted()
+        tasksState?.filter { it.progress == 100 }?.sorted()
     }
 
     Box(
@@ -140,8 +140,7 @@ fun TasksCard(
                                         else completeTasks?.size)
                                             .toString()
 
-                                    Text(
-                                        text=text, color = BadgeContent)
+                                    Text(text=text, color = BadgeContent)
                                 }
                             }
                         }
@@ -168,7 +167,7 @@ fun TasksCard(
 @Preview(showBackground = true, widthDp = 200)
 @Composable
 fun TaskItemPreview() {
-    val dummyTask: Task = Task(id=0, type = TaskType.SCOUTING, matchNum = 0, teamNum = "test", time = 0L, progress = 0f, isDone = false)
+    val dummyTask: Task = Task(id=0, type = TaskType.SCOUTING, matchNum = 0, teamNum = 695, time = 0L, progress = 0)
 
     TaskItem(task = dummyTask, onPress = {})
 }

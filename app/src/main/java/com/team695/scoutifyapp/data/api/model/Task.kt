@@ -1,6 +1,8 @@
 package com.team695.scoutifyapp.data.api.model
 
+import com.team695.scoutifyapp.data.extensions.convertIsoToUnix
 import com.team695.scoutifyapp.db.TaskEntity
+import com.team695.scoutifyapp.ui.extensions.convertUnixToIso
 import java.util.Date
 import kotlin.Int
 
@@ -8,10 +10,9 @@ class Task(
     val id: Int,
     val type: TaskType,
     val matchNum: Int,
-    val teamNum: String,
+    val teamNum: Int,
     val time: Long,
-    val progress: Float, // 0.0 to 1.0
-    val isDone: Boolean = false,
+    val progress: Int, // 0-100
     ) : Comparable<Task> {
     override fun compareTo(other: Task): Int {
         if (time != other.time) {
@@ -29,10 +30,9 @@ fun TaskEntity.createTaskFromDb(): Task {
         id = this.id.toInt(),
         type = TaskType.valueOf(this.type),
         matchNum = this.matchNum.toInt(),
-        teamNum = this.teamNum,
+        teamNum = this.teamNum.toInt(),
         time = this.time,
-        progress = this.progress.toFloat(),
-        isDone = this.isDone == 1L
+        progress = this.progress.toInt()
     )
 }
 
@@ -47,7 +47,19 @@ data class ServerFormatTask(
     val task_completed: Int,
     val gm_game_type: Char,
     val task_id: Int,
-)
+    val ett_ts: String,
+) {
+    fun convertToAppFormat(): Task {
+        return Task(
+            id = task_id,
+            type = if (checkin_task == "Scout") TaskType.SCOUTING else TaskType.PIT,
+            matchNum = gm_number,
+            teamNum = tm_number,
+            time = ett_ts.convertIsoToUnix(),
+            progress = task_completed
+        )
+    }
+}
 
 fun TaskEntity.convertToServerFormat(
     gameConstants: GameConstants,
@@ -64,8 +76,9 @@ fun TaskEntity.convertToServerFormat(
         user_tm_number = user_tm_number,
         gm_number = this.matchNum.toInt(),
         checkin_task = TaskType.valueOf(this.type).toString(),
-        task_completed = (this.isDone == 1L).toString().toInt(),
+        task_completed = (this.progress == 100L).toString().toInt(),
         gm_game_type = gm_game_type,
         task_id = this.id.toInt(),
+        ett_ts = this.time.convertUnixToIso()
     )
 }

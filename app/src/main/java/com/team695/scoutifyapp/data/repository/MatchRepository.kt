@@ -39,9 +39,6 @@ class MatchRepository(
     private fun updateDbFromMatchList(matches: List<Match>) {
         db.transaction {
             matches.forEach {
-                println(it.redAlliance)
-                println(it.blueAlliance)
-
                 db.matchQueries.insertMatch(
                     time = it.unixTime,
                     matchNumber = it.matchNumber.toLong(),
@@ -69,9 +66,8 @@ class MatchRepository(
                 val apiMatches: ApiResponse<List<Match>> = service.listMatches(
                     acToken = ScoutifyClient.tokenManager.getToken() ?: ""
                 )
-
+                
                 if (apiMatches.data != null) {
-
                     updateDbFromMatchList(apiMatches.data)
 
                     return@withContext Result.success(apiMatches.data)

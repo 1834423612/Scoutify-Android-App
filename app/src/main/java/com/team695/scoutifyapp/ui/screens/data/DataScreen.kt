@@ -94,7 +94,7 @@ fun DataScreen(
 
     val sections: List<GameSection> = arrayOf(
         SectionType.PREGAME, SectionType.AUTON, SectionType.TELEOP, SectionType.POSTGAME)
-        .map { s: SectionType -> GameSection(type = s, progress = 0f) }
+        .map { s: SectionType -> GameSection(type = s, progress = 0) }
     
     val adaptiveInfo = currentWindowAdaptiveInfo()
     val customDirective = calculatePaneScaffoldDirective(adaptiveInfo).copy(
