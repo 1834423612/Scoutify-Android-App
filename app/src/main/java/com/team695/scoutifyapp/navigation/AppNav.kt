@@ -16,6 +16,7 @@ import com.team695.scoutifyapp.ui.screens.home.HomeScreen
 import com.team695.scoutifyapp.ui.screens.FormScreen
 import com.team695.scoutifyapp.ui.screens.PitScoutingScreen
 import com.team695.scoutifyapp.ui.viewModels.HomeViewModel
+import com.team695.scoutifyapp.ui.viewModels.PitScoutingViewModel
 import com.team695.scoutifyapp.ui.viewModels.ViewModelFactory
 import com.team695.scoutifyapp.data.repository.GameDetailRepository
 import com.team695.scoutifyapp.data.repository.MatchRepository
@@ -105,7 +106,10 @@ fun AppNav(
                 navController = navController,
                 gameDetailRepository = gameDetailRepository
             ) {
-                PitScoutingScreen()
+                val pitScoutingViewModel: PitScoutingViewModel = viewModel(
+                    factory = ViewModelFactory { PitScoutingViewModel() }
+                )
+                PitScoutingScreen(viewModel = pitScoutingViewModel)
             }
         }
         composable("upload") {

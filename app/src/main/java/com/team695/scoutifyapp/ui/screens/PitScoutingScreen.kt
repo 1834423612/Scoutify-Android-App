@@ -5,14 +5,14 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,13 +23,19 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.team695.scoutifyapp.ui.components.form.*
 import com.team695.scoutifyapp.ui.theme.*
+import com.team695.scoutifyapp.ui.viewModels.PitScoutingViewModel
 
 @Composable
-fun PitScoutingScreen() {
+fun PitScoutingScreen(
+    viewModel: PitScoutingViewModel
+) {
+    val formState by viewModel.formState.collectAsState()
+    
     var selectedTask by remember { mutableStateOf(1) }
     var selectedTab by remember { mutableStateOf("1") }
     var selectedStatus by remember { mutableStateOf(TaskStatus.IN_PROGRESS) }
 
+    // Sample tasks - in production, these would come from a repository
     val sampleTasks = listOf(
         Task(1, "695", "Johnson Regional", "16m", 60, TaskStatus.IN_PROGRESS),
         Task(2, "254", "Johnson Regional", "5m", 30, TaskStatus.IN_PROGRESS),
@@ -60,53 +66,98 @@ fun PitScoutingScreen() {
         ) {
             // Header with tabs
             ContentHeader(
+                formState = formState,
                 selectedTab = selectedTab,
                 onTabChange = { selectedTab = it },
                 onAddTab = { },
                 onCloseTab = { }
             )
 
-            // Form Content
-            LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                item {
-                    FormInformationSection()
+            // Show loading or error state
+            when {
+                formState.isLoading -> {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(color = AccentPrimary)
+                    }
                 }
-
-                item {
-                    RobotAbilitiesSection()
+                formState.error != null -> {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = formState.error ?: "An error occurred",
+                            style = TextStyle(
+                                fontSize = 14.sp,
+                                color = AccentDanger
+                            )
+                        )
+                    }
                 }
+                else -> {
+                    // Form Content
+                    LazyColumn(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        // Form Information Section
+                        item {
+                            FormInformationSection(
+                                eventName = formState.eventName,
+                                formId = formState.formId
+                            )
+                        }
 
-                item {
-                    RobotMeasurementsSection()
-                }
+                        // Dynamic form fields
+                        items(formState.fields) { field ->
+                            DynamicFormField(
+                                field = field,
+                                value = formState.fieldValues[field.originalIndex],
+                                onValueChange = { value ->
+                                    viewModel.updateFieldValue(field.originalIndex, value)
+                                },
+                                validationError = formState.validationErrors[field.originalIndex],
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
 
-                item {
-                    RobotImagesSection()
-                }
-
-                item {
-                    AdditionalCommentsSection()
-                }
-
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
+                        item {
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
+                    }
                 }
             }
 
             // Action Buttons
-            FormActionsBar()
+            FormActionsBar(
+                onClearForm = { viewModel.clearForm() },
+                onSaveDraft = { 
+                    val submission = viewModel.saveDraft()
+                    // In production, save to database or send to API
+                },
+                onSubmitForm = {
+                    val submission = viewModel.submitForm()
+                    // In production, send to API
+                }
+            )
         }
     }
 }
 
 @Composable
 fun ContentHeader(
+    formState: com.team695.scoutifyapp.data.types.PitFormState,
     selectedTab: String,
     onTabChange: (String) -> Unit,
     onAddTab: () -> Unit,
@@ -136,7 +187,7 @@ fun ContentHeader(
                     )
                 )
                 Text(
-                    text = "Form Version: 2025.4.15_PROD_ED6",
+                    text = "Form Version: ${formState.formVersion}",
                     style = TextStyle(
                         fontSize = 11.sp,
                         color = TextSecondary
@@ -153,17 +204,10 @@ fun ContentHeader(
             verticalAlignment = Alignment.CenterVertically
         ) {
             TeamTab(
-                label = "Team 695",
+                label = if (formState.teamNumber.isNotBlank()) "Team ${formState.teamNumber}" else "New Team",
                 isSelected = selectedTab == "1",
                 onClick = { onTabChange("1") },
                 onClose = { onCloseTab("1") }
-            )
-
-            TeamTab(
-                label = "Team 254",
-                isSelected = selectedTab == "2",
-                onClick = { onTabChange("2") },
-                onClose = { onCloseTab("2") }
             )
 
             Box(
@@ -243,7 +287,10 @@ fun TeamTab(
 }
 
 @Composable
-fun FormInformationSection() {
+fun FormInformationSection(
+    eventName: String,
+    formId: String
+) {
     FormSection(
         title = "Form Information"
     ) {
@@ -260,7 +307,7 @@ fun FormInformationSection() {
                     )
                 )
                 Text(
-                    text = "2025_JOHNSON",
+                    text = eventName,
                     style = TextStyle(
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
@@ -279,7 +326,7 @@ fun FormInformationSection() {
                     )
                 )
                 Text(
-                    text = "7fdbba54...",
+                    text = formId.take(8) + "...",
                     style = TextStyle(
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
@@ -292,213 +339,13 @@ fun FormInformationSection() {
     }
 }
 
-@Composable
-fun RobotAbilitiesSection() {
-    var selectedAuto by remember { mutableStateOf<String?>(null) }
-    var selectedSpeed by remember { mutableStateOf<Int?>(null) }
-    var selectedLocations by remember { mutableStateOf<Set<String>>(emptySet()) }
-
-    FormSection(title = "Robot Abilities") {
-        FormRow {
-            FormGroup(modifier = Modifier.weight(1f)) {
-                FormLabel("Mobility", required = true)
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OptionItem(
-                        label = "Yes",
-                        selected = selectedAuto == "yes",
-                        isRadio = true,
-                        onClick = { selectedAuto = "yes" },
-                        modifier = Modifier.weight(1f)
-                    )
-                    OptionItem(
-                        label = "No",
-                        selected = selectedAuto == "no",
-                        isRadio = true,
-                        onClick = { selectedAuto = "no" },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
-
-            FormGroup(modifier = Modifier.weight(1f)) {
-                FormLabel("Robot Speed", required = true)
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    for (i in 1..5) {
-                        RatingItem(
-                            label = when (i) {
-                                1 -> "Slow"
-                                5 -> "Fast"
-                                else -> i.toString()
-                            },
-                            selected = selectedSpeed == i,
-                            onClick = { selectedSpeed = i },
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-                }
-            }
-        }
-
-        FormRow {
-            FormGroup(modifier = Modifier.weight(1f)) {
-                FormLabel("Scoring Locations", required = true)
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    val locations = listOf("Level 1", "Level 2", "Level 3", "Level 4", "Algae Processor", "Algae Net")
-                    locations.chunked(2).forEach { chunk ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            chunk.forEach { location ->
-                                OptionItem(
-                                    label = location,
-                                    selected = selectedLocations.contains(location),
-                                    isRadio = false,
-                                    onClick = {
-                                        selectedLocations = if (selectedLocations.contains(location)) {
-                                            selectedLocations - location
-                                        } else {
-                                            selectedLocations + location
-                                        }
-                                    },
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 
 @Composable
-fun RobotMeasurementsSection() {
-    var weight by remember { mutableStateOf("") }
-    var bumperWeight by remember { mutableStateOf("") }
-
-    FormSection(title = "Robot Measurements") {
-        FormRow {
-            FormGroup(modifier = Modifier.weight(1f)) {
-                FormLabel("Robot Weight (without Bumpers)", required = true, hint = "(lbs)")
-                TextField(
-                    value = weight,
-                    onValueChange = { weight = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp)
-                        .background(BgTertiary, RoundedCornerShape(6.dp)),
-                    placeholder = { Text("Enter weight", style = TextStyle(fontSize = 12.sp)) },
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = BgTertiary,
-                        unfocusedContainerColor = BgTertiary,
-                        focusedTextColor = TextPrimary,
-                        unfocusedTextColor = TextPrimary
-                    )
-                )
-            }
-
-            FormGroup(modifier = Modifier.weight(1f)) {
-                FormLabel("Bumpers Weight", required = true, hint = "(lbs)")
-                TextField(
-                    value = bumperWeight,
-                    onValueChange = { bumperWeight = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp)
-                        .background(BgTertiary, RoundedCornerShape(6.dp)),
-                    placeholder = { Text("Enter bumpers weight", style = TextStyle(fontSize = 12.sp)) },
-                    colors = TextFieldDefaults.colors(
-                        focusedContainerColor = BgTertiary,
-                        unfocusedContainerColor = BgTertiary,
-                        focusedTextColor = TextPrimary,
-                        unfocusedTextColor = TextPrimary
-                    )
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun RobotImagesSection() {
-    FormSection(title = "Robot Images") {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(BgTertiary, RoundedCornerShape(8.dp))
-                .border(2.dp, BorderColor, RoundedCornerShape(8.dp))
-                .padding(24.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                Text(
-                    text = "�",
-                    style = TextStyle(fontSize = 32.sp)
-                )
-                Text(
-                    text = "Click or drag to upload images",
-                    style = TextStyle(
-                        fontSize = 13.sp,
-                        color = TextPrimary,
-                        fontWeight = FontWeight.Medium
-                    )
-                )
-                Text(
-                    text = "Supports JPG, PNG (Max 10MB each)",
-                    style = TextStyle(
-                        fontSize = 11.sp,
-                        color = TextSecondary
-                    )
-                )
-            }
-        }
-    }
-}
-
-@Composable
-fun AdditionalCommentsSection() {
-    var comments by remember { mutableStateOf("") }
-
-    FormSection(title = "Additional Comments") {
-        TextField(
-            value = comments,
-            onValueChange = { comments = it },
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(120.dp)
-                .background(BgTertiary, RoundedCornerShape(6.dp)),
-            placeholder = { Text("Add any additional observations...", style = TextStyle(fontSize = 12.sp)) },
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = BgTertiary,
-                unfocusedContainerColor = BgTertiary,
-                focusedTextColor = TextPrimary,
-                unfocusedTextColor = TextPrimary
-            )
-        )
-    }
-}
-
-@Composable
-fun FormActionsBar() {
+fun FormActionsBar(
+    onClearForm: () -> Unit,
+    onSaveDraft: () -> Unit,
+    onSubmitForm: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -512,21 +359,24 @@ fun FormActionsBar() {
             text = "Clear Form",
             backgroundColor = AccentDanger.copy(alpha = 0.2f),
             textColor = AccentDanger,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            onClick = onClearForm
         )
 
         FormActionButton(
             text = "Save Draft",
             backgroundColor = BgCard,
             textColor = TextSecondary,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            onClick = onSaveDraft
         )
 
         FormActionButton(
             text = "Submit Form",
             backgroundColor = AccentPrimary.copy(alpha = 0.2f),
             textColor = AccentPrimary,
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f),
+            onClick = onSubmitForm
         )
     }
 }
