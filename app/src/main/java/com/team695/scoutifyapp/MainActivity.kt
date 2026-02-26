@@ -2,6 +2,7 @@ package com.team695.scoutifyapp
 
 import android.os.Bundle
 import android.util.Log
+import android.database.sqlite.SQLiteDatabase
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
@@ -36,10 +37,31 @@ class MainActivity : ComponentActivity() {
 
         ScoutifyClient.initialize(applicationContext)
 
+        val dbName = "scoutify_test.db" // Using a test name to avoid messing up real data
+        val dbFile = applicationContext.getDatabasePath(dbName)
+        if (dbFile.exists()) {
+            val hasGameConstantsTable = try {
+                SQLiteDatabase.openDatabase(dbFile.path, null, SQLiteDatabase.OPEN_READONLY).use { db ->
+                    db.rawQuery(
+                        "SELECT name FROM sqlite_master WHERE type='table' AND name='gameConstantsEntity'",
+                        null
+                    ).use { cursor ->
+                        cursor.moveToFirst()
+                    }
+                }
+            } catch (e: Exception) {
+                false
+            }
+
+            if (!hasGameConstantsTable) {
+                applicationContext.deleteDatabase(dbName)
+            }
+        }
+
         val driver = AndroidSqliteDriver(
             schema = AppDatabase.Schema,
             context = applicationContext,
-            name = "scoutify_test.db" // Using a test name to avoid messing up real data
+            name = dbName
         )
 
         val db = AppDatabase(
