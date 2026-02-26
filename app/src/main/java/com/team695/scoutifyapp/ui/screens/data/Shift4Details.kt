@@ -135,8 +135,6 @@ fun Shift4Details(
                         dataViewModel.setTeleopSection(teleopSection = TeleopSection.ENDGAME, teleopTotalMilliseconds = TRANSITION_END_TIME)
                     }
                 },
-                dataViewModel = dataViewModel,
-                formState = formState
             )
 
             Row(

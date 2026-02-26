@@ -10,7 +10,7 @@ data class GameFormState(
 
     // teleop
     val teleopRunning: Boolean = false,
-    val teleopSection: TeleopSection = TeleopSection.STOPPED,
+    val teleopSection: TeleopSection = TeleopSection.ENDGAME,
     val teleopTotalMilliseconds: Int = 0,
     val teleopCachedMilliseconds: Int = 0,
 

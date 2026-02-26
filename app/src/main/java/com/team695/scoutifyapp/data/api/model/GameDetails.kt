@@ -60,6 +60,8 @@ data class GameDetails(
     val endgameAttemptsClimb: Boolean? = null,
     val endgameClimbSuccess: Boolean? = null,
     val endgameClimbPosition: String? = null,
+    val endgameClimbCode: String? = null,
+
 
     // Teleop
     val teleopFuelCount: Int? = null,
@@ -202,6 +204,7 @@ fun GameDetailsEntity.createGameDetailsFromDb(): GameDetails {
         endgameStockpilingTime = this.endgame_stockpiling_time,
         endgameDefendingTime = this.endgame_defending_time,
         endgameBrokenTime = this.endgame_broken_time,
+        endgameClimbCode = this.endgame_climb_code,
 
         endgameAttemptsClimb = this.endgame_attempts_climb,
         endgameClimbSuccess = this.endgame_climb_success,

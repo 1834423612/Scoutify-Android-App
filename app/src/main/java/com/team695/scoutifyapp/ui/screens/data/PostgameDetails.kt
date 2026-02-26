@@ -78,8 +78,6 @@ fun PostgameDetails(
                         dataViewModel.setTeleopSection(teleopSection = TeleopSection.SHIFT1, teleopTotalMilliseconds = TRANSITION_END_TIME)
                     }
                 },
-                dataViewModel = dataViewModel,
-                formState = formState
             )
 
             Row(

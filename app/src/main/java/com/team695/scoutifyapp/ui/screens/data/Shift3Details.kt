@@ -134,8 +134,6 @@ fun Shift3Details(
                         dataViewModel.setTeleopSection(teleopSection = TeleopSection.SHIFT4, teleopTotalMilliseconds = TRANSITION_END_TIME)
                     }
                 },
-                dataViewModel = dataViewModel,
-                formState = formState
             )
 
             Row(

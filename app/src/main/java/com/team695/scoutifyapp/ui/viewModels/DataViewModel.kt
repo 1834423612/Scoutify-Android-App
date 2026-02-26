@@ -153,6 +153,14 @@ class DataViewModel(
         }
     }
 
+    fun endTeleop() {
+        _formState.update {
+            it.copy(
+                teleopRunning = false,
+            )
+        }
+    }
+
     fun setTeleopSection(teleopSection: TeleopSection, teleopTotalMilliseconds: Int) {
         _formState.update {
             it.copy(

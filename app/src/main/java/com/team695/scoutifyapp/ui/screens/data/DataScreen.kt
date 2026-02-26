@@ -141,15 +141,20 @@ fun DataScreen(
                         nextSection = TeleopSection.ENDGAME
                     }
                     TeleopSection.ENDGAME -> {
-                        switchTime = Int.MAX_VALUE
-                        nextSection = TeleopSection.ENDGAME
+                        switchTime = ENDGAME_END_TIME
+                        nextSection = TeleopSection.ENDED
                     }
                     else -> {
                         switchTime = Int.MAX_VALUE
-                        nextSection = TeleopSection.STOPPED
+                        nextSection = TeleopSection.ENDED
                     }
                 }
-                if (formState.teleopTotalMilliseconds + deltaTime > switchTime) {
+
+                val newTime = formState.teleopTotalMilliseconds + deltaTime
+                if (newTime > switchTime) {
+                    if(nextSection == TeleopSection.ENDED) {
+                        dataViewModel.endTeleop()
+                    }
                     dataViewModel.setTeleopSection(teleopSection = nextSection, teleopTotalMilliseconds = switchTime)
                 }
                 dataViewModel.updateTime(deltaTime = (frameTimeMillis-startTime).toInt())
@@ -208,6 +213,7 @@ fun DataScreen(
                 }
             )
         }
+        TeleopLockScreen(isOverlayActive = formState.teleopRunning)
     }
 }
 
@@ -402,7 +408,7 @@ private fun DetailContent(
             onContinue = {
                 dataViewModel.toggleWarningModal(title = "", text = "")
                 when(formState.teleopSection) {
-                    TeleopSection.STOPPED -> {
+                    TeleopSection.UNSTARTED -> {
                         dataViewModel.startTeleop()
                     }
                     TeleopSection.TRANSITION -> {
@@ -420,7 +426,7 @@ private fun DetailContent(
                     TeleopSection.SHIFT4 -> {
                         dataViewModel.setTeleopSection(teleopSection = TeleopSection.ENDGAME, teleopTotalMilliseconds = SHIFT4_END_TIME)
                     }
-                    TeleopSection.ENDGAME -> {
+                    TeleopSection.ENDGAME, TeleopSection.ENDED -> {
                         dataViewModel.startTeleop()
                     }
                 }
@@ -448,7 +454,7 @@ private fun DetailContent(
                     }
                     SectionType.TELEOP -> {
                         when(formState.teleopSection) {
-                            TeleopSection.STOPPED -> {
+                            TeleopSection.UNSTARTED -> {
                                 StoppedDetails(
                                     dataViewModel = dataViewModel,
                                     formState = formState
@@ -484,7 +490,7 @@ private fun DetailContent(
                                     formState = formState
                                 )
                             }
-                            TeleopSection.ENDGAME -> {
+                            TeleopSection.ENDGAME, TeleopSection.ENDED -> {
                                 EndgameDetails(
                                     dataViewModel = dataViewModel,
                                     formState = formState

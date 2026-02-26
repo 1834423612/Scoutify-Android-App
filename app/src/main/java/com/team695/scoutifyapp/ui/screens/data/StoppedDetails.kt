@@ -63,8 +63,6 @@ fun StoppedDetails(
                         dataViewModel.startTeleop()
                     }
                 },
-                dataViewModel = dataViewModel,
-                formState = formState
             )
         }
     }
