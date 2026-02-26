@@ -37,7 +37,10 @@ fun EndgameDetails(
     dataViewModel: DataViewModel,
     formState: GameFormState
 ) {
-    val currentTimer = min(formState.teleopTotalMilliseconds - SHIFT4_END_TIME, formState.teleopCachedMilliseconds)
+    val currentTimer = min(
+        formState.teleopTotalMilliseconds - SHIFT4_END_TIME,
+        formState.teleopCachedMilliseconds
+    )
     val previousTimer = formState.teleopCachedMilliseconds - currentTimer
 
     val timers = listOf(
@@ -98,8 +101,8 @@ fun EndgameDetails(
             onClick = {
                 dataViewModel.formEvent(
                     gameDetails = formState.gameDetails.copy(
-                        endgameBrokenTime = (formState.gameDetails.endgameBrokenTime ?: 0) + previousTimer,
-                        shift4BrokenTime = (formState.gameDetails.shift4BrokenTime ?: 0) + currentTimer,
+                        endgameBrokenTime = (formState.gameDetails.endgameBrokenTime ?: 0) + currentTimer,
+                        shift4BrokenTime = (formState.gameDetails.shift4BrokenTime ?: 0) + previousTimer,
                     )
                 )
                 dataViewModel.resetCacheTime()

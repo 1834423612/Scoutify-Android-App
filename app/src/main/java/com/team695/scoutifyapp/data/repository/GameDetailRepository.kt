@@ -52,7 +52,6 @@ class GameDetailRepository(
     }
 
     suspend fun pushGameDetails(): List<GameDetailsActions> {
-
         fun findTeamField(match: MatchEntity, team: Long): String? {
             return when (team) {
                 match.r1.toLong() -> "r1"
@@ -189,7 +188,6 @@ class GameDetailRepository(
                 )
 
                 if (result.data != null) {
-                    print(result.data)
                     if (result.data != GameConstantsStore.constants) {
                         db.transaction {
                             db.taskQueries.clearAllTasks()
