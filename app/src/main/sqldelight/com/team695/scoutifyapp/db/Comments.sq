@@ -2,13 +2,15 @@ import kotlin.Int;
 
 CREATE TABLE commentsEntity (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-    match_number INTEGER AS Int NOT NULL UNIQUE, --number for the corresponding match
+    match_number INTEGER AS Int NOT NULL, --number for the corresponding match
 
     team_number INTEGER AS Int,
     alliance TEXT, --R, B
     alliance_position INTEGER AS Int, --1, 2, 3
     timestamp INTEGER,
-    comment TEXT
+    comment TEXT,
+
+    UNIQUE(match_number, team_number)
 );
 
 --queries
