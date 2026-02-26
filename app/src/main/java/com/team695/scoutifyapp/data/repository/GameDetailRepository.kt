@@ -1,5 +1,6 @@
 package com.team695.scoutifyapp.data.repository
 
+import android.util.Log
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.team695.scoutifyapp.data.api.client.ScoutifyClient
@@ -176,7 +177,8 @@ class GameDetailRepository(
     }
 
     suspend fun setGameConstants(): Result<GameConstants> {
-        if (pulledConstants) return Result.failure(Exception("already pulled game constants"))
+        if (pulledConstants)
+            return Result.failure(Exception("already pulled game constants"))
 
         pulledConstants = true
 
@@ -187,20 +189,33 @@ class GameDetailRepository(
                 )
 
                 if (result.data != null) {
-                    isReady.value = true
+                    print(result.data)
+                    if (result.data != GameConstantsStore.constants) {
+                        db.transaction {
+                            db.taskQueries.clearAllTasks()
+                            db.matchQueries.clearAllMatches()
+                        }
+                    }
 
-                    // store globally
                     GameConstantsStore.set(result.data)
 
-                    Result.success(result.data)
+                    db.gameConstantsQueries.insertOrUpdateConstants(
+                        frc_season_master_sm_year = result.data.frc_season_master_sm_year,
+                        competition_master_cm_event_code = result.data.competition_master_cm_event_code,
+                        game_matchup_gm_game_type = result.data.game_matchup_gm_game_type
+                    )
+
+                    isReady.value = true
+
+                    return@withContext Result.success(result.data)
                 } else {
                     pulledConstants = false
                     return@withContext Result.failure(Exception("Game constants are empty"))
                 }
             } catch (e: Exception) {
                 pulledConstants = false
-                println("Error when trying to fetch gameConstants: $e")
-                Result.failure(e)
+                Log.e("Game Constants", "Error when trying to fetch gameConstants: $e")
+                return@withContext Result.failure(e)
             }
         }
     }

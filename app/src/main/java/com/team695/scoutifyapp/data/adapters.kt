@@ -11,3 +11,7 @@ val intAdapter = object : ColumnAdapter<Int, Long> {
     override fun decode(databaseValue: Long): Int = databaseValue.toInt()
     override fun encode(value: Int): Long = value.toLong()
 }
+val charAdapter = object : ColumnAdapter<Char, String> {
+    override fun decode(databaseValue: String): Char = databaseValue[0]
+    override fun encode(value: Char): String = value.toString()
+}

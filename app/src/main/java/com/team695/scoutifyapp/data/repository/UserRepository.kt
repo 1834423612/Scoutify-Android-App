@@ -91,8 +91,9 @@ class UserRepository(
     suspend fun logout() {
         withContext(Dispatchers.IO) {
             db.userQueries.deleteUser()
-            //db.taskQueries.clearAllTasks()
-            db.matchQueries.deleteAllMatches()
+
+            db.matchQueries.clearAllMatches()
+            db.taskQueries.clearAllTasks()
 
             ScoutifyClient.tokenManager.saveToken("")
 

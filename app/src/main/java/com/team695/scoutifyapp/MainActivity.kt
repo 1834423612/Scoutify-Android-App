@@ -8,6 +8,7 @@ import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.team695.scoutifyapp.data.api.NetworkMonitor
 import com.team695.scoutifyapp.data.api.client.CasdoorClient
 import com.team695.scoutifyapp.data.api.client.ScoutifyClient
+import com.team695.scoutifyapp.data.api.model.GameConstantsStore
 import com.team695.scoutifyapp.data.api.model.User
 import com.team695.scoutifyapp.data.api.service.LoginService
 import com.team695.scoutifyapp.data.api.service.MatchService
@@ -21,8 +22,10 @@ import com.team695.scoutifyapp.db.GameDetailsEntity
 import com.team695.scoutifyapp.db.CommentsEntity
 import com.team695.scoutifyapp.data.api.service.GameDetailsService
 import com.team695.scoutifyapp.data.api.service.UserService
+import com.team695.scoutifyapp.data.charAdapter
 import com.team695.scoutifyapp.data.intAdapter
 import com.team695.scoutifyapp.data.repository.GameDetailRepository
+import com.team695.scoutifyapp.db.GameConstantsEntity
 import com.team695.scoutifyapp.ui.extensions.androidID
 
 class MainActivity : ComponentActivity() {
@@ -75,7 +78,17 @@ class MainActivity : ComponentActivity() {
                 match_numberAdapter = intAdapter,
                 team_numberAdapter  = intAdapter,
                 alliance_positionAdapter = intAdapter,
+            ),
+            gameConstantsEntityAdapter = GameConstantsEntity.Adapter(
+                frc_season_master_sm_yearAdapter = intAdapter,
+                game_matchup_gm_game_typeAdapter = charAdapter
             )
+        )
+
+        db.gameConstantsQueries.seedData()
+
+        GameConstantsStore.update(
+            db.gameConstantsQueries.getConstants().executeAsOne()
         )
 
         val taskService = ScoutifyClient.taskService

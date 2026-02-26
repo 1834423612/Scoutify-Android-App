@@ -119,4 +119,10 @@ class TaskRepository(
             }
         }
     }
+
+    suspend fun clearTasks() {
+        withContext(Dispatchers.IO) {
+            db.taskQueries.clearAllTasks()
+        }
+    }
 }

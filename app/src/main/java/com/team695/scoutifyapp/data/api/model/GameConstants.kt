@@ -1,5 +1,6 @@
 package com.team695.scoutifyapp.data.api.model
 import com.google.gson.annotations.SerializedName
+import com.team695.scoutifyapp.db.GameConstantsEntity
 
 data class GameConstants (
     val frc_season_master_sm_year: Int,
@@ -7,23 +8,29 @@ data class GameConstants (
     val game_matchup_gm_game_type: Char
 )
 
+val emptyConstants = GameConstants(
+    0,
+    "",
+    'E'
+)
+
 object GameConstantsStore {
     private var _constants: GameConstants? = null
 
     val constants: GameConstants
-        get() = _constants ?: error("GameConst  ants not initialized")
+        get() = _constants ?: emptyConstants
 
     fun set(value: GameConstants) {
         _constants = value
     }
 
-    init {
-        /*
-        set(GameConstants(
-            frc_season_master_sm_year = 2026,
-            competition_master_cm_event_code = "test",
-            game_matchup_gm_game_type = 'Q'
-        ))
-         */
+    fun update(gameConsts: GameConstantsEntity) {
+        set(
+            GameConstants(
+                frc_season_master_sm_year = gameConsts.frc_season_master_sm_year,
+                competition_master_cm_event_code = gameConsts.competition_master_cm_event_code,
+                game_matchup_gm_game_type = gameConsts.game_matchup_gm_game_type
+            )
+        )
     }
 }

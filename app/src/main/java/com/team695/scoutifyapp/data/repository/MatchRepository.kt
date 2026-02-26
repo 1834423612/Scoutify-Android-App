@@ -81,4 +81,10 @@ class MatchRepository(
             }
         }
     }
+
+    suspend fun clearMatches() {
+        return withContext(Dispatchers.IO) {
+            db.matchQueries.clearAllMatches()
+        }
+    }
 }

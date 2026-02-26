@@ -75,6 +75,7 @@ import com.team695.scoutifyapp.ui.viewModels.HomeViewModel
 fun MatchSchedule(homeViewModel: HomeViewModel, modifier: Modifier = Modifier, onCommentClicked: () -> Unit) {
     var searchQuery: String by remember { mutableStateOf("") }
     val matchState by homeViewModel.matchState.collectAsStateWithLifecycle()
+    val readyState by homeViewModel.isReady.collectAsStateWithLifecycle()
 
     val filteredMatches = matchState?.filter { m ->
         searchQuery.isBlank() || m.redAlliance.any{it.toString().contains(searchQuery)} || m.blueAlliance.any{it.toString().contains(searchQuery) }
@@ -205,7 +206,7 @@ fun MatchSchedule(homeViewModel: HomeViewModel, modifier: Modifier = Modifier, o
                     )
                 }
             }
-            if (matchState.isNullOrEmpty()) {
+            if (matchState.isNullOrEmpty() || !readyState) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
