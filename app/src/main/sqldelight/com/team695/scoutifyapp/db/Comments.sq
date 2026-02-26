@@ -3,8 +3,7 @@ import kotlin.Int;
 CREATE TABLE commentsEntity (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     match_number INTEGER AS Int NOT NULL, --number for the corresponding match
-
-    team_number INTEGER AS Int,
+    team_number INTEGER AS Int NOT NULL,
     alliance TEXT, --R, B
     alliance_position INTEGER AS Int, --1, 2, 3
     timestamp INTEGER,
