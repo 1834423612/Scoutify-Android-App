@@ -121,19 +121,8 @@ fun EndgameDetails(
             verticalArrangement = Arrangement.Top
         ) {
 
-            TopbarWithButton(
-                title = "Teleop (Endgame)",
-                buttonLabel = "Restart Teleop",
-                buttonColor = RedAlliance,
-                onButtonPressed = {
-                    //warn user if starting teleop will reset their progress
-                    if(formState.gameDetails.teleopProgress > 0) {
-                        dataViewModel.toggleWarningModal(title = "WARNING: Are you sure?", text = "Restarting teleop will reset your data.")
-                    }
-                    else {
-                        dataViewModel.startTeleop()
-                    }
-                },
+            TopbarNoButton(
+                title = "Teleop (Endgame)"
             )
 
             Row(

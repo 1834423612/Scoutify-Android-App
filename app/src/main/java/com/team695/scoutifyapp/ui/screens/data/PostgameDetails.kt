@@ -61,23 +61,8 @@ fun PostgameDetails(
             verticalArrangement = Arrangement.Top
         ) {
 
-            TopbarWithButton(
-                title = "Pregame",
-                buttonLabel = "Start Shift 1",
-                buttonColor = lerp(
-                    start = RedAlliance,
-                    stop = AccentGreen,
-                    fraction = formState.teleopCachedMilliseconds.toFloat() / TRANSITION_END_TIME
-                ),
-                onButtonPressed = {
-                    //warn user if transition shift is not close to ending
-                    if(abs(formState.teleopTotalMilliseconds - TRANSITION_END_TIME) > TELEOP_TIME_THRESHOLD) {
-                        dataViewModel.toggleWarningModal(title = "Are you sure?", text = "The transition period isn't over yet")
-                    }
-                    else {
-                        dataViewModel.setTeleopSection(teleopSection = TeleopSection.SHIFT1, teleopTotalMilliseconds = TRANSITION_END_TIME)
-                    }
-                },
+            TopbarNoButton(
+                title = "Postgame",
             )
 
             Row(

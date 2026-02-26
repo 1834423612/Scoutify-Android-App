@@ -10,7 +10,7 @@ data class GameFormState(
 
     // teleop
     val teleopRunning: Boolean = false,
-    val teleopSection: TeleopSection = TeleopSection.ENDGAME,
+    val teleopSection: TeleopSection = TeleopSection.UNSTARTED,
     val teleopTotalMilliseconds: Int = 0,
     val teleopCachedMilliseconds: Int = 0,
 
@@ -22,4 +22,18 @@ data class GameFormState(
     val warningModalTitle: String = "",
     val warningModalText: String = ""
 
-)
+) {
+    val teleopProgress: Float get() {
+        when (teleopSection) {
+            TeleopSection.UNSTARTED -> return 0f
+            TeleopSection.TRANSITION -> return 1/7f
+            TeleopSection.SHIFT1 -> return 2/7f
+            TeleopSection.SHIFT2 -> return 3/7f
+            TeleopSection.SHIFT3 -> return 4/7f
+            TeleopSection.SHIFT4 -> return 5/7f
+            TeleopSection.ENDGAME -> return 6/7f
+            TeleopSection.ENDED -> return 1f
+        }
+
+    }
+}

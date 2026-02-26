@@ -277,19 +277,24 @@ private fun ListContent(
                 itemsIndexed(sections) { index: Int, section: GameSection ->
 
                     var isFlagged: Boolean = false
+                    var progress: Float = 0f
 
                     when(section.type) {
                         SectionType.PREGAME -> {
                             isFlagged = formState.gameDetails.pregameFlag == true //use == because flag could be null
+                            progress = formState.gameDetails.pregameProgress
                         }
                         SectionType.AUTON -> {
                             isFlagged = formState.gameDetails.autonFlag == true
+                            progress = formState.gameDetails.autonProgress
                         }
                         SectionType.TELEOP -> {
                             isFlagged = formState.gameDetails.teleopFlag == true
+                            progress = formState.teleopProgress
                         }
                         SectionType.POSTGAME -> {
                             isFlagged = formState.gameDetails.postgameFlag == true
+                            progress = formState.gameDetails.postgameProgress
                         }
                     }
 
@@ -306,7 +311,7 @@ private fun ListContent(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(60.dp)
-                            .progressBorder(progress=section.progress)
+                            .progressBorder(progress=progress)
                             .background(color = DarkGunmetal, shape = RoundedCornerShape(mediumCornerRadius))
                             .clip(RoundedCornerShape(mediumCornerRadius))
                             .buttonHighlight(
