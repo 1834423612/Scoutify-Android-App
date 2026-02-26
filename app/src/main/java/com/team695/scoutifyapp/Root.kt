@@ -13,6 +13,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.team695.scoutifyapp.data.api.NetworkMonitor
 import com.team695.scoutifyapp.navigation.AppNav
 import com.team695.scoutifyapp.ui.components.NavRail
 import com.team695.scoutifyapp.data.repository.GameDetailRepository
@@ -28,6 +29,7 @@ fun Root(
     matchRepository: MatchRepository,
     userRepository: UserRepository,
     gameDetailRepository: GameDetailRepository,
+    networkMonitor: NetworkMonitor
 ) {
     val context = LocalContext.current
 
@@ -114,6 +116,7 @@ fun Root(
                         matchRepository = matchRepository,
                         userRepository = userRepository,
                         gameDetailRepository = gameDetailRepository,
+                        networkMonitor = networkMonitor,
                     )
                 }
             }

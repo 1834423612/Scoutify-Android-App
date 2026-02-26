@@ -29,7 +29,7 @@ import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.viewModels.DataViewModel
 
 @Composable
-fun TeleopTopBar(
+fun TopbarWithButton(
     title: String,
     buttonLabel: String,
     buttonColor: Color,

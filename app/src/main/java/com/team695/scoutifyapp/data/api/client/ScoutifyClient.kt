@@ -2,7 +2,9 @@ package com.team695.scoutifyapp.data.api.client
 
 import android.content.Context
 import com.team695.scoutifyapp.data.api.TokenManager
+import com.team695.scoutifyapp.data.api.service.GameDetailsService
 import com.team695.scoutifyapp.data.api.service.MatchService
+import com.team695.scoutifyapp.data.api.service.TaskService
 import com.team695.scoutifyapp.data.api.service.UserService
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
@@ -11,7 +13,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object ScoutifyClient {
     lateinit var tokenManager: TokenManager
-    private const val BASE_URL = "https://scoutify.team695.com/"
+    private const val BASE_URL = "https://api.team695.com/"
     private lateinit var retrofit: Retrofit
 
     fun initialize(context: Context) {
@@ -49,5 +51,17 @@ object ScoutifyClient {
 
     val userService: UserService by lazy {
         retrofit.create(UserService::class.java)
+    }
+//    val GameDetailsService: GameDetailsService by lazy {
+//        retrofit.create(GameDetailsService::class.java)
+//    }
+//    private val _gameDetailsService: GameDetailsService by lazy { retrofit.create(GameDetailsService::class.java) }
+//    fun getGameDetailsService(): GameDetailsService { return _gameDetailsService }
+
+    val taskService: TaskService by lazy {
+        retrofit.create(TaskService::class.java)
+    }
+    val gameDetailsService: GameDetailsService by lazy {
+        retrofit.create(GameDetailsService::class.java)
     }
 }

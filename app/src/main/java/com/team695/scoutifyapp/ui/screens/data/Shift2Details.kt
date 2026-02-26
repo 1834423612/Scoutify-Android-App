@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.team695.scoutifyapp.data.types.ENDGAME_END_TIME
 import com.team695.scoutifyapp.data.types.GameFormState
+import com.team695.scoutifyapp.data.types.SHIFT1_END_TIME
 import com.team695.scoutifyapp.data.types.SHIFT2_END_TIME
 import com.team695.scoutifyapp.data.types.TELEOP_TIME_THRESHOLD
 import com.team695.scoutifyapp.data.types.TRANSITION_END_TIME
@@ -29,28 +30,15 @@ import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.viewModels.DataViewModel
 import kotlinx.coroutines.delay
 import kotlin.math.abs
-
-// ─── Color Palette ──────────────────────────────────────────────────────────
-
-private val Background    = Color(0xFF0D0D0F)
-private val SurfaceDark   = Color(0xFF161618)
-private val SurfaceMid    = Color(0xFF1E1E22)
-private val SurfaceLight  = Color(0xFF2A2A30)
-private val AccentOrange  = Color(0xFFFF6B35)
-private val AccentBlue    = Color(0xFF4DAFFF)
-private val AccentGreen   = Color(0xFF3DDC84)
-private val TextPrimary   = Color(0xFFEEEEF0)
-private val TextSecondary = Color(0xFF888899)
-private val BadgeRed      = Color(0xFFE53935)
-private val BorderColor   = Color(0xFF2E2E36)
-
-// ─── Root Composable ────────────────────────────────────────────────────────
+import kotlin.math.min
 
 @Composable
 fun Shift2Details(
     dataViewModel: DataViewModel,
     formState: GameFormState
 ) {
+    val currentTimer = min(formState.teleopTotalMilliseconds - SHIFT1_END_TIME, formState.teleopCachedMilliseconds)
+    val previousTimer = formState.teleopCachedMilliseconds - currentTimer
 
     val timers = listOf(
         Timer(
@@ -71,7 +59,8 @@ fun Shift2Details(
             onClick = {
                 dataViewModel.formEvent(
                     gameDetails = formState.gameDetails.copy(
-                        shift2CyclingTime = (formState.gameDetails.shift2CyclingTime ?: 0) + formState.teleopCachedMilliseconds
+                        shift1CyclingTime = (formState.gameDetails.shift1CyclingTime ?: 0) + previousTimer,
+                        shift2CyclingTime = (formState.gameDetails.shift2CyclingTime ?: 0) + currentTimer
                     )
                 )
                 dataViewModel.resetCacheTime()
@@ -83,7 +72,8 @@ fun Shift2Details(
             onClick = {
                 dataViewModel.formEvent(
                     gameDetails = formState.gameDetails.copy(
-                        shift2StockpilingTime = (formState.gameDetails.shift2StockpilingTime ?: 0) + formState.teleopCachedMilliseconds
+                        shift1StockpilingTime = (formState.gameDetails.shift1StockpilingTime ?: 0) + previousTimer,
+                        shift2StockpilingTime = (formState.gameDetails.shift2StockpilingTime ?: 0) + currentTimer
                     )
                 )
                 dataViewModel.resetCacheTime()
@@ -95,7 +85,8 @@ fun Shift2Details(
             onClick = {
                 dataViewModel.formEvent(
                     gameDetails = formState.gameDetails.copy(
-                        shift2DefendingTime = (formState.gameDetails.shift2DefendingTime ?: 0) + formState.teleopCachedMilliseconds
+                        shift1DefendingTime = (formState.gameDetails.shift1DefendingTime ?: 0) + previousTimer,
+                        shift2DefendingTime = (formState.gameDetails.shift2DefendingTime ?: 0) + currentTimer
                     )
                 )
                 dataViewModel.resetCacheTime()
@@ -107,7 +98,8 @@ fun Shift2Details(
             onClick = {
                 dataViewModel.formEvent(
                     gameDetails = formState.gameDetails.copy(
-                        shift2BrokenTime = (formState.gameDetails.shift2BrokenTime ?: 0) + formState.teleopCachedMilliseconds
+                        shift1BrokenTime = (formState.gameDetails.shift1BrokenTime ?: 0) + previousTimer,
+                        shift2BrokenTime = (formState.gameDetails.shift2BrokenTime ?: 0) + currentTimer
                     )
                 )
                 dataViewModel.resetCacheTime()
@@ -118,7 +110,6 @@ fun Shift2Details(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Background)
             .padding(16.dp)
     ) {
         Column (
@@ -126,13 +117,13 @@ fun Shift2Details(
             verticalArrangement = Arrangement.Top
         ) {
 
-            TeleopTopBar(
+            TopbarWithButton(
                 title = "Teleop (Shift2)",
                 buttonLabel = "Start Shift 3",
                 buttonColor = lerp(
                     start = RedAlliance,
                     stop = AccentGreen,
-                    fraction = formState.teleopCachedMilliseconds.toFloat() / SHIFT2_END_TIME
+                    fraction = formState.teleopTotalMilliseconds.toFloat() / SHIFT2_END_TIME
                 ),
                 onButtonPressed = {
                     //warn user if shift2 shift is not close to ending

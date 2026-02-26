@@ -26,21 +26,6 @@ import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.viewModels.DataViewModel
 import kotlinx.coroutines.delay
 
-// ─── Color Palette ──────────────────────────────────────────────────────────
-
-private val Background    = Color(0xFF0D0D0F)
-private val SurfaceDark   = Color(0xFF161618)
-private val SurfaceMid    = Color(0xFF1E1E22)
-private val SurfaceLight  = Color(0xFF2A2A30)
-private val AccentOrange  = Color(0xFFFF6B35)
-private val AccentBlue    = Color(0xFF4DAFFF)
-private val AccentGreen   = Color(0xFF3DDC84)
-private val TextPrimary   = Color(0xFFEEEEF0)
-private val TextSecondary = Color(0xFF888899)
-private val BadgeRed      = Color(0xFFE53935)
-private val BorderColor   = Color(0xFF2E2E36)
-
-// ─── Root Composable ────────────────────────────────────────────────────────
 
 @Composable
 fun StoppedDetails(
@@ -51,7 +36,6 @@ fun StoppedDetails(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Background)
             .padding(16.dp)
     ) {
         Column (
@@ -59,7 +43,7 @@ fun StoppedDetails(
             verticalArrangement = Arrangement.Top
         ) {
 
-            TeleopTopBar(
+            TopbarWithButton(
                 title = "Teleop (Not Started)",
                 buttonLabel = "Start Teleop",
                 buttonColor = lerp(

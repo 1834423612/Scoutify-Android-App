@@ -29,28 +29,16 @@ import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.viewModels.DataViewModel
 import kotlinx.coroutines.delay
 import kotlin.math.abs
-
-// ─── Color Palette ──────────────────────────────────────────────────────────
-
-private val Background    = Color(0xFF0D0D0F)
-private val SurfaceDark   = Color(0xFF161618)
-private val SurfaceMid    = Color(0xFF1E1E22)
-private val SurfaceLight  = Color(0xFF2A2A30)
-private val AccentOrange  = Color(0xFFFF6B35)
-private val AccentBlue    = Color(0xFF4DAFFF)
-private val AccentGreen   = Color(0xFF3DDC84)
-private val TextPrimary   = Color(0xFFEEEEF0)
-private val TextSecondary = Color(0xFF888899)
-private val BadgeRed      = Color(0xFFE53935)
-private val BorderColor   = Color(0xFF2E2E36)
-
-// ─── Root Composable ────────────────────────────────────────────────────────
+import kotlin.math.max
+import kotlin.math.min
 
 @Composable
 fun Shift1Details(
     dataViewModel: DataViewModel,
     formState: GameFormState
 ) {
+    val currentTimer = min(formState.teleopTotalMilliseconds - TRANSITION_END_TIME, formState.teleopCachedMilliseconds)
+    val previousTimer = formState.teleopCachedMilliseconds - currentTimer
 
     val timers = listOf(
         Timer(
@@ -71,7 +59,8 @@ fun Shift1Details(
             onClick = {
                 dataViewModel.formEvent(
                     gameDetails = formState.gameDetails.copy(
-                        shift1CyclingTime = (formState.gameDetails.shift1CyclingTime ?: 0) + formState.teleopCachedMilliseconds
+                        transitionCyclingTime = (formState.gameDetails.transitionCyclingTime ?: 0) + previousTimer,
+                        shift1CyclingTime = (formState.gameDetails.shift1CyclingTime ?: 0) + currentTimer
                     )
                 )
                 dataViewModel.resetCacheTime()
@@ -81,9 +70,11 @@ fun Shift1Details(
             label = "Stockpiling Time",
             milliseconds = formState.gameDetails.shift1StockpilingTime ?: 0,
             onClick = {
+
                 dataViewModel.formEvent(
                     gameDetails = formState.gameDetails.copy(
-                        shift1StockpilingTime = (formState.gameDetails.shift1StockpilingTime ?: 0) + formState.teleopCachedMilliseconds
+                        transitionStockpilingTime = (formState.gameDetails.transitionStockpilingTime ?: 0) + previousTimer,
+                        shift1StockpilingTime = (formState.gameDetails.shift1StockpilingTime ?: 0) + currentTimer
                     )
                 )
                 dataViewModel.resetCacheTime()
@@ -95,7 +86,8 @@ fun Shift1Details(
             onClick = {
                 dataViewModel.formEvent(
                     gameDetails = formState.gameDetails.copy(
-                        shift1DefendingTime = (formState.gameDetails.shift1DefendingTime ?: 0) + formState.teleopCachedMilliseconds
+                        transitionDefendingTime = (formState.gameDetails.transitionDefendingTime ?: 0) + previousTimer,
+                        shift1DefendingTime = (formState.gameDetails.shift1DefendingTime ?: 0) + currentTimer
                     )
                 )
                 dataViewModel.resetCacheTime()
@@ -107,7 +99,8 @@ fun Shift1Details(
             onClick = {
                 dataViewModel.formEvent(
                     gameDetails = formState.gameDetails.copy(
-                        shift1BrokenTime = (formState.gameDetails.shift1BrokenTime ?: 0) + formState.teleopCachedMilliseconds
+                        transitionBrokenTime = (formState.gameDetails.transitionBrokenTime ?: 0) + previousTimer,
+                        shift1BrokenTime = (formState.gameDetails.shift1BrokenTime ?: 0) + currentTimer
                     )
                 )
                 dataViewModel.resetCacheTime()
@@ -118,7 +111,6 @@ fun Shift1Details(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Background)
             .padding(16.dp)
     ) {
         Column (
@@ -126,13 +118,13 @@ fun Shift1Details(
             verticalArrangement = Arrangement.Top
         ) {
 
-            TeleopTopBar(
+            TopbarWithButton(
                 title = "Teleop (Shift1)",
                 buttonLabel = "Start Shift 2",
                 buttonColor = lerp(
                     start = RedAlliance,
                     stop = AccentGreen,
-                    fraction = formState.teleopCachedMilliseconds.toFloat() / SHIFT1_END_TIME
+                    fraction = formState.teleopTotalMilliseconds.toFloat() / SHIFT1_END_TIME
                 ),
                 onButtonPressed = {
                     //warn user if shift1 shift is not close to ending

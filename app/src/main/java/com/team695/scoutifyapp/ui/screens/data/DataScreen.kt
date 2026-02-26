@@ -94,7 +94,7 @@ fun DataScreen(
 
     val sections: List<GameSection> = arrayOf(
         SectionType.PREGAME, SectionType.AUTON, SectionType.TELEOP, SectionType.POSTGAME)
-        .map { s: SectionType -> GameSection(type = s, progress = 0f) }
+        .map { s: SectionType -> GameSection(type = s, progress = 0) }
     
     val adaptiveInfo = currentWindowAdaptiveInfo()
     val customDirective = calculatePaneScaffoldDirective(adaptiveInfo).copy(
@@ -116,6 +116,42 @@ fun DataScreen(
 
         while(formState.teleopRunning) {
             withFrameMillis { frameTimeMillis ->
+                val deltaTime = (frameTimeMillis-startTime).toInt()
+                val switchTime: Int
+                val nextSection: TeleopSection
+                when(formState.teleopSection) {
+                    TeleopSection.TRANSITION -> {
+                        switchTime = TRANSITION_END_TIME
+                        nextSection = TeleopSection.SHIFT1
+                    }
+                    TeleopSection.SHIFT1 -> {
+                        switchTime = SHIFT1_END_TIME
+                        nextSection = TeleopSection.SHIFT2
+                    }
+                    TeleopSection.SHIFT2 -> {
+                        switchTime = SHIFT2_END_TIME
+                        nextSection = TeleopSection.SHIFT3
+                    }
+                    TeleopSection.SHIFT3 -> {
+                        switchTime = SHIFT3_END_TIME
+                        nextSection = TeleopSection.SHIFT4
+                    }
+                    TeleopSection.SHIFT4 -> {
+                        switchTime = SHIFT4_END_TIME
+                        nextSection = TeleopSection.ENDGAME
+                    }
+                    TeleopSection.ENDGAME -> {
+                        switchTime = Int.MAX_VALUE
+                        nextSection = TeleopSection.ENDGAME
+                    }
+                    else -> {
+                        switchTime = Int.MAX_VALUE
+                        nextSection = TeleopSection.STOPPED
+                    }
+                }
+                if (formState.teleopTotalMilliseconds + deltaTime > switchTime) {
+                    dataViewModel.setTeleopSection(teleopSection = nextSection, teleopTotalMilliseconds = switchTime)
+                }
                 dataViewModel.updateTime(deltaTime = (frameTimeMillis-startTime).toInt())
                 startTime = frameTimeMillis
             }
@@ -402,7 +438,10 @@ private fun DetailContent(
                 //animated stuff goes here
                 when(section.type) {
                     SectionType.PREGAME -> {
-
+                        PregameDetails(
+                            dataViewModel = dataViewModel,
+                            formState = formState
+                        )
                     }
                     SectionType.AUTON -> {
 
@@ -454,7 +493,10 @@ private fun DetailContent(
                         }
                     }
                     SectionType.POSTGAME -> {
-
+                        PostgameDetails(
+                            dataViewModel = dataViewModel,
+                            formState = formState
+                        )
                     }
                 }
             }

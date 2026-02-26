@@ -2,6 +2,7 @@ package com.team695.scoutifyapp.ui.viewModels
 
 import android.net.Uri
 import android.util.Base64
+import android.util.Log
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,6 +11,7 @@ import com.team695.scoutifyapp.data.api.client.ScoutifyClient
 import com.team695.scoutifyapp.data.api.model.User
 import com.team695.scoutifyapp.data.api.service.TokenResponse
 import com.team695.scoutifyapp.data.repository.UserRepository
+import com.team695.scoutifyapp.ui.screens.login.LoginScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -57,9 +59,6 @@ class LoginViewModel(private val repository: UserRepository): ViewModel() {
             .build()
             .toString()
 
-
-        println("Safely encoded URL: $loginUrl")
-
         _loginState.value = LoginStatus(
             verifier = verifier,
             loginUrl = loginUrl
@@ -86,7 +85,7 @@ class LoginViewModel(private val repository: UserRepository): ViewModel() {
             } else {
                 _loginState.update {
                     it.copy(
-                        error = "No verifier found"
+                        error = LoginError.VERIFIER
                     )
                 }
             }
@@ -94,16 +93,20 @@ class LoginViewModel(private val repository: UserRepository): ViewModel() {
         } catch (e: Exception) {
             _loginState.update {
                 it.copy(
-                    error = e.message
+                    error = LoginError.TOKEN_EXCHANGE
                 )
             }
 
-            println("Error in casdoor token exchange: ${e.message}")
+            Log.e("Login", "Error in casdoor token exchange: ${e.message}")
         }
     }
 
     suspend fun getUserInfo() {
-        repository.getUserInfo()
+        val res: Boolean = repository.getUserInfo()
+
+        if (!res) {
+            _loginState.value = LoginStatus(error = LoginError.ANDROID_ID)
+        }
     }
 
     fun logout() {
@@ -120,8 +123,14 @@ data class LoginStatus(
     val acToken: String? = null,
     val displayName: String? = null,
     val loginUrl: String? = null,
-    val error: String? = null,
+    val error: LoginError? = null,
 )
+
+enum class LoginError(val message: String) {
+    VERIFIER("No verifier found"),
+    TOKEN_EXCHANGE("Token exchange error"),
+    ANDROID_ID("User AndroidID doesn't match device")
+}
 
 fun generateCodeVerifier(): String {
     val sr = SecureRandom()

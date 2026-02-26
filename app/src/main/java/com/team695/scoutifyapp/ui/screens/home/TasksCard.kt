@@ -24,6 +24,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -68,8 +69,13 @@ fun TasksCard(
     val tabs = arrayOf("Incomplete", "Complete")
 
     val tasksState by homeViewModel.tasksState.collectAsStateWithLifecycle()
-    val incompleteTasks = tasksState?.filter { it -> !it.isDone }
-    val completeTasks = tasksState?.filter { it -> it.isDone }
+
+    val incompleteTasks = remember(tasksState) {
+        tasksState?.filter { it.progress != 100 }?.sorted()
+    }
+    val completeTasks = remember(tasksState) {
+        tasksState?.filter { it.progress == 100 }?.sorted()
+    }
 
     Box(
         modifier = Modifier
@@ -126,10 +132,16 @@ fun TasksCard(
                                     containerColor = BadgeBackground,
                                     modifier = Modifier
                                         .graphicsLayer {
-                                            translationX = -10f
-                                            translationY = -10f
+                                            translationX = 0F
+                                            translationY = 0F
                                         }
-                                ) { Text(text=if(index==0) incompleteTasks?.size.toString() else completeTasks?.size.toString() , color = BadgeContent) }
+                                ) {
+                                    val text = (if (index==0) incompleteTasks?.size
+                                        else completeTasks?.size)
+                                            .toString()
+
+                                    Text(text=text, color = BadgeContent)
+                                }
                             }
                         }
                     }
@@ -139,7 +151,8 @@ fun TasksCard(
             }
             Spacer(modifier = Modifier.height(16.dp))
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                val tasks = if (tabState.selectedTab == 0) incompleteTasks else completeTasks
+                val tasks = (if (tabState.selectedTab == 0) incompleteTasks else completeTasks)
+
                 if(tasks != null) {
                     items(tasks) { task ->
                         TaskItem(task = task, onPress = {onPress.invoke(task.id)})
@@ -150,24 +163,11 @@ fun TasksCard(
     }
 }
 
-fun borderGradient(progress: Float): Brush {
-    val before = (progress - 0.1f).coerceIn(0f, 1f)
-    val after = (progress + 0.1f).coerceIn(0f, 1f)
-
-    return Brush.linearGradient(
-        colorStops = arrayOf(
-            0f to ProgressGreen,
-            before to ProgressGreen,
-            after to DarkGunmetal,
-            1f to DarkishGunmetal,
-        )
-    )
-}
 
 @Preview(showBackground = true, widthDp = 200)
 @Composable
 fun TaskItemPreview() {
-    val dummyTask: Task = Task(id=0, type = TaskType.SCOUTING, matchNum = 0, teamNum = "test", time = 0L, progress = 0f, isDone = false)
+    val dummyTask: Task = Task(id=0, type = TaskType.SCOUTING, matchNum = 0, teamNum = 695, time = 0L, progress = 0)
 
     TaskItem(task = dummyTask, onPress = {})
 }

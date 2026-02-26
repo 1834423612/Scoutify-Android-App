@@ -1,20 +1,24 @@
 package com.team695.scoutifyapp.data.repository
 
+import android.content.Context
 import android.webkit.CookieManager
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToOneOrNull
 import com.team695.scoutifyapp.BuildConfig
 import com.team695.scoutifyapp.data.api.client.ScoutifyClient
 import com.team695.scoutifyapp.data.api.model.User
+import com.team695.scoutifyapp.data.api.service.ApiResponse
 import com.team695.scoutifyapp.data.api.service.LoginService
 import com.team695.scoutifyapp.data.api.service.TokenResponse
 import com.team695.scoutifyapp.data.api.service.UserInfoResponse
 import com.team695.scoutifyapp.data.api.service.UserService
 import com.team695.scoutifyapp.db.AppDatabase
+import com.team695.scoutifyapp.ui.extensions.androidID
 import com.team695.scoutifyapp.ui.viewModels.LoginStatus
 import com.team695.scoutifyapp.utility.displayTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
@@ -22,6 +26,7 @@ class UserRepository(
     private val loginService: LoginService,
     private val userService: UserService,
     private val db: AppDatabase,
+    private val context: Context,
 ) {
 
     var currentUser: Flow<User?> = db.userQueries.selectUser()
@@ -33,25 +38,44 @@ class UserRepository(
             User(
                 name = entity.name,
                 displayName = entity.display_name,
-                preferredUsername = entity.preferred_username,
-                picture = entity.picture,
-                email = entity.email
+                email = entity.email,
+                androidID = entity.android_id
             )
         }
+        .flowOn(Dispatchers.IO)
 
-    suspend fun getUserInfo() {
-        withContext(Dispatchers.IO) {
-            val userRes: UserInfoResponse = userService.getUserInfo(
-                authHeader = "Bearer ${ScoutifyClient.tokenManager.getToken() ?: ""}"
-            )
+    suspend fun getUserInfo(): Boolean {
+        return withContext(Dispatchers.IO) {
+            try {
+                val reqRes: ApiResponse<UserInfoResponse> = userService.getUserInfo(
+                    authHeader = "Bearer ${ScoutifyClient.tokenManager.getToken() ?: ""}"
+                )
 
-            db.userQueries.insertUser(
-                name = userRes.name,
-                display_name = userRes.displayName,
-                preferred_username = userRes.preferredUsername,
-                picture = userRes.picture,
-                email = userRes.email
-            )
+                val userRes: UserInfoResponse? = reqRes.data
+
+                if (userRes?.androidID == context.androidID) {
+                    db.userQueries.insertUser(
+                        name = userRes.name,
+                        display_name = userRes.displayName,
+                        email = userRes.email,
+                        android_id = userRes.androidID
+                    )
+
+                    return@withContext true
+                } else {
+                    db.userQueries.insertUser(
+                        name = "WRONG_USER",
+                        display_name = "WRONG_USER",
+                        email = "WRONG_USER",
+                        android_id = "WRONG_USER"
+                    )
+
+                    return@withContext false
+                }
+            } catch (e: Exception) {
+                println("Error when trying to get user info: $e")
+                return@withContext true
+            }
         }
     }
 
@@ -67,6 +91,10 @@ class UserRepository(
     suspend fun logout() {
         withContext(Dispatchers.IO) {
             db.userQueries.deleteUser()
+
+            db.matchQueries.clearAllMatches()
+            db.taskQueries.clearAllTasks()
+
             ScoutifyClient.tokenManager.saveToken("")
 
             CookieManager.getInstance().removeAllCookies(null)

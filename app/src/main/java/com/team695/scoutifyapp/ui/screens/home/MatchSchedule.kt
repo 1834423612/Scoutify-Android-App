@@ -48,10 +48,12 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.team695.scoutifyapp.R
 import com.team695.scoutifyapp.data.api.model.Match
+import com.team695.scoutifyapp.data.extensions.convertIsoToUnix
 import com.team695.scoutifyapp.ui.reusables.Pressable
 import com.team695.scoutifyapp.ui.components.BackgroundGradient
 import com.team695.scoutifyapp.ui.components.ImageBackground
 import com.team695.scoutifyapp.ui.components.buttonHighlight
+import com.team695.scoutifyapp.ui.extensions.convertUnixToMilitaryTime
 import com.team695.scoutifyapp.ui.theme.Accent
 import com.team695.scoutifyapp.ui.theme.BadgeBackground
 import com.team695.scoutifyapp.ui.theme.BadgeContent
@@ -68,12 +70,12 @@ import com.team695.scoutifyapp.ui.theme.TextSecondary
 import com.team695.scoutifyapp.ui.theme.mediumCornerRadius
 import com.team695.scoutifyapp.ui.theme.smallCornerRadius
 import com.team695.scoutifyapp.ui.viewModels.HomeViewModel
-import com.team695.scoutifyapp.utility.displayTime
 
 @Composable
 fun MatchSchedule(homeViewModel: HomeViewModel, modifier: Modifier = Modifier, onCommentClicked: () -> Unit) {
     var searchQuery: String by remember { mutableStateOf("") }
     val matchState by homeViewModel.matchState.collectAsStateWithLifecycle()
+    val readyState by homeViewModel.isReady.collectAsStateWithLifecycle()
 
     val filteredMatches = matchState?.filter { m ->
         searchQuery.isBlank() || m.redAlliance.any{it.toString().contains(searchQuery)} || m.blueAlliance.any{it.toString().contains(searchQuery) }
@@ -204,15 +206,46 @@ fun MatchSchedule(homeViewModel: HomeViewModel, modifier: Modifier = Modifier, o
                     )
                 }
             }
-            LazyColumn(
-                modifier = Modifier.padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(smallCornerRadius)
-            ) {
-                if(filteredMatches != null) {
-                    items(filteredMatches) {
+            if (matchState.isNullOrEmpty() || !readyState) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        androidx.compose.material3.CircularProgressIndicator(
+                            color = TextPrimary
+                        )
+                        Text(
+                            text = "Loading schedule...",
+                            color = TextSecondary,
+                            fontSize = 16.sp
+                        )
+                    }
+                }
+            } else if (filteredMatches?.isEmpty() == true) {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "No matches found for team '$searchQuery'",
+                        color = TextSecondary,
+                        fontSize = 16.sp
+                    )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(smallCornerRadius)
+                ) {
+                    items(filteredMatches!!) {
                         MatchItem(
                             matchNum = it.matchNumber,
-                            time = it.time,
+                            time = it.time.toLong(),
                             redAlliance = it.redAlliance,
                             blueAlliance = it.blueAlliance,
                             showHighlight = showMatchHighlight(it),
@@ -239,7 +272,6 @@ fun TeamNumber(number: String) {
             .buttonHighlight(
                 corner = smallCornerRadius
             )
-
     ) {
         Text(
             text = number,
@@ -293,7 +325,7 @@ fun MatchItem(
                 modifier = Modifier.size(17.dp)
             )
             Spacer(modifier = Modifier.width(4.dp))
-            Text(displayTime(time), color = Deselected, fontSize = 16.sp)
+            Text(time.convertUnixToMilitaryTime(), color = Deselected, fontSize = 16.sp)
         }
 
 

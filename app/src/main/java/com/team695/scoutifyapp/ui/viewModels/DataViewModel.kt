@@ -47,7 +47,7 @@ class DataViewModel(
 
             _formState.update {
                 it.copy(
-                    teamNumber = task?.teamNum ?: "FAILED",
+                    teamNumber = task?.teamNum.toString() ?: "FAILED",
                     matchNum = task?.matchNum ?: -2,
                     gameDetails = gameDetails
                 )

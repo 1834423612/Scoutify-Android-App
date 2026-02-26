@@ -212,7 +212,7 @@ fun TaskItem(
             )
             .border(
                 1.dp,
-                if (isSelected) AccentPrimary else BorderColor,
+                if (isSelected) AccentPrimary else Border,
                 RoundedCornerShape(8.dp)
             )
             .clickable { onClick() }
