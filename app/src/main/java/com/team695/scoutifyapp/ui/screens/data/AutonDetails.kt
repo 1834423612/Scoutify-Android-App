@@ -18,20 +18,28 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.team695.scoutifyapp.data.types.ENDGAME_END_TIME
 import com.team695.scoutifyapp.data.types.GameFormState
+import com.team695.scoutifyapp.data.types.SHIFT1_END_TIME
+import com.team695.scoutifyapp.data.types.SHIFT4_END_TIME
+import com.team695.scoutifyapp.data.types.TELEOP_TIME_THRESHOLD
 import com.team695.scoutifyapp.data.types.TRANSITION_END_TIME
+import com.team695.scoutifyapp.data.types.TeleopSection
 import com.team695.scoutifyapp.ui.theme.AccentGreen
 import com.team695.scoutifyapp.ui.theme.BlueAlliance
 import com.team695.scoutifyapp.ui.theme.RedAlliance
 import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.viewModels.DataViewModel
 import kotlinx.coroutines.delay
+import kotlin.math.abs
 
+// ─── Root Composable ────────────────────────────────────────────────────────
 
 @Composable
-fun StoppedDetails(
+fun AutonDetails(
     dataViewModel: DataViewModel,
     formState: GameFormState
 ) {
+
+
 
     Box(
         modifier = Modifier
@@ -44,15 +52,11 @@ fun StoppedDetails(
         ) {
 
             TopbarWithButton(
-                title = "Teleop (Not Started)",
+                title = "Auton (WIP)",
                 buttonLabel = "Start Teleop",
-                buttonColor = lerp(
-                    start = RedAlliance,
-                    stop = AccentGreen,
-                    fraction = formState.teleopCachedMilliseconds.toFloat() / TRANSITION_END_TIME
-                ),
+                buttonColor = AccentGreen,
                 onButtonPressed = {
-                    dataViewModel.toggleWarningModal(title = "Are you sure?", text = "You cannot pause teleop")
+                    dataViewModel.toggleWarningModal(title = "Are you sure?", text = "You cannot pause teleop.")
                 },
             )
         }

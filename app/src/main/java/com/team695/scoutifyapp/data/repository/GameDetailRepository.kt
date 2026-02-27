@@ -156,6 +156,7 @@ class GameDetailRepository(
                 endgame_attempts_climb = details.endgameAttemptsClimb,
                 endgame_climb_success = details.endgameClimbSuccess,
                 endgame_climb_position = details.endgameClimbPosition,
+                endgame_climb_code = details.endgameClimbCode,
 
                 teleop_fuel_count = details.teleopFuelCount,
                 teleop_flag = details.teleopFlag,

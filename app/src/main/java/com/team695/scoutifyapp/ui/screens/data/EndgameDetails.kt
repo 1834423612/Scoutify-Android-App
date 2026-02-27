@@ -13,6 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,6 +33,8 @@ import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.viewModels.DataViewModel
 import kotlinx.coroutines.delay
 import kotlin.math.min
+import com.team695.scoutifyapp.R
+
 
 @Composable
 fun EndgameDetails(
@@ -120,25 +124,8 @@ fun EndgameDetails(
             verticalArrangement = Arrangement.Top
         ) {
 
-            TopbarWithButton(
-                title = "Teleop (Endgame)",
-                buttonLabel = "Restart Teleop",
-                buttonColor = lerp(
-                    start = RedAlliance,
-                    stop = AccentGreen,
-                    fraction = formState.teleopTotalMilliseconds.toFloat() / ENDGAME_END_TIME
-                ),
-                onButtonPressed = {
-                    //warn user if starting teleop will reset their progress
-                    if(formState.gameDetails.teleopProgress > 0) {
-                        dataViewModel.toggleWarningModal(title = "Are you sure?", text = "Restarting teleop will reset your data.")
-                    }
-                    else {
-                        dataViewModel.startTeleop()
-                    }
-                },
-                dataViewModel = dataViewModel,
-                formState = formState
+            TopbarNoButton(
+                title = "Teleop (Endgame)"
             )
 
             Row(
@@ -174,7 +161,7 @@ private fun EndgamePanel(
         modifier = Modifier
             .width(220.dp)
             .fillMaxHeight(),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Spacer(Modifier.height(8.dp))
 
@@ -188,7 +175,7 @@ private fun EndgamePanel(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Endgame",
+                text = "Tower",
                 color = TextPrimary,
                 fontSize = 15.sp,
                 fontWeight = FontWeight.SemiBold
@@ -234,103 +221,114 @@ private fun EndgamePanel(
         )
 
         // Field map placeholder
-        Box(
+        Column (
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f)
                 .clip(RoundedCornerShape(14.dp))
                 .background(DarkGunmetal)
                 .border(1.dp, Border, RoundedCornerShape(14.dp)),
-            contentAlignment = Alignment.Center
-        ) {
-            FieldDiagram()
-        }
-    }
-}
-
-
-// ─── Field Diagram ───────────────────────────────────────────────────────────
-
-@Composable
-private fun FieldDiagram() {
-    // Simplified top-down FRC field representation
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFF1A3A4A))
-            .padding(8.dp)
-    ) {
-        // Grid lines
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.SpaceEvenly
-        ) {
-            repeat(4) {
-                Divider(color = Color(0xFF2A5A6A), thickness = 1.dp)
-            }
-        }
-        Row(
-            modifier = Modifier.fillMaxSize(),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            repeat(3) {
-                VerticalDivider()
-            }
-        }
-
-        // Corner position buttons
-        val positions = listOf(
-            Alignment.TopStart, Alignment.TopEnd,
-            Alignment.CenterStart, Alignment.CenterEnd,
-            Alignment.BottomStart, Alignment.BottomEnd
-        )
-        positions.forEach { alignment ->
-            Box(
-                modifier = Modifier.align(alignment).padding(4.dp)
-            ) {
-                FieldPositionButton()
-            }
-        }
-
-        // Center label
-        Box(
-            modifier = Modifier.align(Alignment.Center)
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
         ) {
             Text(
-                text = "REBUILT",
-                color = Color(0xFFFF6B35),
-                fontSize = 13.sp,
-                fontWeight = FontWeight.ExtraBold,
-                letterSpacing = 2.sp
+                text = "Space Taken",
+                color = TextPrimary,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp,
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            TowerDiagram(
+                formState = formState,
+                dataViewModel = dataViewModel
             )
         }
     }
 }
 
 @Composable
-private fun FieldPositionButton() {
-    var selected by remember { mutableStateOf(false) }
-    val bg by animateColorAsState(
-        targetValue = if (selected) ProgressGreen else Gunmetal,
-        animationSpec = tween(150),
-        label = "pos_bg"
-    )
+fun TowerDiagram(
+    formState: GameFormState,
+    dataViewModel: DataViewModel
+) {
     Box(
         modifier = Modifier
-            .size(28.dp)
-            .clip(RoundedCornerShape(6.dp))
-            .background(bg)
-            .border(1.dp, Border, RoundedCornerShape(6.dp))
-            .clickable { selected = !selected }
-    )
-}
+            .aspectRatio(0.85f)
+    ) {
+        Image(
+            painter = painterResource(id = R.drawable.towerclimb), // Temporary placeholder for compilation
+            contentDescription = null, // Decorative background image
+            modifier = Modifier.fillMaxSize(),
+            // Crop ensures the image fills the screen bounds without distorting aspect ratio
+            contentScale = ContentScale.Crop
+        )
 
-@Composable
-private fun VerticalDivider() {
-    Box(
-        modifier = Modifier
-            .fillMaxHeight()
-            .width(1.dp)
-            .background(Color(0xFF2A5A6A))
-    )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.6f))
+        )
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(bottom = 24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // 3x3 Grid Structure
+                Column(
+                    modifier = Modifier.wrapContentSize(),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    for (level in 4 downTo 1) {
+                        Box(contentAlignment = Alignment.Center) {
+
+                            // Checkboxes for Left, Center, Right
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                val positions = listOf(
+                                    "L",
+                                    "CL",
+                                    "CR",
+                                    "R"
+                                ) //left, center-left, center-right, right
+                                for (pos in positions) {
+                                    val spaceKey = "$level:$pos,"
+                                    Checkbox(
+                                        colors = CheckboxDefaults.colors(
+                                            // This changes the color of the border when not checked
+                                            uncheckedColor = Color.White,
+                                            // Optional: Ensure the checkmark and box remain visible when checked
+                                            checkedColor = ProgressGreen
+                                        ),
+                                        checked = formState.gameDetails.endgameClimbCode?.contains(
+                                            spaceKey
+                                        ) ?: false,
+                                        onCheckedChange = {
+                                            dataViewModel.formEvent(
+                                                gameDetails = formState.gameDetails.copy(
+                                                    endgameClimbCode = if (it) formState.gameDetails.endgameClimbCode + spaceKey else formState.gameDetails.endgameClimbCode?.replaceFirst(
+                                                        spaceKey,
+                                                        " "
+                                                    )
+                                                )
+                                            )
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(if(level == 4) 6.dp else 22.dp))
+                    }
+                }
+            }
+        }
+    }
 }
