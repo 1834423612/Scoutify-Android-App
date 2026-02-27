@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 data class CommentBody (
     @SerializedName("game_matchup_gm_number")
     val match_number: Int,
-    val team_number: Int?,
+    val team_number: Int,
     @SerializedName("game_matchup_gm_alliance")
     val alliance: String?, // B/R
     @SerializedName("game_matchup_gm_alliance_position")

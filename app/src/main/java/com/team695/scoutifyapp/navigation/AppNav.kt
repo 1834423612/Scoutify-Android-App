@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.team695.scoutifyapp.data.api.NetworkMonitor
+import com.team695.scoutifyapp.data.repository.CommentRepository
 import com.team695.scoutifyapp.ui.InputScreen
 import com.team695.scoutifyapp.ui.screens.CommentsScreen
 import com.team695.scoutifyapp.ui.screens.home.HomeScreen
@@ -21,6 +22,7 @@ import com.team695.scoutifyapp.data.repository.GameDetailRepository
 import com.team695.scoutifyapp.data.repository.MatchRepository
 import com.team695.scoutifyapp.data.repository.TaskRepository
 import com.team695.scoutifyapp.data.repository.UserRepository
+import com.team695.scoutifyapp.ui.screens.CommentsViewModel
 import com.team695.scoutifyapp.ui.screens.data.DataScreen
 import com.team695.scoutifyapp.ui.screens.login.LoginScreen
 import com.team695.scoutifyapp.ui.viewModels.DataViewModel
@@ -33,6 +35,7 @@ fun AppNav(
     taskRepository: TaskRepository,
     matchRepository: MatchRepository,
     userRepository: UserRepository,
+    commentRepository: CommentRepository,
     gameDetailRepository: GameDetailRepository,
     networkMonitor: NetworkMonitor,
 ) {
@@ -96,7 +99,12 @@ fun AppNav(
                 navController = navController,
                 gameDetailRepository = gameDetailRepository
             ) {
-                CommentsScreen()
+                val commentsViewModel: CommentsViewModel = viewModel(
+                    viewModelStoreOwner = owner,
+                    factory = ViewModelFactory { CommentsViewModel(commentRepository) }
+                )
+
+                CommentsScreen(viewModel = commentsViewModel)
             }
         }
         composable("pitScouting") {
