@@ -108,6 +108,8 @@ dependencies {
     implementation(libs.sqldelight.coroutines)
     implementation(libs.sqldelight.primitive.adapters)
     implementation(libs.androidx.security.crypto)
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+
     // datastore
     implementation(libs.androidx.datastore)
 }
