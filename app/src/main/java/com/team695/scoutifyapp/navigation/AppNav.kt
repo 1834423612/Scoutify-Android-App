@@ -9,6 +9,7 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.team695.scoutifyapp.config.DebugConfig
 import com.team695.scoutifyapp.data.api.NetworkMonitor
 import com.team695.scoutifyapp.ui.InputScreen
 import com.team695.scoutifyapp.ui.screens.CommentsScreen
@@ -40,7 +41,10 @@ fun AppNav(
     val owner: ViewModelStoreOwner = LocalViewModelStoreOwner.current
         ?: throw IllegalStateException("Root must be attached to a ViewModelStoreOwner")
 
-    NavHost(navController = navController, startDestination = "login") {
+    // In debug mode, start at home; otherwise start at login
+    val startDestination = if (DebugConfig.BYPASS_AUTH) "home" else "login"
+
+    NavHost(navController = navController, startDestination = startDestination) {
         composable("home") {
             AuthGuard(
                 userRepository = userRepository,

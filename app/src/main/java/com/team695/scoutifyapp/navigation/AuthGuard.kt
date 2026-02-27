@@ -5,6 +5,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.navigation.NavController
+import com.team695.scoutifyapp.config.DebugConfig
 import com.team695.scoutifyapp.data.api.model.User
 import com.team695.scoutifyapp.data.repository.GameDetailRepository
 import com.team695.scoutifyapp.data.repository.UserRepository
@@ -18,6 +19,13 @@ fun AuthGuard(
     gameDetailRepository: GameDetailRepository,
     content: @Composable () -> Unit
 ) {
+    // Debug mode: bypass authentication
+    if (DebugConfig.BYPASS_AUTH) {
+        LaunchedEffect(Unit) {
+            gameDetailRepository.setGameConstants()
+        }
+        return content()
+    }
 
     val user by userRepository.currentUser.collectAsState(
         initial = User(

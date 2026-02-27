@@ -7,7 +7,7 @@
 /.idea/workspace.xml
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
-secrets.properties
+app/secrets.properties
 .DS_Store
 /build
 /captures
