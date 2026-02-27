@@ -46,6 +46,7 @@ import androidx.compose.material3.adaptive.navigation.NavigableListDetailPaneSca
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
@@ -77,6 +78,7 @@ import com.team695.scoutifyapp.ui.theme.LightGunmetal
 import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.theme.mediumCornerRadius
 import com.team695.scoutifyapp.ui.theme.smallCornerRadius
+import com.team695.scoutifyapp.ui.viewModels.PenViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -455,7 +457,27 @@ private fun DetailContent(
                         )
                     }
                     SectionType.AUTON -> {
-
+                        val penViewModel = remember(formState.matchNum) {
+                            PenViewModel().apply {
+                                paths = formState.gameDetails.autonPath
+                                    ?.let { jsonToPaths(it) }
+                                    ?: emptyList()
+                            }
+                        }
+                        // Sync PenViewModel -> DataViewModel
+                        LaunchedEffect(penViewModel.paths) {
+                            val json = penViewModel.pathsToJson()   // <-- use your function
+                            dataViewModel.formEvent(
+                                formState.gameDetails.copy(
+                                    autonPath = json
+                                )
+                            )
+                        }
+                        AutonDetails(
+                            dataViewModel = dataViewModel,
+                            formState = formState,
+                            viewModel= penViewModel//()
+                        )
                     }
                     SectionType.TELEOP -> {
                         when(formState.teleopSection) {

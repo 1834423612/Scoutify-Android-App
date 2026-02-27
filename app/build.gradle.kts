@@ -6,6 +6,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose") // Compose compiler plugin
     id("kotlin-parcelize")
+    kotlin("plugin.serialization")
     alias(libs.plugins.sqldelight) // Apply the plugin
 }
 
@@ -83,6 +84,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.retrofit)
     implementation(libs.converter.gson)

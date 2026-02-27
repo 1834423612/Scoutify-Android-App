@@ -1,6 +1,7 @@
 package com.team695.scoutifyapp.data.api.model
 
 import com.team695.scoutifyapp.db.GameDetailsEntity
+import com.team695.scoutifyapp.ui.viewModels.Stroke
 import kotlin.Boolean
 import kotlin.Double
 
