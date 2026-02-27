@@ -46,8 +46,8 @@ class CommentsViewModel (
 
     // Function to handle match selection
     fun onMatchSelected(match: String) {
+        autoSaveJob?.cancel()
         _selectedMatch.value = match
-        resetAutoSave()  // Reset the auto-save timer whenever the match is changed
         fetchComments(match.toInt())
     }
 
@@ -103,7 +103,7 @@ class CommentsViewModel (
                             alliance_position = position,
                             comment = comment,
                             timestamp = System.currentTimeMillis(),
-                            submitted = 0
+                            submitted = if (_isSubmitted.value) 1 else 0
                         )
                     )
                 }
