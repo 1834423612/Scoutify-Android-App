@@ -11,3 +11,13 @@ val intAdapter = object : ColumnAdapter<Int, Long> {
     override fun decode(databaseValue: Long): Int = databaseValue.toInt()
     override fun encode(value: Int): Long = value.toLong()
 }
+val charAdapter = object : ColumnAdapter<Char, String> {
+    override fun decode(databaseValue: String): Char {
+        require(databaseValue.length == 1) {
+            "Expected a single-character value, got '${databaseValue}'"
+        }
+
+        return databaseValue[0]
+    }
+    override fun encode(value: Char): String = value.toString()
+}

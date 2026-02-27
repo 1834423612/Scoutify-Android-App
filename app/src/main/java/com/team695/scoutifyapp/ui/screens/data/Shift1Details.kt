@@ -37,6 +37,8 @@ fun Shift1Details(
     dataViewModel: DataViewModel,
     formState: GameFormState
 ) {
+    val currentTimer = min(formState.teleopTotalMilliseconds - TRANSITION_END_TIME, formState.teleopCachedMilliseconds)
+    val previousTimer = formState.teleopCachedMilliseconds - currentTimer
 
     val timers = listOf(
         Timer(
@@ -55,13 +57,10 @@ fun Shift1Details(
             label = "Cycling Time",
             milliseconds = formState.gameDetails.shift1CyclingTime ?: 0,
             onClick = {
-                val t2 = min(formState.teleopTotalMilliseconds - TRANSITION_END_TIME, formState.teleopCachedMilliseconds)
-                val t1 = formState.teleopCachedMilliseconds - t2
-
                 dataViewModel.formEvent(
                     gameDetails = formState.gameDetails.copy(
-                        transitionCyclingTime = (formState.gameDetails.transitionCyclingTime ?: 0) + t1,
-                        shift1CyclingTime = (formState.gameDetails.shift1CyclingTime ?: 0) + t2
+                        transitionCyclingTime = (formState.gameDetails.transitionCyclingTime ?: 0) + previousTimer,
+                        shift1CyclingTime = (formState.gameDetails.shift1CyclingTime ?: 0) + currentTimer
                     )
                 )
                 dataViewModel.resetCacheTime()
@@ -71,9 +70,11 @@ fun Shift1Details(
             label = "Stockpiling Time",
             milliseconds = formState.gameDetails.shift1StockpilingTime ?: 0,
             onClick = {
+
                 dataViewModel.formEvent(
                     gameDetails = formState.gameDetails.copy(
-                        shift1StockpilingTime = (formState.gameDetails.shift1StockpilingTime ?: 0) + formState.teleopCachedMilliseconds
+                        transitionStockpilingTime = (formState.gameDetails.transitionStockpilingTime ?: 0) + previousTimer,
+                        shift1StockpilingTime = (formState.gameDetails.shift1StockpilingTime ?: 0) + currentTimer
                     )
                 )
                 dataViewModel.resetCacheTime()
@@ -85,7 +86,8 @@ fun Shift1Details(
             onClick = {
                 dataViewModel.formEvent(
                     gameDetails = formState.gameDetails.copy(
-                        shift1DefendingTime = (formState.gameDetails.shift1DefendingTime ?: 0) + formState.teleopCachedMilliseconds
+                        transitionDefendingTime = (formState.gameDetails.transitionDefendingTime ?: 0) + previousTimer,
+                        shift1DefendingTime = (formState.gameDetails.shift1DefendingTime ?: 0) + currentTimer
                     )
                 )
                 dataViewModel.resetCacheTime()
@@ -97,7 +99,8 @@ fun Shift1Details(
             onClick = {
                 dataViewModel.formEvent(
                     gameDetails = formState.gameDetails.copy(
-                        shift1BrokenTime = (formState.gameDetails.shift1BrokenTime ?: 0) + formState.teleopCachedMilliseconds
+                        transitionBrokenTime = (formState.gameDetails.transitionBrokenTime ?: 0) + previousTimer,
+                        shift1BrokenTime = (formState.gameDetails.shift1BrokenTime ?: 0) + currentTimer
                     )
                 )
                 dataViewModel.resetCacheTime()

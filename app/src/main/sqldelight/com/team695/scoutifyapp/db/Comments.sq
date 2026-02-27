@@ -2,60 +2,35 @@ import kotlin.Int;
 
 CREATE TABLE commentsEntity (
     id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-
     match_number INTEGER AS Int NOT NULL, --number for the corresponding match
-    team_number INTEGER AS Int,
+    team_number INTEGER AS Int NOT NULL,
     alliance TEXT, --R, B
     alliance_position INTEGER AS Int, --1, 2, 3
     timestamp INTEGER,
     comment TEXT,
-    submitted INTEGER AS Int,
 
-    UNIQUE(match_number, alliance, alliance_position)
+    UNIQUE(match_number, team_number)
 );
 
 --queries
 selectCommentsByMatchNumber:
-SELECT * FROM commentsEntity WHERE match_number = ?;
+SELECT * FROM commentsEntity
+WHERE match_number = ?;
 
 selectCommentsById:
 SELECT * FROM commentsEntity
 WHERE id = ?;
 
-selectAllComments:
-SELECT * FROM commentsEntity;
-
-insertComment:
+insertComments:
 INSERT OR REPLACE INTO commentsEntity(
         match_number,
         team_number,
         alliance,
         alliance_position,
         timestamp,
-        comment,
-        submitted
+        comment
         )
         VALUES(
-       ?,?,?,?,?,?,?
+        ?,?,?,?,?,?
         );
 
--- Add a query to insert sample data for testing
-seedData:
-INSERT INTO commentsEntity(
-    match_number,
-    team_number,
-    alliance,
-    alliance_position,
-    timestamp,
-    comment,
-    submitted
-)
-VALUES
-    (1001, 1234, 'R', 1, 1610000000, 'Great match!', 1),
-    (1002, 2345, 'B', 2, 1610000001, 'Amazing defense!', 0),
-    (1003, 3456, 'R', 3, 1610000002, 'Awesome strategy!', 1);
-
-updateSubmissionStatus:
-    UPDATE commentsEntity
-    SET submitted = ?
-    WHERE match_number = ?;
