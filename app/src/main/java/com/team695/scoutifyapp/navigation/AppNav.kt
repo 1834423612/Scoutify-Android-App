@@ -1,6 +1,7 @@
 package com.team695.scoutifyapp.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -94,6 +95,11 @@ fun AppNav(
             }
         }
         composable(route = "comments") {
+            val matchNumber = navController
+                .previousBackStackEntry
+                ?.savedStateHandle
+                ?.get<Int>("matchNumber")
+
             AuthGuard(
                 userRepository = userRepository,
                 navController = navController,
@@ -104,7 +110,16 @@ fun AppNav(
                     factory = ViewModelFactory { CommentsViewModel(commentRepository) }
                 )
 
-                CommentsScreen(viewModel = commentsViewModel)
+                LaunchedEffect(matchNumber) {
+                    if (matchNumber != -1) {
+                        commentsViewModel.onMatchSelected(matchNumber.toString())
+                    }
+                }
+
+                CommentsScreen(
+                    viewModel = commentsViewModel,
+                    matchNumber = matchNumber
+                )
             }
         }
         composable("pitScouting") {

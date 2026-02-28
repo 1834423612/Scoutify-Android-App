@@ -13,6 +13,16 @@ class CommentsViewModel (
     private val commentRepository: CommentRepository
 ) : ViewModel() {
     // State variables for comments
+    enum class SaveStatus {
+        IDLE,
+        SAVING,
+        AUTOSAVED,
+        SUBMITTED,
+        ERROR
+    }
+
+    private val _saveStatus = mutableStateOf(SaveStatus.IDLE)
+    val saveStatus: State<SaveStatus> = _saveStatus
     private val _selectedMatch = mutableStateOf("1") // DEFAULT MATCH NUMBER THAT SHOWS UP WHEN YOU GO INTO COMMENTS PAGE
     val selectedMatch: State<String> = _selectedMatch
 
@@ -48,11 +58,25 @@ class CommentsViewModel (
     fun onMatchSelected(match: String) {
         autoSaveJob?.cancel()
         _selectedMatch.value = match
-        fetchComments(match.toInt())
+        match.toIntOrNull()?.let { // safe check cuz it was crashing when going to home
+            fetchComments(it)
+        }
     }
 
     // Function to handle comment change
     fun onCommentChanged(alliance: String, position: Int, comment: String) {
+        // check if the thang is being changed ts
+        if (_isSubmitted.value) {
+            _isSubmitted.value = false
+
+            val matchNum = _selectedMatch.value.toIntOrNull()
+            if (matchNum != null) {
+                viewModelScope.launch {
+                    commentRepository.updateSubmissionStatus(matchNum, 0)
+                }
+            }
+        }
+
         when (alliance) {
             "Red" -> {
                 when (position) {
@@ -141,6 +165,7 @@ class CommentsViewModel (
             _autoSaved.value = true
         }
     }
+
 
     private fun fetchComments(match: Int) {
         viewModelScope.launch {

@@ -24,7 +24,10 @@ import com.team695.scoutifyapp.ui.theme.*
 import com.team695.scoutifyapp.ui.reusables.Pressable
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CommentsScreen(viewModel: CommentsViewModel) {
+fun CommentsScreen(
+    viewModel: CommentsViewModel,
+    matchNumber: Int?
+) {
     val selectedMatch by viewModel.selectedMatch
     val red1Comment by viewModel.red1Comment
     val red2Comment by viewModel.red2Comment
