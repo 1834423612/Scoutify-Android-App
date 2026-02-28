@@ -116,7 +116,9 @@ class TaskRepository(
             if (taskList.isNotEmpty()) {
                 return@withContext Result.success(taskList[0].createTaskFromDb())
             } else {
-                return@withContext Result.failure(Exception("Could not find task for id = $taskId"))
+                return@withContext Result.failure(
+                    Exception("Could not find task for id = $taskId")
+                )
             }
         }
     }
