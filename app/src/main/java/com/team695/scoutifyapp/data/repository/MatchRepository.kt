@@ -53,7 +53,11 @@ class MatchRepository(
             }
         }
     }
-
+    fun getAllianceForMatch(mathNumber: Long,teamNumber: Long): String{
+        val red = db.matchQueries.selectMatchByNumberAndTeam(mathNumber,teamNumber).executeAsOne()
+        if(red.r1==teamNumber||red.r2==teamNumber||red.r3==teamNumber) return "R"
+        return "B"
+    }
     suspend fun fetchMatches(): Result<List<Match>> {
         return withContext(Dispatchers.IO) {
             val oldMatches = db.matchQueries.selectAllMatches()
@@ -81,6 +85,7 @@ class MatchRepository(
             }
         }
     }
+
 
     suspend fun clearMatches() {
         return withContext(Dispatchers.IO) {

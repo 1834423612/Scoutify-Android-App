@@ -133,9 +133,12 @@ fun AutonDetails(
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-
-                    val image: ImageBitmap = ImageBitmap.imageResource(id = R.drawable.autonpath)
-                    DrawCanvas(viewModel, image)
+                    var alliance ="R"
+                    var fieldImage = ImageBitmap.imageResource(id = R.drawable.map)
+                    if(dataViewModel.getAllianceForMatch(formState.matchNum.toLong(), formState.teamNumber.toLong())=="B"){
+                        fieldImage=ImageBitmap.imageResource(id = R.drawable.image_29__1_)
+                    }
+                    DrawCanvas(viewModel, fieldImage)
                 }
             }
         }
@@ -324,8 +327,9 @@ fun RobotActionPanel(
             isSelected = selected == "Path",
             onClick = { selected = "Path"; onPath() }
         ) {
-            // Bullet/projectile pointing right (gray body, pointed tip)
-            BulletIcon(bodyColor = Color(0xFF888899), tipColor = Color(0xFF555566))
+            PathIcon()
+        // Bullet/projectile pointing right (gray body, pointed tip)
+            //BulletIcon(bodyColor = Color(0xFF888899), tipColor = Color(0xFF555566))
         }
 
         // ── Ball button ───────────────────────────────────────────
@@ -413,157 +417,192 @@ private fun ActionButton(
         }
     }
 }
+@Composable
+private fun PathIcon(){
+    Image(
+        painter = painterResource(id = R.drawable.group_33), // Temporary placeholder for compilation
+        contentDescription = null, // Decorative background image
+        modifier = Modifier.fillMaxSize(),
+        // Crop ensures the image fills the screen bounds without distorting aspect ratio
+        contentScale = ContentScale.Fit
+    )
+}
+
+
 
 // ── Icon: Bullet / Projectile ────────────────────────────────────────────────
-@Composable
-private fun BulletIcon(bodyColor: Color, tipColor: Color) {
-    Canvas(modifier = Modifier.size(36.dp)) {
-        val w = size.width
-        val h = size.height
-        val cy = h / 2f
-
-        // Body (rectangle)
-        val bodyPath = Path().apply {
-            moveTo(w * 0.15f, cy - h * 0.18f)
-            lineTo(w * 0.70f, cy - h * 0.18f)
-            lineTo(w * 0.70f, cy + h * 0.18f)
-            lineTo(w * 0.15f, cy + h * 0.18f)
-            close()
-        }
-        drawPath(bodyPath, bodyColor)
-
-        // Pointed tip (right side)
-        val tipPath = Path().apply {
-            moveTo(w * 0.70f, cy - h * 0.18f)
-            lineTo(w * 0.92f, cy)
-            lineTo(w * 0.70f, cy + h * 0.18f)
-            close()
-        }
-        drawPath(tipPath, tipColor)
-    }
-}
+//@Composable
+//private fun BulletIcon(bodyColor: Color, tipColor: Color) {
+//    Canvas(modifier = Modifier.size(36.dp)) {
+//        val w = size.width
+//        val h = size.height
+//        val cy = h / 2f
+//
+//        // Body (rectangle)
+//        val bodyPath = Path().apply {
+//            moveTo(w * 0.15f, cy - h * 0.18f)
+//            lineTo(w * 0.70f, cy - h * 0.18f)
+//            lineTo(w * 0.70f, cy + h * 0.18f)
+//            lineTo(w * 0.15f, cy + h * 0.18f)
+//            close()
+//        }
+//        drawPath(bodyPath, bodyColor)
+//
+//        // Pointed tip (right side)
+//        val tipPath = Path().apply {
+//            moveTo(w * 0.70f, cy - h * 0.18f)
+//            lineTo(w * 0.92f, cy)
+//            lineTo(w * 0.70f, cy + h * 0.18f)
+//            close()
+//        }
+//        drawPath(tipPath, tipColor)
+//    }
+//}
 
 
 @Composable
 private fun ShootIcon() {
-    Canvas(modifier = Modifier.size(36.dp)) {
-        val w = size.width
-        val h = size.height
-
-        val barTop = h * 0.2f
-        val barBottom = h * 0.8f
-        val barHeight = barBottom - barTop
-
-        val rectRight = w * 0.70f
-        val radius = barHeight / 2f
-
-        val yellow = Color(0xFFE6D36F)
-
-        // Main black rectangle
-        drawRect(
-            color = Color.Black,
-            topLeft = Offset(0f, barTop),
-            size = Size(rectRight, barHeight)
-        )
-
-        // White borders (top & bottom)
-        drawLine(
-            color = Color.White,
-            start = Offset(0f, barTop),
-            end = Offset(rectRight, barTop),
-            strokeWidth = 3f
-        )
-
-        drawLine(
-            color = Color.White,
-            start = Offset(0f, barBottom),
-            end = Offset(rectRight, barBottom),
-            strokeWidth = 3f
-        )
-
-        // Black rounded end (half circle)
-        drawArc(
-            color = Color.Black,
-            startAngle = -90f,
-            sweepAngle = 180f,
-            useCenter = true,
-            topLeft = Offset(rectRight - radius, barTop),
-            size = Size(barHeight, barHeight)
-        )
-
-        // Yellow outer ring
-        drawArc(
-            color = yellow,
-            startAngle = -90f,
-            sweepAngle = 180f,
-            useCenter = false,
-            topLeft = Offset(rectRight - radius - 6f, barTop - 6f),
-            size = Size(barHeight + 12f, barHeight + 12f),
-            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 6f)
-        )
-
-        // Yellow circular cap at front
-        drawCircle(
-            color = yellow,
-            radius = radius * 0.6f,
-            center = Offset(rectRight + radius * 0.6f, h / 2f)
-        )
-    }
+    Image(
+        painter = painterResource(id = R.drawable.group_30), // Temporary placeholder for compilation
+        contentDescription = null, // Decorative background image
+        modifier = Modifier.fillMaxSize(),
+        // Crop ensures the image fills the screen bounds without distorting aspect ratio
+        contentScale = ContentScale.Fit
+    )
+//    Canvas(modifier = Modifier.size(36.dp)) {
+//        val w = size.width
+//        val h = size.height
+//
+//        val barTop = h * 0.2f
+//        val barBottom = h * 0.8f
+//        val barHeight = barBottom - barTop
+//
+//        val rectRight = w * 0.70f
+//        val radius = barHeight / 2f
+//
+//        val yellow = Color(0xFFE6D36F)
+//
+//        // Main black rectangle
+//        drawRect(
+//            color = Color.Black,
+//            topLeft = Offset(0f, barTop),
+//            size = Size(rectRight, barHeight)
+//        )
+//
+//        // White borders (top & bottom)
+//        drawLine(
+//            color = Color.White,
+//            start = Offset(0f, barTop),
+//            end = Offset(rectRight, barTop),
+//            strokeWidth = 3f
+//        )
+//
+//        drawLine(
+//            color = Color.White,
+//            start = Offset(0f, barBottom),
+//            end = Offset(rectRight, barBottom),
+//            strokeWidth = 3f
+//        )
+//
+//        // Black rounded end (half circle)
+//        drawArc(
+//            color = Color.Black,
+//            startAngle = -90f,
+//            sweepAngle = 180f,
+//            useCenter = true,
+//            topLeft = Offset(rectRight - radius, barTop),
+//            size = Size(barHeight, barHeight)
+//        )
+//
+//        // Yellow outer ring
+//        drawArc(
+//            color = yellow,
+//            startAngle = -90f,
+//            sweepAngle = 180f,
+//            useCenter = false,
+//            topLeft = Offset(rectRight - radius - 6f, barTop - 6f),
+//            size = Size(barHeight + 12f, barHeight + 12f),
+//            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 6f)
+//        )
+//
+//        // Yellow circular cap at front
+//        drawCircle(
+//            color = yellow,
+//            radius = radius * 0.6f,
+//            center = Offset(rectRight + radius * 0.6f, h / 2f)
+//        )
+//    }
 }
 
 
 @Composable
 private fun IntakeIcon() {
-    Canvas(modifier = Modifier.size(36.dp)) {
-        val w = size.width
-        val h = size.height
+    Image(
+        painter = painterResource(id = R.drawable.group_32), // Temporary placeholder for compilation
+        contentDescription = null, // Decorative background image
+        modifier = Modifier.fillMaxSize(),
+        // Crop ensures the image fills the screen bounds without distorting aspect ratio
+        contentScale = ContentScale.Fit
+    )
 
-        // Main black rectangle
-        drawRect(
-            color = Color.Black,
-            size = Size(w * 0.85f, h * 0.7f),
-            topLeft = Offset(0f, h * 0.15f)
-        )
-
-        // White border (top & bottom)
-        drawLine(
-            color = Color.White,
-            start = Offset(0f, h * 0.15f),
-            end = Offset(w * 0.85f, h * 0.15f),
-            strokeWidth = 4f
-        )
-
-        drawLine(
-            color = Color.White,
-            start = Offset(0f, h * 0.85f),
-            end = Offset(w * 0.85f, h * 0.85f),
-            strokeWidth = 4f
-        )
-
-        // Light blue angled shape (middle slanted part)
-        val bluePath = Path().apply {
-            moveTo(w * 0.78f, h * 0.15f)
-            lineTo(w * 0.82f, h * 0.15f)
-            lineTo(w * 0.79f, h * 0.85f)
-            lineTo(w * 0.75f, h * 0.85f)
-            close()
-        }
-        drawPath(bluePath, color = Color(0xFF87B6E6))
-
-        // Right triangle end
-        val trianglePath = Path().apply {
-            moveTo(w * 0.85f, h * 0.15f)
-            lineTo(w * 0.95f, h * 0.5f)
-            lineTo(w * 0.85f, h * 0.85f)
-            close()
-        }
-        drawPath(trianglePath, color = Color(0xFF87B6E6))
-    }
+//    Canvas(modifier = Modifier.size(36.dp)) {
+//        val w = size.width
+//        val h = size.height
+//
+//        // Main black rectangle
+//        drawRect(
+//            color = Color.Black,
+//            size = Size(w * 0.85f, h * 0.7f),
+//            topLeft = Offset(0f, h * 0.15f)
+//        )
+//
+//        // White border (top & bottom)
+//        drawLine(
+//            color = Color.White,
+//            start = Offset(0f, h * 0.15f),
+//            end = Offset(w * 0.85f, h * 0.15f),
+//            strokeWidth = 4f
+//        )
+//
+//        drawLine(
+//            color = Color.White,
+//            start = Offset(0f, h * 0.85f),
+//            end = Offset(w * 0.85f, h * 0.85f),
+//            strokeWidth = 4f
+//        )
+//
+//        // Light blue angled shape (middle slanted part)
+//        val bluePath = Path().apply {
+//            moveTo(w * 0.78f, h * 0.15f)
+//            lineTo(w * 0.82f, h * 0.15f)
+//            lineTo(w * 0.79f, h * 0.85f)
+//            lineTo(w * 0.75f, h * 0.85f)
+//            close()
+//        }
+//        drawPath(bluePath, color = Color(0xFF87B6E6))
+//
+//        // Right triangle end
+//        val trianglePath = Path().apply {
+//            moveTo(w * 0.85f, h * 0.15f)
+//            lineTo(w * 0.95f, h * 0.5f)
+//            lineTo(w * 0.85f, h * 0.85f)
+//            close()
+//        }
+//        drawPath(trianglePath, color = Color(0xFF87B6E6))
+//    }
 }
 // ── Icon: Broke ───────────────────────────────────────────────────────────────
 @Composable
 private fun BrokeIcon() {
-    Canvas(modifier = Modifier.size(36.dp)) {
+    Image(
+        painter = painterResource(id = R.drawable.group_31), // Temporary placeholder for compilation
+        contentDescription = null, // Decorative background image
+        modifier = Modifier.fillMaxSize(),
+        // Crop ensures the image fills the screen bounds without distorting aspect ratio
+        contentScale = ContentScale.Fit
+    )
+}
+    //Canvas(modifier = Modifier.size(36.dp)) {
 //        val w = size.width
 //        val h = size.height
 //        val cy = h / 2f
@@ -580,55 +619,55 @@ private fun BrokeIcon() {
 //            topLeft = Offset(w * 0.30f, cy - h * 0.20f),
 //            size = Size(w * 0.06f, h * 0.40f)
 //        )
-        val w = size.width
-        val h = size.height
-
-        val barTop = h * 0.2f
-        val barBottom = h * 0.8f
-        val barRight = w * 0.85f
-
-        // Main black bar
-        drawRect(
-            color = Color.Black,
-            topLeft = Offset(0f, barTop),
-            size = Size(barRight, barBottom - barTop)
-        )
-
-        // White borders (top & bottom)
-        drawLine(
-            color = Color.White,
-            start = Offset(0f, barTop),
-            end = Offset(barRight, barTop),
-            strokeWidth = 3f
-        )
-
-        drawLine(
-            color = Color.White,
-            start = Offset(0f, barBottom),
-            end = Offset(barRight, barBottom),
-            strokeWidth = 3f
-        )
-
-        val accentColor = Color(0xFFFF6F5A)
-
-        // Coral slanted strip
-        val slanted = Path().apply {
-            moveTo(w * 0.78f, barTop)
-            lineTo(w * 0.82f, barTop)
-            lineTo(w * 0.79f, barBottom)
-            lineTo(w * 0.75f, barBottom)
-            close()
-        }
-        drawPath(slanted, accentColor)
-
-        // Right coral angled end
-        val endShape = Path().apply {
-            moveTo(barRight, barTop)
-            lineTo(w * 0.97f, h * 0.35f)
-            lineTo(w * 0.95f, barBottom)
-            lineTo(barRight, barBottom)
-            close()
-        }
-        drawPath(endShape, accentColor)
-    }
-}
+//        val w = size.width
+//        val h = size.height
+//
+//        val barTop = h * 0.2f
+//        val barBottom = h * 0.8f
+//        val barRight = w * 0.85f
+//
+//        // Main black bar
+//        drawRect(
+//            color = Color.Black,
+//            topLeft = Offset(0f, barTop),
+//            size = Size(barRight, barBottom - barTop)
+//        )
+//
+//        // White borders (top & bottom)
+//        drawLine(
+//            color = Color.White,
+//            start = Offset(0f, barTop),
+//            end = Offset(barRight, barTop),
+//            strokeWidth = 3f
+//        )
+//
+//        drawLine(
+//            color = Color.White,
+//            start = Offset(0f, barBottom),
+//            end = Offset(barRight, barBottom),
+//            strokeWidth = 3f
+//        )
+//
+//        val accentColor = Color(0xFFFF6F5A)
+//
+//        // Coral slanted strip
+//        val slanted = Path().apply {
+//            moveTo(w * 0.78f, barTop)
+//            lineTo(w * 0.82f, barTop)
+//            lineTo(w * 0.79f, barBottom)
+//            lineTo(w * 0.75f, barBottom)
+//            close()
+//        }
+//        drawPath(slanted, accentColor)
+//
+//        // Right coral angled end
+//        val endShape = Path().apply {
+//            moveTo(barRight, barTop)
+//            lineTo(w * 0.97f, h * 0.35f)
+//            lineTo(w * 0.95f, barBottom)
+//            lineTo(barRight, barBottom)
+//            close()
+//        }
+//        drawPath(endShape, accentColor)
+//    }
+//}

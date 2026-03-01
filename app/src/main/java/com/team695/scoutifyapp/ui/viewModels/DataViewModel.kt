@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import com.team695.scoutifyapp.data.repository.GameDetailRepository
+import com.team695.scoutifyapp.data.repository.MatchRepository
 import com.team695.scoutifyapp.data.repository.TaskRepository
 import com.team695.scoutifyapp.data.types.*
 import kotlinx.coroutines.Dispatchers
@@ -28,6 +29,7 @@ import kotlin.collections.plus
 class DataViewModel(
     private val gameDetailRepository: GameDetailRepository,
     private val taskRepository: TaskRepository,
+    private val matchRepository: MatchRepository,
     private val taskId: Int,
 ) : ViewModel() {
     private val _formState = MutableStateFlow(
@@ -78,7 +80,9 @@ class DataViewModel(
             )
         }
     }
-
+    fun getAllianceForMatch(MatchNum:Long,TeamNum: Long):String{
+        return matchRepository.getAllianceForMatch(MatchNum, TeamNum)
+    }
     fun toggleWarningModal(title: String, text: String) {
         _formState.update {
             it.copy(

@@ -82,6 +82,7 @@ fun AppNav(
                         DataViewModel(
                             gameDetailRepository = gameDetailRepository,
                             taskRepository = taskRepository,
+                            matchRepository = matchRepository,
                             taskId = taskId
                         )
                     }
