@@ -99,7 +99,7 @@ fun MatchSchedule(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFF000000))
+            .background(Color(0xFF08090C))
             .clip(RoundedCornerShape(smallCornerRadius))
             .border(
                 width = 1.dp,
@@ -108,8 +108,6 @@ fun MatchSchedule(
             )
 
     ) {
-        ImageBackground(x = -1350f, y = 355f)
-        BackgroundGradient()
         Column(
             modifier = Modifier
                 .fillMaxSize()

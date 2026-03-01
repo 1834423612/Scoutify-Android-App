@@ -34,6 +34,7 @@ import com.team695.scoutifyapp.ui.viewModels.DataViewModel
 import kotlinx.coroutines.delay
 import kotlin.math.min
 import com.team695.scoutifyapp.R
+import com.team695.scoutifyapp.ui.theme.TextPrimary
 
 
 @Composable
@@ -226,14 +227,14 @@ private fun EndgamePanel(
                 .fillMaxWidth()
                 .weight(1f)
                 .clip(RoundedCornerShape(14.dp))
-                .background(DarkGunmetal)
+                .background(if(formState.gameDetails.endgameClimbPositionFilled) DarkGunmetal else RedAlliance.copy(alpha = 0.15f))
                 .border(1.dp, Border, RoundedCornerShape(14.dp)),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
             Text(
                 text = "Space Taken",
-                color = TextPrimary,
+                color = if(formState.gameDetails.endgameClimbPositionFilled) TextPrimary else RedAlliance,
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
             )
@@ -312,14 +313,25 @@ fun TowerDiagram(
                                             spaceKey
                                         ) ?: false,
                                         onCheckedChange = {
-                                            dataViewModel.formEvent(
-                                                gameDetails = formState.gameDetails.copy(
-                                                    endgameClimbCode = if (it) formState.gameDetails.endgameClimbCode + spaceKey else formState.gameDetails.endgameClimbCode?.replaceFirst(
-                                                        spaceKey,
-                                                        " "
+                                            val unchecked: Boolean = it
+                                            val position = formState.gameDetails.endgameClimbCode
+                                            if (unchecked) {
+                                                dataViewModel.formEvent(
+                                                    gameDetails = formState.gameDetails.copy(
+                                                        endgameClimbCode = if (position == null) spaceKey else formState.gameDetails.endgameClimbCode + spaceKey
                                                     )
                                                 )
-                                            )
+                                            }
+                                            else {
+                                                dataViewModel.formEvent(
+                                                    gameDetails = formState.gameDetails.copy(
+                                                        endgameClimbCode = formState.gameDetails.endgameClimbCode?.replaceFirst(
+                                                            oldValue = spaceKey,
+                                                            newValue = ""
+                                                        )
+                                                    )
+                                                )
+                                            }
                                         }
                                     )
                                 }
