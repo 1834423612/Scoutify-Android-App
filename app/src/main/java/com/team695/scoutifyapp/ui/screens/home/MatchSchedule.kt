@@ -260,7 +260,7 @@ fun MatchSchedule(homeViewModel: HomeViewModel, modifier: Modifier = Modifier, o
 
 @Composable
 fun TeamNumber(number: String) {
-    val highlightedTeams = setOf("695", "4211", "1787", "254")
+    val highlightedTeams = setOf("695", "1787")
     val isHighlighted = number in highlightedTeams
     Box(
         contentAlignment = Alignment.Center,

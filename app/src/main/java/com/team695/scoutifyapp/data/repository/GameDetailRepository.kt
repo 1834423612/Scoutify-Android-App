@@ -160,6 +160,7 @@ class GameDetailRepository(
 
                 teleop_fuel_count = details.teleopFuelCount,
                 teleop_flag = details.teleopFlag,
+                teleop_completed = details.teleopCompleted,
 
                 // Postgame
                 postgame_shoot_anywhere = details.postgameShootAnywhere,

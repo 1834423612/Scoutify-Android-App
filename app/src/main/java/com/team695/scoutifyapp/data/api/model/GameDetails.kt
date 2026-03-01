@@ -69,6 +69,7 @@ data class GameDetails(
     // Teleop
     val teleopFuelCount: Int? = null,
     val teleopFlag: Boolean? = null,
+    val teleopCompleted: Boolean? = null,
 
     val postgameShootWhileMoving: Boolean? = null,
     val postgameStockpileNeutral: Boolean? = null,
@@ -105,6 +106,16 @@ data class GameDetails(
         return 1f
     }
 
+    // returns progress for endgame
+    val endgameProgress: Float get() {
+        val endgameVars = listOf<Any?>(
+            endgameAttemptsClimb,
+            endgameClimbSuccess,
+            endgameClimbCode,
+        )
+        return endgameVars.count( {it != null} ).toFloat() / endgameVars.size
+    }
+
     val postgameProgress: Float get() {
         val postgameVars = listOf<Any?>(
             postgameShootWhileMoving,
@@ -116,7 +127,6 @@ data class GameDetails(
             postgameUnderTrench,
             postgameOverBump,
             postgameShootAnywhere,
-            postgameFlag,
         )
         return postgameVars.count( {it != null} ).toFloat() / postgameVars.size
     }
@@ -187,6 +197,7 @@ fun GameDetailsEntity.createGameDetailsFromDb(): GameDetails {
         // Teleop
         teleopFuelCount = this.teleop_fuel_count,
         teleopFlag = this.teleop_flag,
+        teleopCompleted = this.teleop_completed,
 
         // Postgame
         postgameShootAnywhere = this.postgame_shoot_anywhere,

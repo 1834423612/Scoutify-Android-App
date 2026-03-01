@@ -78,6 +78,12 @@ class TaskRepository(
         }
     }
 
+    suspend fun updateTaskProgress(id: Int, progress: Int) {
+        withContext(Dispatchers.IO) {
+            db.taskQueries.updateTaskProgress(id = id.toLong(), progress = progress.toLong())
+        }
+    }
+
     suspend fun fetchTasks(): Result<List<Task>?> {
         return withContext(Dispatchers.IO) {
             val oldTasks = db.taskQueries.selectAllTasks()

@@ -74,7 +74,7 @@ fun TasksCard(
         tasksState?.filter { it.progress != 100 }?.sorted()
     }
     val completeTasks = remember(tasksState) {
-        tasksState?.filter { it.progress == 100 }?.sorted()
+        tasksState?.filter { it.progress >= 100 }?.sorted()
     }
 
     Box(

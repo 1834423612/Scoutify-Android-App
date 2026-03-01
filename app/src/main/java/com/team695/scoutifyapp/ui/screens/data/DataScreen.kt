@@ -154,6 +154,12 @@ fun DataScreen(
                 if (newTime > switchTime) {
                     if(nextSection == TeleopSection.ENDED) {
                         dataViewModel.endTeleop()
+                        //mark teleop as done
+                        dataViewModel.formEvent(
+                            gameDetails = formState.gameDetails.copy(
+                                teleopCompleted = true
+                            )
+                        )
                     }
                     dataViewModel.setTeleopSection(teleopSection = nextSection, teleopTotalMilliseconds = switchTime)
                 }
@@ -290,7 +296,7 @@ private fun ListContent(
                         }
                         SectionType.TELEOP -> {
                             isFlagged = formState.gameDetails.teleopFlag == true
-                            progress = formState.teleopProgress
+                            progress = (formState.teleopSectionProgress + formState.gameDetails.endgameProgress)/2
                         }
                         SectionType.POSTGAME -> {
                             isFlagged = formState.gameDetails.postgameFlag == true
@@ -311,7 +317,7 @@ private fun ListContent(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(60.dp)
-                            .progressBorder(progress=progress)
+                            .progressBorder(progress=(progress*100).toInt())
                             .background(color = DarkGunmetal, shape = RoundedCornerShape(mediumCornerRadius))
                             .clip(RoundedCornerShape(mediumCornerRadius))
                             .buttonHighlight(

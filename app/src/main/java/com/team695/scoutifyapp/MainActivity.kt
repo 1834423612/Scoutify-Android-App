@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        Log.d("MAIN", "Android ID: ${applicationContext.androidID}")
+        Log.d("MAIN", "Android_ID: ${applicationContext.androidID}")
 
         ScoutifyClient.initialize(applicationContext)
 
