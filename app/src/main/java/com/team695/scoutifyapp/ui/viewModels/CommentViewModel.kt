@@ -2,6 +2,7 @@ package com.team695.scoutifyapp.ui.screens
 
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.team695.scoutifyapp.data.api.model.CommentBody
 import com.team695.scoutifyapp.data.repository.CommentRepository
@@ -15,6 +16,9 @@ class CommentsViewModel (
     private val commentRepository: CommentRepository,
     private val matchRepository: MatchRepository
 ) : ViewModel() {
+    // get match stuff
+    val matches = matchRepository.matches
+
     // State variables for comments
 
     private val _saveStatus = mutableStateOf(SaveStatus.IDLE)

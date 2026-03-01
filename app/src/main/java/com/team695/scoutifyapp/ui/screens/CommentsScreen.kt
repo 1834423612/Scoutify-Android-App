@@ -24,6 +24,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.team695.scoutifyapp.data.api.model.Match
 import com.team695.scoutifyapp.data.types.SaveStatus
 import com.team695.scoutifyapp.ui.components.BackgroundGradient
 import com.team695.scoutifyapp.ui.components.ImageBackground
@@ -48,6 +51,10 @@ fun CommentsScreen(
     val isSubmitted by viewModel.isSubmitted
     val saveStatus by viewModel.saveStatus
 
+    val matches by viewModel.matches.collectAsStateWithLifecycle(
+        initialValue = emptyList()
+    )
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Background
@@ -71,6 +78,7 @@ fun CommentsScreen(
                 isSubmitted = isSubmitted,
                 autoSaved = autoSaved,
                 saveStatus = saveStatus,
+                matches = matches,
                 onSubmit = { viewModel.setCommentsAsSubmitted() },
                 printDB = { viewModel.printDB() }
             )
@@ -93,10 +101,11 @@ fun CommentsContent(
     isSubmitted: Boolean,
     autoSaved: Boolean,
     saveStatus: SaveStatus,
+    matches: List<Match>,
     onSubmit: () -> Unit,
     printDB: () -> Unit
 ) {
-    val matches = (1..64).map { it.toString() }
+    val matches_list = (1..matches.size).map { it.toString() }
     var expanded by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
 
@@ -192,7 +201,7 @@ fun CommentsContent(
                             onDismissRequest = { expanded = false },
                             modifier = Modifier.background(DarkGunmetal)
                         ) {
-                            matches.forEach { match ->
+                            matches_list.forEach { match ->
                                 DropdownMenuItem(
                                     text = { Text("Match $match", color = TextPrimary) },
                                     onClick = {
