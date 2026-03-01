@@ -24,6 +24,7 @@ import com.team695.scoutifyapp.data.api.service.GameDetailsService
 import com.team695.scoutifyapp.data.api.service.UserService
 import com.team695.scoutifyapp.data.charAdapter
 import com.team695.scoutifyapp.data.intAdapter
+import com.team695.scoutifyapp.data.repository.CommentRepository
 import com.team695.scoutifyapp.data.repository.GameDetailRepository
 import com.team695.scoutifyapp.db.GameConstantsEntity
 import com.team695.scoutifyapp.ui.extensions.androidID
@@ -78,6 +79,7 @@ class MainActivity : ComponentActivity() {
                 match_numberAdapter = intAdapter,
                 team_numberAdapter  = intAdapter,
                 alliance_positionAdapter = intAdapter,
+                submittedAdapter = intAdapter
             ),
             gameConstantsEntityAdapter = GameConstantsEntity.Adapter(
                 frc_season_master_sm_yearAdapter = intAdapter,
@@ -106,6 +108,7 @@ class MainActivity : ComponentActivity() {
         val taskRepository = TaskRepository(service = taskService, db = db)
         val matchRepository = MatchRepository(service = matchService, db = db)
         val gameDetailRepository = GameDetailRepository(service = gameDetailsService, db = db)
+        val commentRepository = CommentRepository(db = db)
 
         val networkMonitor = NetworkMonitor(applicationContext)
 
@@ -116,6 +119,7 @@ class MainActivity : ComponentActivity() {
                     matchRepository = matchRepository,
                     userRepository = userRepository,
                     gameDetailRepository = gameDetailRepository,
+                    commentRepository = commentRepository,
                     networkMonitor = networkMonitor,
                 )
             }

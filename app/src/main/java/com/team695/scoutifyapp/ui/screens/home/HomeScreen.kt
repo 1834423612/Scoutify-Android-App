@@ -31,7 +31,13 @@ fun HomeScreen(
         Box(modifier = Modifier.weight(0.7f)) {
             MatchSchedule(
                 homeViewModel = homeViewModel,
-                onCommentClicked = {navController.navigate("comments")}
+                onCommentClicked = { matchNumber: Int ->
+                    navController.currentBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("matchNumber", matchNumber)
+
+                    navController.navigate("comments")
+                }
             )
         }
     }

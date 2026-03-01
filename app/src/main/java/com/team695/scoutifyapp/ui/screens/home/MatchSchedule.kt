@@ -78,7 +78,7 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
 
 @Composable
-fun MatchSchedule(homeViewModel: HomeViewModel, modifier: Modifier = Modifier, onCommentClicked: () -> Unit) {
+fun MatchSchedule(homeViewModel: HomeViewModel, modifier: Modifier = Modifier, onCommentClicked: (Int) -> Unit) {
     var searchQuery: String by remember { mutableStateOf("") }
     val matchState by homeViewModel.matchState.collectAsStateWithLifecycle()
     val readyState by homeViewModel.isReady.collectAsStateWithLifecycle()
@@ -327,7 +327,7 @@ fun MatchItem(
     redAlliance: List<Int>,
     blueAlliance: List<Int>,
     showHighlight: Boolean,
-    onCommentClicked: () -> Unit
+    onCommentClicked: (Int) -> Unit
 ) {
     val borderColor = if (showHighlight) Accent else Border
     Row(
@@ -415,7 +415,7 @@ fun MatchItem(
         Spacer(modifier = Modifier.weight(1f))
 
         Pressable (
-            onClick = {onCommentClicked()},
+            onClick = {onCommentClicked(matchNum)},
             corner = smallCornerRadius,
             text = "Comment",
             modifier = Modifier
