@@ -41,6 +41,10 @@ class TaskRepository(
         .flowOn(Dispatchers.IO)
 
 
+    val teams: Flow<List<Long>> = db.taskQueries.selectScoutedTeams()
+        .asFlow()
+        .mapToList(Dispatchers.IO)
+        .flowOn(Dispatchers.IO)
 
     suspend fun pushTasks(): List<ServerFormatTask> {
         fun convert(Task: TaskEntity): ServerFormatTask{
@@ -86,6 +90,7 @@ class TaskRepository(
 
     suspend fun fetchTasks(): Result<List<Task>?> {
         return withContext(Dispatchers.IO) {
+
             val oldTasks = db.taskQueries.selectAllTasks()
                 .executeAsList()
                 .map { entity ->
