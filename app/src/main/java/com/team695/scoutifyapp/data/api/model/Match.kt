@@ -24,7 +24,7 @@ data class Match(
     private val b2: Int,
     @SerializedName(value="B3")
     private val b3: Int,
-) {
+): Comparable<Match> {
     val redAlliance: List<Int>
         get() = listOf(r1, r2, r3)
     val blueAlliance: List<Int>
@@ -32,6 +32,10 @@ data class Match(
 
     val unixTime: Long
         get() = time.convertIsoToUnix()
+
+    override fun compareTo(other: Match): Int {
+        return (unixTime - other.unixTime).toInt()
+    }
 }
 
 fun MatchEntity.createMatchFromDb(): Match {
