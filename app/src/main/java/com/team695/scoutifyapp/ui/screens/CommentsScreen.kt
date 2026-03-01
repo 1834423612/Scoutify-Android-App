@@ -1,6 +1,13 @@
 package com.team695.scoutifyapp.ui.screens
 
 import android.R.color.white
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -17,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.team695.scoutifyapp.data.types.SaveStatus
 import com.team695.scoutifyapp.ui.components.BackgroundGradient
 import com.team695.scoutifyapp.ui.components.ImageBackground
 import com.team695.scoutifyapp.ui.components.buttonHighlight
@@ -38,6 +46,7 @@ fun CommentsScreen(
 
     val autoSaved by viewModel.autoSaved
     val isSubmitted by viewModel.isSubmitted
+    val saveStatus by viewModel.saveStatus
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -61,6 +70,7 @@ fun CommentsScreen(
                 onCommentChanged = { alliance, position, comment -> viewModel.onCommentChanged(alliance, position, comment) },
                 isSubmitted = isSubmitted,
                 autoSaved = autoSaved,
+                saveStatus = saveStatus,
                 onSubmit = { viewModel.setCommentsAsSubmitted() },
                 printDB = { viewModel.printDB() }
             )
@@ -82,6 +92,7 @@ fun CommentsContent(
     onCommentChanged: (String, Int, String) -> Unit,
     isSubmitted: Boolean,
     autoSaved: Boolean,
+    saveStatus: SaveStatus,
     onSubmit: () -> Unit,
     printDB: () -> Unit
 ) {
@@ -118,12 +129,35 @@ fun CommentsContent(
                     fontWeight = FontWeight.Bold
                 )
 
-                Text(
-                    text = if (isSubmitted) "Submitted: true" else "Submitted: false"
-                )
-                Text(
-                    text = if (autoSaved) "Autosaved: true" else "Autosaved: false"
-                )
+                Spacer(modifier = Modifier.width(12.dp))
+
+                AnimatedContent(
+                    targetState = Pair(saveStatus, isSubmitted),
+                    transitionSpec = {
+                        slideInVertically { height -> height } + fadeIn() togetherWith
+                                slideOutVertically { height -> -height } + fadeOut()
+                    }
+                ) { (status, submitted) ->
+
+                    val text = when {
+                        status == SaveStatus.SAVING -> "Saving..."
+                        status == SaveStatus.ERROR -> "Failed to save"
+                        submitted -> "Submitted ✓"
+                        status == SaveStatus.AUTOSAVED -> "Auto-saved locally ✓"
+                        else -> "Not Submitted"
+                    }
+
+                    if (text.isNotEmpty()) {
+                        Text(
+                            text = text,
+                            style = MaterialTheme.typography.titleMedium,
+                            color = when (status) {
+                                SaveStatus.ERROR -> MaterialTheme.colorScheme.error
+                                else -> MaterialTheme.colorScheme.primary
+                            }
+                        )
+                    }
+                }
 
                 Spacer(modifier = Modifier.weight(1f))
 

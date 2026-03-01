@@ -107,7 +107,7 @@ fun AppNav(
             ) {
                 val commentsViewModel: CommentsViewModel = viewModel(
                     viewModelStoreOwner = owner,
-                    factory = ViewModelFactory { CommentsViewModel(commentRepository) }
+                    factory = ViewModelFactory { CommentsViewModel(commentRepository = commentRepository, matchRepository = matchRepository) }
                 )
 
                 LaunchedEffect(matchNumber) {

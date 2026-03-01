@@ -5,21 +5,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.team695.scoutifyapp.data.api.model.CommentBody
 import com.team695.scoutifyapp.data.repository.CommentRepository
+import com.team695.scoutifyapp.data.repository.MatchRepository
+import com.team695.scoutifyapp.data.types.SaveStatus
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class CommentsViewModel (
-    private val commentRepository: CommentRepository
+    private val commentRepository: CommentRepository,
+    private val matchRepository: MatchRepository
 ) : ViewModel() {
     // State variables for comments
-    enum class SaveStatus {
-        IDLE,
-        SAVING,
-        AUTOSAVED,
-        SUBMITTED,
-        ERROR
-    }
 
     private val _saveStatus = mutableStateOf(SaveStatus.IDLE)
     val saveStatus: State<SaveStatus> = _saveStatus
@@ -53,6 +49,9 @@ class CommentsViewModel (
     val isSubmitted: State<Boolean> = _isSubmitted
     // Auto-save timeout job
     private var autoSaveJob: Job? = null
+
+
+    // matches logicing
 
     // Function to handle match selection
     fun onMatchSelected(match: String) {
@@ -100,8 +99,14 @@ class CommentsViewModel (
     fun setCommentsAsSubmitted () {
         val matchNum = _selectedMatch.value.toIntOrNull() ?: return
         viewModelScope.launch {
-            commentRepository.updateSubmissionStatus(matchNum, 1)
-            _isSubmitted.value = true
+            try {
+                commentRepository.updateSubmissionStatus(matchNum, 1)
+                _isSubmitted.value = true
+                _saveStatus.value = SaveStatus.SUBMITTED
+            }
+            catch(e: Exception) {
+                _saveStatus.value = SaveStatus.ERROR
+            }
         }
     }
 
@@ -110,39 +115,46 @@ class CommentsViewModel (
         val matchNum = _selectedMatch.value.toIntOrNull() ?: return
 
         viewModelScope.launch {
-            val commentsToSave = mutableListOf<CommentBody>()
+            try {
+                val commentsToSave = mutableListOf<CommentBody>()
 
-            fun addIfNotEmpty(
-                team: Int,
-                alliance: String,
-                position: Int,
-                comment: String
-            ) {
-                if (comment.isNotBlank()) {
-                    commentsToSave.add(
-                        CommentBody(
-                            match_number = matchNum,
-                            team_number = team,
-                            alliance = alliance,
-                            alliance_position = position,
-                            comment = comment,
-                            timestamp = System.currentTimeMillis(),
-                            submitted = if (_isSubmitted.value) 1 else 0
+                fun addIfNotEmpty(
+                    team: Int,
+                    alliance: String,
+                    position: Int,
+                    comment: String
+                ) {
+                    if (comment.isNotBlank()) {
+                        commentsToSave.add(
+                            CommentBody(
+                                match_number = matchNum,
+                                team_number = team,
+                                alliance = alliance,
+                                alliance_position = position,
+                                comment = comment,
+                                timestamp = System.currentTimeMillis(),
+                                submitted = if (_isSubmitted.value) 1 else 0
+                            )
                         )
-                    )
+                    }
                 }
+
+                // currently using placeholder teams
+                addIfNotEmpty(695, "R", 1, _red1Comment.value)
+                addIfNotEmpty(1234, "R", 2, _red2Comment.value)
+                addIfNotEmpty(4321, "R", 3, _red3Comment.value)
+                addIfNotEmpty(5555, "B", 1, _blue1Comment.value)
+                addIfNotEmpty(3333, "B", 2, _blue2Comment.value)
+                addIfNotEmpty(4444, "B", 3, _blue3Comment.value)
+
+                if (commentsToSave.isNotEmpty()) {
+                    commentRepository.saveComments(commentsToSave)
+                }
+
+                showAutosaved()
             }
-
-            // currently using placeholder teams
-            addIfNotEmpty(695,  "R", 1, _red1Comment.value)
-            addIfNotEmpty(1234, "R", 2, _red2Comment.value)
-            addIfNotEmpty(4321, "R", 3, _red3Comment.value)
-            addIfNotEmpty(5555, "B", 1, _blue1Comment.value)
-            addIfNotEmpty(3333, "B", 2, _blue2Comment.value)
-            addIfNotEmpty(4444, "B", 3, _blue3Comment.value)
-
-            if (commentsToSave.isNotEmpty()) {
-                commentRepository.saveComments(commentsToSave)
+            catch(e: Exception) {
+                _saveStatus.value = SaveStatus.ERROR
             }
         }
     }
@@ -163,6 +175,14 @@ class CommentsViewModel (
             delay(1000)
             submitComments()
             _autoSaved.value = true
+        }
+    }
+
+    private fun showAutosaved() {
+        viewModelScope.launch {
+            _saveStatus.value = SaveStatus.AUTOSAVED
+            delay(4000)
+            _saveStatus.value = SaveStatus.IDLE
         }
     }
 
