@@ -5,11 +5,15 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.team695.scoutifyapp.data.api.model.CommentBody
+import com.team695.scoutifyapp.data.api.model.Match
 import com.team695.scoutifyapp.data.repository.CommentRepository
 import com.team695.scoutifyapp.data.repository.MatchRepository
 import com.team695.scoutifyapp.data.types.SaveStatus
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class CommentsViewModel (
@@ -17,7 +21,14 @@ class CommentsViewModel (
     private val matchRepository: MatchRepository
 ) : ViewModel() {
     // get match stuff
-    val matches = matchRepository.matches
+    val matches: StateFlow<List<Match>> =
+        matchRepository.matches
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5000),
+                initialValue = emptyList()
+            )
+
 
     // State variables for comments
 
@@ -53,9 +64,6 @@ class CommentsViewModel (
     val isSubmitted: State<Boolean> = _isSubmitted
     // Auto-save timeout job
     private var autoSaveJob: Job? = null
-
-
-    // matches logicing
 
     // Function to handle match selection
     fun onMatchSelected(match: String) {
@@ -143,13 +151,15 @@ class CommentsViewModel (
                     }
                 }
 
-                // currently using placeholder teams
-                addIfNotEmpty(695, "R", 1, _red1Comment.value)
-                addIfNotEmpty(1234, "R", 2, _red2Comment.value)
-                addIfNotEmpty(4321, "R", 3, _red3Comment.value)
-                addIfNotEmpty(5555, "B", 1, _blue1Comment.value)
-                addIfNotEmpty(3333, "B", 2, _blue2Comment.value)
-                addIfNotEmpty(4444, "B", 3, _blue3Comment.value)
+                val match = matches.value.getOrNull(matchNum.toInt() - 1)
+                match?.let {
+                    addIfNotEmpty(it.redAlliance[0], "R", 1, _red1Comment.value)
+                    addIfNotEmpty(it.redAlliance[1], "R", 2, _red2Comment.value)
+                    addIfNotEmpty(it.redAlliance[2], "R", 3, _red3Comment.value)
+                    addIfNotEmpty(it.blueAlliance[0], "B", 1, _blue1Comment.value)
+                    addIfNotEmpty(it.blueAlliance[1], "B", 2, _blue2Comment.value)
+                    addIfNotEmpty(it.blueAlliance[2], "B", 3, _blue3Comment.value)
+                }
 
                 if (commentsToSave.isNotEmpty()) {
                     commentRepository.saveComments(commentsToSave)

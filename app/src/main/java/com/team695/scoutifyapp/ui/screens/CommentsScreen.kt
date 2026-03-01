@@ -106,6 +106,8 @@ fun CommentsContent(
     printDB: () -> Unit
 ) {
     val matches_list = (1..matches.size).map { it.toString() }
+    val currentMatch = matches.getOrNull(selectedMatch.toIntOrNull()?.minus(1) ?: 0) // converts from 1 to 0 based indexing
+
     var expanded by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
 
@@ -255,9 +257,15 @@ fun CommentsContent(
                         titleColor = RedAlliance,
                         modifier = Modifier.weight(1f)
                     ) {
-                        CommentField("Red 1", red1Comment) { onCommentChanged("Red", 1, it) }
-                        CommentField("Red 2", red2Comment) { onCommentChanged("Red", 2, it) }
-                        CommentField("Red 3", red3Comment) { onCommentChanged("Red", 3, it) }
+                        CommentField(
+                            ("Team " + currentMatch?.redAlliance?.get(0)?.toString()) ?: "Red 1",
+                            red1Comment) { onCommentChanged("Red", 1, it) }
+                        CommentField(
+                            ("Team " + currentMatch?.redAlliance?.get(1)?.toString()) ?: "Red 2",
+                            red2Comment) { onCommentChanged("Red", 2, it) }
+                        CommentField(
+                            ("Team " + currentMatch?.redAlliance?.get(2)?.toString()) ?: "Red 3",
+                            red3Comment) { onCommentChanged("Red", 3, it) }
                     }
 
                     // Blue Alliance Column
@@ -266,9 +274,15 @@ fun CommentsContent(
                         titleColor = BlueAlliance,
                         modifier = Modifier.weight(1f)
                     ) {
-                        CommentField("Blue 1", blue1Comment) { onCommentChanged("Blue", 1, it) }
-                        CommentField("Blue 2", blue2Comment) { onCommentChanged("Blue", 2, it) }
-                        CommentField("Blue 3", blue3Comment) { onCommentChanged("Blue", 3, it) }
+                        CommentField(
+                            ("Team " + currentMatch?.blueAlliance?.get(0)?.toString()) ?: "Blue 1",
+                            blue1Comment) { onCommentChanged("Blue", 1, it) }
+                        CommentField(
+                            ("Team " + currentMatch?.blueAlliance?.get(1)?.toString()) ?: "Blue 2",
+                            blue2Comment) { onCommentChanged("Blue", 2, it) }
+                        CommentField(
+                            ("Team " + currentMatch?.blueAlliance?.get(2)?.toString()) ?: "Blue 3",
+                            blue3Comment) { onCommentChanged("Blue", 3, it) }
                     }
                 }
             }
