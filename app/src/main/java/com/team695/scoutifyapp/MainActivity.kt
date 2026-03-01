@@ -10,6 +10,7 @@ import com.team695.scoutifyapp.data.api.client.CasdoorClient
 import com.team695.scoutifyapp.data.api.client.ScoutifyClient
 import com.team695.scoutifyapp.data.api.model.GameConstantsStore
 import com.team695.scoutifyapp.data.api.model.User
+import com.team695.scoutifyapp.data.api.service.CommentService
 import com.team695.scoutifyapp.data.api.service.LoginService
 import com.team695.scoutifyapp.data.api.service.MatchService
 import com.team695.scoutifyapp.ui.theme.ScoutifyTheme
@@ -97,6 +98,7 @@ class MainActivity : ComponentActivity() {
         val matchService: MatchService = ScoutifyClient.matchService
         val loginService: LoginService = CasdoorClient.loginService
         val userService: UserService = ScoutifyClient.userService
+        val commentService: CommentService = ScoutifyClient.commentService
         val gameDetailsService: GameDetailsService = ScoutifyClient.gameDetailsService
 
         val userRepository = UserRepository(
@@ -108,7 +110,7 @@ class MainActivity : ComponentActivity() {
         val taskRepository = TaskRepository(service = taskService, db = db)
         val matchRepository = MatchRepository(service = matchService, db = db)
         val gameDetailRepository = GameDetailRepository(service = gameDetailsService, db = db)
-        val commentRepository = CommentRepository(db = db)
+        val commentRepository = CommentRepository(db = db, service = commentService)
 
         val networkMonitor = NetworkMonitor(applicationContext)
 

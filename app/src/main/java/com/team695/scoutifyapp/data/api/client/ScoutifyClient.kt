@@ -2,6 +2,7 @@ package com.team695.scoutifyapp.data.api.client
 
 import android.content.Context
 import com.team695.scoutifyapp.data.api.TokenManager
+import com.team695.scoutifyapp.data.api.service.CommentService
 import com.team695.scoutifyapp.data.api.service.GameDetailsService
 import com.team695.scoutifyapp.data.api.service.MatchService
 import com.team695.scoutifyapp.data.api.service.TaskService
@@ -63,5 +64,9 @@ object ScoutifyClient {
     }
     val gameDetailsService: GameDetailsService by lazy {
         retrofit.create(GameDetailsService::class.java)
+    }
+
+    val commentService: CommentService by lazy {
+        retrofit.create(CommentService::class.java)
     }
 }

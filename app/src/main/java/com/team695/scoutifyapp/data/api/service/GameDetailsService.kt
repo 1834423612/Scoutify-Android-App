@@ -16,9 +16,9 @@ interface GameDetailsService {
     suspend fun getGameConstants(
         @Query("bearerAuth") acToken: String,
         @Query("apiKeyAuth") acKey: String
-        = BuildConfig.API_AC_KEY,
+            = BuildConfig.API_AC_KEY,
         @Query("apiSecretAuth") secret: String
-        = BuildConfig.API_AC_SECRET,
+            = BuildConfig.API_AC_SECRET,
     ): ApiResponse<GameConstants>
 
     @POST("scoutify/admin/game-details")

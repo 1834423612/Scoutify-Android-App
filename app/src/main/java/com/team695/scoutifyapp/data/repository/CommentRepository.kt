@@ -1,27 +1,53 @@
 package com.team695.scoutifyapp.data.repository
 
+import android.util.Log
+import com.team695.scoutifyapp.data.api.client.ScoutifyClient
 import com.team695.scoutifyapp.data.api.model.CommentBody
+import com.team695.scoutifyapp.data.api.model.convertToServerBody
 import com.team695.scoutifyapp.data.api.service.CommentService
 import com.team695.scoutifyapp.db.AppDatabase
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class CommentRepository (
-    private val db: AppDatabase
+    private val db: AppDatabase,
+    private val service: CommentService
 ) {
+
+    suspend fun uploadComments() {
+        withContext(Dispatchers.IO) {
+            try {
+                val allComments = db.commentsQueries.selectAllComments().executeAsList()
+
+                service.uploadComments(
+                    acToken = ScoutifyClient.tokenManager.getToken()!!,
+                    comments = allComments.map { it.convertToServerBody() }
+                )
+            } catch (e: Exception) {
+                Log.e("Comments", "Error uploading comments: $e")
+            }
+        }
+    }
+
     suspend fun saveComments (
         comments: List<CommentBody>
     ) {
-        db.transaction {
-            comments.forEach { c ->
-                db.commentsQueries.insertComment(
-                    c.match_number,
-                    c.team_number,
-                    c.alliance,
-                    c.alliance_position,
-                    c.timestamp,
-                    c.comment,
-                    c.submitted
-                )
+        withContext(Dispatchers.IO) {
+            db.transaction {
+                comments.forEach { c ->
+                    db.commentsQueries.insertComment(
+                        c.match_number,
+                        c.team_number,
+                        c.alliance,
+                        c.alliance_position,
+                        c.timestamp,
+                        c.comment,
+                        c.submitted
+                    )
+                }
             }
+
+            uploadComments()
         }
     }
 
