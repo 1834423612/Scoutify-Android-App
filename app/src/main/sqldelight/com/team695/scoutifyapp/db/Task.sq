@@ -48,6 +48,10 @@ SELECT *
 FROM taskEntity
 WHERE taskEntity.id = ?;
 
+selectScoutedTeams:
+SELECT DISTINCT teamNum
+FROM taskEntity;
+
 --9. Update the progress of a task
 updateTaskProgress:
 UPDATE taskEntity

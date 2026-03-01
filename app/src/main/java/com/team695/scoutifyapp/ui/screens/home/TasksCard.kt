@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -32,6 +33,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -84,8 +86,19 @@ fun TasksCard(
             .clip(RoundedCornerShape(8.dp))
             .border(1.dp, LightGunmetal, RoundedCornerShape(smallCornerRadius))
     ) {
-        ImageBackground(x = -350f, y = 330f)
-        BackgroundGradient()
+        Box(
+            modifier = Modifier.wrapContentWidth(unbounded = true)
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.tasks_background),
+                contentDescription = "background",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .width(375.dp)
+                    .height(900.dp)
+            )
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()

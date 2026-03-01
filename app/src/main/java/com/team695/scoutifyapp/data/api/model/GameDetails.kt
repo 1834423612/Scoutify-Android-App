@@ -1,4 +1,5 @@
 package com.team695.scoutifyapp.data.api.model
+import android.util.Log
 import com.team695.scoutifyapp.db.GameDetailsEntity
 import com.team695.scoutifyapp.ui.viewModels.Stroke
 import kotlin.Boolean
@@ -85,6 +86,13 @@ data class GameDetails(
     // Review
     val reviewMatchFlag: Boolean? = null
 ) {
+    val endgameClimbPositionFilled: Boolean get() {
+        if(endgameClimbSuccess == true) {
+            return !endgameClimbCode.isNullOrEmpty()
+        }
+        return true
+    }
+
     val pregameProgress: Float get() {
         val pregameVars = listOf<Any?>(
             //startingLocation, //TO DO: add this
@@ -112,9 +120,10 @@ data class GameDetails(
         val endgameVars = listOf<Any?>(
             endgameAttemptsClimb,
             endgameClimbSuccess,
-            endgameClimbCode,
         )
-        return endgameVars.count( {it != null} ).toFloat() / endgameVars.size
+        val filledElements: Int = endgameVars.count( {it != null} ) + if(endgameClimbPositionFilled) 1 else 0
+        val totalElements: Int = endgameVars.size + 1
+        return filledElements.toFloat() / totalElements
     }
 
     val postgameProgress: Float get() {

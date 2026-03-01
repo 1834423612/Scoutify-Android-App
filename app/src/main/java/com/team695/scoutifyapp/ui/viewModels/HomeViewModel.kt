@@ -46,6 +46,13 @@ class HomeViewModel(
 
     val isReady: StateFlow<Boolean> = gameDetailRepository.isReady
 
+    val teamsState = taskRepository.teams
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = null
+        )
+
     private val _tasksState = taskRepository.tasks
         .stateIn(
             scope = viewModelScope,

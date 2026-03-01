@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,7 +16,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -75,27 +78,36 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
 
 @Composable
-fun MatchSchedule(homeViewModel: HomeViewModel, modifier: Modifier = Modifier, onCommentClicked: () -> Unit) {
+fun MatchSchedule(
+    homeViewModel: HomeViewModel,
+    modifier: Modifier = Modifier,
+    onCommentClicked: (Int) -> Unit
+) {
     var searchQuery: String by remember { mutableStateOf("") }
     val matchState by homeViewModel.matchState.collectAsStateWithLifecycle()
     val readyState by homeViewModel.isReady.collectAsStateWithLifecycle()
+    val teamState by homeViewModel.teamsState.collectAsStateWithLifecycle()
 
     val filteredMatches = remember(searchQuery, matchState) {
         matchState?.sorted()?.filter { m ->
-            searchQuery.isBlank() || m.redAlliance.any{it.toString().contains(searchQuery)} || m.blueAlliance.any{it.toString().contains(searchQuery) }
+            searchQuery.isBlank()
+                    || m.redAlliance.any{ it.toString().contains(searchQuery) }
+                    || m.blueAlliance.any{ it.toString().contains(searchQuery) }
         }
     }
 
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFF000000))
+            .background(Color(0xFF08090C))
             .clip(RoundedCornerShape(smallCornerRadius))
-            .border(1.dp, LightGunmetal, RoundedCornerShape(smallCornerRadius))
+            .border(
+                width = 1.dp,
+                color = LightGunmetal,
+                shape = RoundedCornerShape(smallCornerRadius)
+            )
 
     ) {
-        ImageBackground(x = -1350f, y = 355f)
-        BackgroundGradient()
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -103,26 +115,21 @@ fun MatchSchedule(homeViewModel: HomeViewModel, modifier: Modifier = Modifier, o
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(120.dp)
+                    .height(150.dp) // Changed back to a fixed height
             ) {
-                Badge(
-                    containerColor = BadgeBackground.copy(0.5f),
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .padding(8.dp)
-                ) { Text("i", color = BadgeContent) }
                 Image(
                     painter = painterResource(id = R.drawable.bluffcountry),
                     contentDescription = "Regional background",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
-                        .fillMaxSize()
+                        .fillMaxSize() // Safe to use fillMaxSize again with fixed height
                         .alpha(0.3f)
                         .clip(RoundedCornerShape(smallCornerRadius))
                 )
+
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
+                        .fillMaxSize() // Fills the 150dp Box height evenly
                         .padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
@@ -131,84 +138,111 @@ fun MatchSchedule(homeViewModel: HomeViewModel, modifier: Modifier = Modifier, o
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 10.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.Top
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Box(
-                            modifier = Modifier.fillMaxWidth(),
-                            contentAlignment = Alignment.Center
+
+                        // 1. Header Title
+                        Text(
+                            text = "Bluff Country Regional",
+                            color = TextPrimary,
+                            fontSize = 22.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Start,
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        // Info Icon
+                        Badge(
+                            containerColor = BadgeBackground.copy(0.5f),
+                            modifier = Modifier
+                                .padding(1.dp)
+                                .weight(1f)
                         ) {
                             Text(
-                                "Bluff Country Regional",
-                                color = TextPrimary,
-                                fontSize = 28.sp,
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Center
+                                text = "i",
+                                color = BadgeContent,
+                                fontSize = 14.sp,
                             )
                         }
-                        Spacer(modifier = Modifier.weight(1f))
-                        Image(
-                            painter = painterResource(id = R.drawable.info),
-                            contentDescription = "Info",
-                            modifier = Modifier.size(24.dp)
+
+                        Spacer(modifier = Modifier.width(384.dp))
+
+                        // 2. Search Bar
+                        BasicTextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            cursorBrush = SolidColor(TextPrimary),
+                            textStyle = TextStyle(
+                                color = TextPrimary,
+                                fontSize = 14.sp
+                            ),
+                            singleLine = true,
+                            decorationBox = { innerTextField ->
+                                Row(
+                                    modifier = Modifier.fillMaxSize(),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Search,
+                                        contentDescription = "Search",
+                                        tint = TextSecondary,
+                                        modifier = Modifier.padding(start = 8.dp, end = 8.dp)
+                                    )
+
+                                    Box(
+                                        contentAlignment = Alignment.CenterStart,
+                                        modifier = Modifier.padding(start = 2.dp)
+                                    ) {
+                                        if (searchQuery.isEmpty()) {
+                                            Text(
+                                                text = "Search Team",
+                                                color = TextSecondary,
+                                                fontSize = 14.sp
+                                            )
+                                        }
+                                        innerTextField()
+                                    }
+                                }
+                            },
+                            modifier = Modifier
+                                .width(160.dp)
+                                .height(35.dp)
+                                .background(
+                                    color = TextFieldBackground,
+                                    shape = RoundedCornerShape(smallCornerRadius)
+                                )
+                                .border(
+                                    width = 1.dp,
+                                    color = LightGunmetal,
+                                    shape = RoundedCornerShape(smallCornerRadius)
+                                )
                         )
                     }
 
-                    BasicTextField(
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
-                        // BasicTextField uses a Brush for the cursor
-                        cursorBrush = SolidColor(TextPrimary),
-                        textStyle = TextStyle(
-                            color = TextPrimary,
-                            fontSize = 14.sp // Adjust font size to fit the smaller height
-                        ),
-                        singleLine = true,
-                        decorationBox = { innerTextField ->
-                            Row(
-                                modifier = Modifier.fillMaxSize(),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                // Leading Icon
-                                Icon(
-                                    imageVector = Icons.Default.Search,
-                                    contentDescription = "Search",
-                                    tint = TextSecondary,
-                                    modifier = Modifier.padding(start = 8.dp, end = 8.dp)
-                                )
-
-                                // Placeholder and Actual Text
-                                Box(
-                                    contentAlignment = Alignment.Center,
-                                    modifier = Modifier
-                                        .padding(start=10.dp)
-                                ) {
-                                    // Show placeholder only when text is empty
-                                    if (searchQuery.isEmpty()) {
-                                        Text(
-                                            text = "Search Team",
-                                            color = TextSecondary,
-                                            fontSize = 14.sp
-                                        )
-                                    }
-                                    // This invokes the actual input field
-                                    innerTextField()
-                                }
+                    if (!teamState.isNullOrEmpty()) {
+                        Text(
+                            text = "Currently Scouting:",
+                            color = TextSecondary,
+                            fontSize = 12.sp,
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        LazyRow(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(35.dp),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            items(teamState ?: emptyList()) { team ->
+                                TeamNumber(number = team.toString())
+                                Spacer(modifier = Modifier.width(8.dp))
                             }
-                        },
-                        modifier = Modifier
-                            .width(200.dp)
-                            .height(35.dp) // BasicTextField respects exact heights better
-                            .background(
-                                color = TextFieldBackground,
-                                shape = RoundedCornerShape(smallCornerRadius)
-                            )
-                            .border(
-                                width = 1.dp,
-                                color = LightGunmetal,
-                                shape = RoundedCornerShape(smallCornerRadius)
-                            )
-                    )
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+                    }
                 }
             }
             if (matchState.isNullOrEmpty() || !readyState) {
@@ -299,7 +333,7 @@ fun MatchItem(
     redAlliance: List<Int>,
     blueAlliance: List<Int>,
     showHighlight: Boolean,
-    onCommentClicked: () -> Unit
+    onCommentClicked: (Int) -> Unit
 ) {
     val borderColor = if (showHighlight) Accent else Border
     Row(
@@ -387,7 +421,7 @@ fun MatchItem(
         Spacer(modifier = Modifier.weight(1f))
 
         Pressable (
-            onClick = {onCommentClicked()},
+            onClick = {onCommentClicked(matchNum)},
             corner = smallCornerRadius,
             text = "Comment",
             modifier = Modifier
