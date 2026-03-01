@@ -78,7 +78,11 @@ import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
 
 @Composable
-fun MatchSchedule(homeViewModel: HomeViewModel, modifier: Modifier = Modifier, onCommentClicked: (Int) -> Unit) {
+fun MatchSchedule(
+    homeViewModel: HomeViewModel,
+    modifier: Modifier = Modifier,
+    onCommentClicked: (Int) -> Unit
+) {
     var searchQuery: String by remember { mutableStateOf("") }
     val matchState by homeViewModel.matchState.collectAsStateWithLifecycle()
     val readyState by homeViewModel.isReady.collectAsStateWithLifecycle()
@@ -97,7 +101,11 @@ fun MatchSchedule(homeViewModel: HomeViewModel, modifier: Modifier = Modifier, o
             .fillMaxSize()
             .background(Color(0xFF000000))
             .clip(RoundedCornerShape(smallCornerRadius))
-            .border(1.dp, LightGunmetal, RoundedCornerShape(smallCornerRadius))
+            .border(
+                width = 1.dp,
+                color = LightGunmetal,
+                shape = RoundedCornerShape(smallCornerRadius)
+            )
 
     ) {
         ImageBackground(x = -1350f, y = 355f)
@@ -201,7 +209,7 @@ fun MatchSchedule(homeViewModel: HomeViewModel, modifier: Modifier = Modifier, o
                                 }
                             },
                             modifier = Modifier
-                                .width(160.dp) // Shrunk slightly to fit cleanly next to the title
+                                .width(160.dp)
                                 .height(35.dp)
                                 .background(
                                     color = TextFieldBackground,
