@@ -43,7 +43,6 @@ class PenViewModel : ViewModel() {
     var justUndid by mutableStateOf(false)
         private set
     var paths by mutableStateOf<List<Stroke>>(emptyList())
-        private set
 
     var undoTree by mutableStateOf<List<Stroke>>(emptyList())
         private set
