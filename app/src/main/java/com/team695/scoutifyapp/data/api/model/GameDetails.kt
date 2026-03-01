@@ -69,7 +69,6 @@ data class GameDetails(
 
     val postgameShootWhileMoving: Boolean? = null,
     val postgameStockpileNeutral: Boolean? = null,
-    val postgameStockpileAlliance: Boolean? = null,
     val postgameStockpileCrossCourt: Boolean? = null,
     val postgameFeedOutpost: Boolean? = null,
     val postgameReceiveOutpost: Boolean? = null,
@@ -80,6 +79,11 @@ data class GameDetails(
     // Review
     val reviewMatchFlag: Boolean? = null
 ) {
+    val endgameClimbPositionFilled: Boolean get() {
+        return endgameClimbSuccess == false || (endgameClimbPosition != "" && endgameClimbPosition != null)
+    }
+
+
     val pregameProgress: Float get() {
         val pregameVars = listOf<Any?>(
             startingLocation,
@@ -217,7 +221,6 @@ fun GameDetailsEntity.createGameDetailsFromDb(): GameDetails {
         postgameShootAnywhere = this.postgame_shoot_anywhere,
         postgameShootWhileMoving = this.postgame_shoot_while_moving,
         postgameStockpileNeutral = this.postgame_stockpile_neutral,
-        postgameStockpileAlliance = this.postgame_stockpile_alliance,
         postgameStockpileCrossCourt = this.postgame_stockpile_cross_court,
         postgameFeedOutpost = this.postgame_feed_outpost,
         postgameReceiveOutpost = this.postgame_receive_outpost,

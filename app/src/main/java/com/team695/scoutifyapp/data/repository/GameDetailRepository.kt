@@ -165,7 +165,6 @@ class GameDetailRepository(
                 postgame_shoot_anywhere = details.postgameShootAnywhere,
                 postgame_shoot_while_moving = details.postgameShootWhileMoving,
                 postgame_stockpile_neutral = details.postgameStockpileNeutral,
-                postgame_stockpile_alliance = details.postgameStockpileAlliance,
                 postgame_stockpile_cross_court = details.postgameStockpileCrossCourt,
                 postgame_feed_outpost = details.postgameFeedOutpost,
                 postgame_receive_outpost = details.postgameReceiveOutpost,

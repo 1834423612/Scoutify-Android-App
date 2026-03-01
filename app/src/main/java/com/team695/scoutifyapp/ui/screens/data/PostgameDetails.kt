@@ -208,24 +208,6 @@ fun PostgameDetails(
                     )
 
                     CheckboxRow(
-                        label = "Stockpiles from Alliance Zone",
-                        isChecked = formState.gameDetails.postgameStockpileAlliance,
-                        onCheckedChange = { isChecked: Boolean? ->
-                            val nextState: Boolean = when (isChecked) {
-                                null -> false
-                                true -> false
-                                false -> true
-                            }
-
-                            dataViewModel.formEvent(
-                                gameDetails = formState.gameDetails.copy(
-                                    postgameStockpileAlliance = nextState
-                                )
-                            )
-                        }
-                    )
-
-                    CheckboxRow(
                         label = "Stockpiles cross-court",
                         isChecked = formState.gameDetails.postgameStockpileCrossCourt,
                         onCheckedChange = { isChecked: Boolean? ->

@@ -240,7 +240,9 @@ private fun EndgamePanel(
                 .border(1.dp, Border, RoundedCornerShape(14.dp)),
             contentAlignment = Alignment.Center
         ) {
-            FieldDiagram()
+            FieldDiagram(
+                formState = formState
+            )
         }
     }
 }
@@ -249,12 +251,14 @@ private fun EndgamePanel(
 // ─── Field Diagram ───────────────────────────────────────────────────────────
 
 @Composable
-private fun FieldDiagram() {
+private fun FieldDiagram(
+    formState: GameFormState
+) {
     // Simplified top-down FRC field representation
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF1A3A4A))
+            .background(if(formState.gameDetails.endgameClimbPositionFilled) Color(0xFF1A3A4A) else RedAlliance.copy(alpha = 0.2f))
             .padding(8.dp)
     ) {
         // Grid lines
