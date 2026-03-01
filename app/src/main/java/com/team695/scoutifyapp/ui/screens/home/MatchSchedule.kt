@@ -86,7 +86,6 @@ fun MatchSchedule(homeViewModel: HomeViewModel, modifier: Modifier = Modifier, o
         }
     }
 
-
     Box(
         modifier = modifier
             .fillMaxSize()

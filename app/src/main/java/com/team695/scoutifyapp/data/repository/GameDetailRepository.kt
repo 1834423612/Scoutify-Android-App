@@ -227,6 +227,7 @@ class GameDetailRepository(
                 }
             } catch (e: Exception) {
                 pulledConstants = false
+                isReady.value = true
                 Log.e("Game Constants", "Error when trying to fetch gameConstants: $e")
                 return@withContext Result.failure(e)
             }
