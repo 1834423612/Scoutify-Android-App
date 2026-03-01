@@ -1,10 +1,17 @@
 package com.team695.scoutifyapp.data.repository
 
+import android.util.Log
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import com.team695.scoutifyapp.data.api.client.ScoutifyClient
+import com.team695.scoutifyapp.data.api.model.GameConstantsStore
+import com.team695.scoutifyapp.data.api.model.ServerFormatTask
 import com.team695.scoutifyapp.data.api.model.Task
 import com.team695.scoutifyapp.data.api.model.TaskType
+import com.team695.scoutifyapp.data.api.model.convertToServerFormat
 import com.team695.scoutifyapp.data.api.model.createTaskFromDb
+import com.team695.scoutifyapp.data.api.service.ApiResponse
+import com.team695.scoutifyapp.data.api.service.ApiResponseWithRows
 import com.team695.scoutifyapp.data.api.service.LoginService
 import com.team695.scoutifyapp.data.api.service.TaskService
 import com.team695.scoutifyapp.db.AppDatabase
@@ -12,10 +19,12 @@ import com.team695.scoutifyapp.db.TaskEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Locale
+import kotlin.text.first
 
 class TaskRepository(
     private val service: TaskService,
@@ -29,46 +38,75 @@ class TaskRepository(
                 entity.createTaskFromDb()
             }
         }
+        .flowOn(Dispatchers.IO)
 
 
-    suspend fun pushTasks() {
-        //service.pushTasks(tasks.first())
+
+    suspend fun pushTasks(): List<ServerFormatTask> {
+        fun convert(Task: TaskEntity): ServerFormatTask{
+            val gameConstants = GameConstantsStore.constants   // non-null
+
+            val matchNumber = Task.matchNum
+            val teamNumber = Task.teamNum.toLong()
+            val gameType = db.matchQueries
+                .selectMatchByNumberAndTeam(matchNumber, teamNumber)
+                .executeAsOne().gameType
+            val user: String = db.userQueries.selectUser().executeAsOne().name ?: ""
+            return Task.convertToServerFormat(gameConstants,teamNumber.toInt(),user,695,gameType[0])
+        }
+
+        return db.taskQueries.selectAllTasks().executeAsList().map {
+            convert(it)
+        }
+
     }
 
-    private fun updateDbFromTaskList(tasks: List<Task>) {
-        db.transaction {
-            tasks.forEach {
-                db.taskQueries.insertTask(
-                    id = it.id.toLong(),
-                    type = it.type.toString(),
-                    matchNum = it.matchNum.toLong(),
-                    teamNum = it.teamNum,
-                    time = it.time,
-                    progress = it.progress.toDouble(),
-                    isDone = if (it.isDone) 1L else 0L
-                )
+    suspend private fun updateDbFromTaskList(tasks: List<Task>) {
+        withContext(Dispatchers.IO) {
+            db.transaction {
+                tasks.forEach {
+                    db.taskQueries.insertTask(
+                        id = it.id.toLong(),
+                        type = it.type.toString(),
+                        matchNum = it.matchNum.toLong(),
+                        teamNum = it.teamNum.toLong(),
+                        time = it.time,
+                        progress = it.progress.toLong(),
+                    )
+                }
             }
         }
     }
 
-    suspend fun fetchTasks(): Result<List<Task>> {
-        val oldTasks = db.taskQueries.selectAllTasks()
-            .executeAsList()
-            .map { entity ->
-                entity.createTaskFromDb()
-            }
+    suspend fun updateTaskProgress(id: Int, progress: Int) {
+        withContext(Dispatchers.IO) {
+            db.taskQueries.updateTaskProgress(id = id.toLong(), progress = progress.toLong())
+        }
+    }
 
+    suspend fun fetchTasks(): Result<List<Task>?> {
         return withContext(Dispatchers.IO) {
-            try {
-                val apiTasks: List<Task> = service.getTasks()
-
-                if (apiTasks.isNotEmpty()) {
-                    updateDbFromTaskList(apiTasks)
+            val oldTasks = db.taskQueries.selectAllTasks()
+                .executeAsList()
+                .map { entity ->
+                    entity.createTaskFromDb()
                 }
 
-                return@withContext Result.success(apiTasks)
+            try {
+                val apiTasks: ApiResponseWithRows<List<ServerFormatTask>> = service.getTasks(
+                    acToken = ScoutifyClient.tokenManager.getToken() ?: ""
+                )
+
+                if (apiTasks.data.rows != null) {
+                    val taskList: List<Task> = apiTasks.data.rows.map { it.convertToAppFormat() }
+                    updateDbFromTaskList(taskList)
+
+                    return@withContext Result.success(taskList)
+                }
+
+                return@withContext Result.success(emptyList())
             } catch(e: Exception) {
-                println("Error when trying to fetch tasks: $e")
+                Log.e("TASK", "Error when trying to fetch tasks: $e")
                 updateDbFromTaskList(oldTasks)
                 return@withContext Result.failure(e)
             }
@@ -84,8 +122,16 @@ class TaskRepository(
             if (taskList.isNotEmpty()) {
                 return@withContext Result.success(taskList[0].createTaskFromDb())
             } else {
-                return@withContext Result.failure(Exception("Could not find task for id = $taskId"))
+                return@withContext Result.failure(
+                    Exception("Could not find task for id = $taskId")
+                )
             }
+        }
+    }
+
+    suspend fun clearTasks() {
+        withContext(Dispatchers.IO) {
+            db.taskQueries.clearAllTasks()
         }
     }
 }

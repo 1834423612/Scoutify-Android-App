@@ -1,11 +1,14 @@
 package com.team695.scoutifyapp
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
+import com.team695.scoutifyapp.data.api.NetworkMonitor
 import com.team695.scoutifyapp.data.api.client.CasdoorClient
 import com.team695.scoutifyapp.data.api.client.ScoutifyClient
+import com.team695.scoutifyapp.data.api.model.GameConstantsStore
 import com.team695.scoutifyapp.data.api.model.User
 import com.team695.scoutifyapp.data.api.service.LoginService
 import com.team695.scoutifyapp.data.api.service.MatchService
@@ -19,11 +22,17 @@ import com.team695.scoutifyapp.db.GameDetailsEntity
 import com.team695.scoutifyapp.db.CommentsEntity
 import com.team695.scoutifyapp.data.api.service.GameDetailsService
 import com.team695.scoutifyapp.data.api.service.UserService
+import com.team695.scoutifyapp.data.charAdapter
 import com.team695.scoutifyapp.data.intAdapter
 import com.team695.scoutifyapp.data.repository.GameDetailRepository
+import com.team695.scoutifyapp.db.GameConstantsEntity
+import com.team695.scoutifyapp.ui.extensions.androidID
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        Log.d("MAIN", "Android_ID: ${applicationContext.androidID}")
 
         ScoutifyClient.initialize(applicationContext)
 
@@ -69,16 +78,24 @@ class MainActivity : ComponentActivity() {
                 match_numberAdapter = intAdapter,
                 team_numberAdapter  = intAdapter,
                 alliance_positionAdapter = intAdapter,
+            ),
+            gameConstantsEntityAdapter = GameConstantsEntity.Adapter(
+                frc_season_master_sm_yearAdapter = intAdapter,
+                game_matchup_gm_game_typeAdapter = charAdapter
             )
         )
-        db.taskQueries.seedData() //to add default data
-        db.matchQueries.seedData() //to add default data
 
-        val taskService = TaskService(db = db)
+        db.gameConstantsQueries.seedData()
+
+        GameConstantsStore.update(
+            db.gameConstantsQueries.getConstants().executeAsOne()
+        )
+
+        val taskService = ScoutifyClient.taskService
         val matchService: MatchService = ScoutifyClient.matchService
         val loginService: LoginService = CasdoorClient.loginService
         val userService: UserService = ScoutifyClient.userService
-        val gameDetailsService: GameDetailsService = GameDetailsService()
+        val gameDetailsService: GameDetailsService = ScoutifyClient.gameDetailsService
 
         val userRepository = UserRepository(
             loginService = loginService,
@@ -86,11 +103,11 @@ class MainActivity : ComponentActivity() {
             db = db,
             context = applicationContext
         )
-
         val taskRepository = TaskRepository(service = taskService, db = db)
         val matchRepository = MatchRepository(service = matchService, db = db)
         val gameDetailRepository = GameDetailRepository(service = gameDetailsService, db = db)
 
+        val networkMonitor = NetworkMonitor(applicationContext)
 
         setContent {
             ScoutifyTheme {
@@ -99,10 +116,10 @@ class MainActivity : ComponentActivity() {
                     matchRepository = matchRepository,
                     userRepository = userRepository,
                     gameDetailRepository = gameDetailRepository,
+                    networkMonitor = networkMonitor,
                 )
             }
         }
-
 
     }
 }

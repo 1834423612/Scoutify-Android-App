@@ -87,7 +87,7 @@ fun TaskItem(task: Task, onPress: () -> Unit) {
                     corner = smallCornerRadius
                 )
         ) {
-            Text(task.teamNum, color = Deselected)
+            Text(task.teamNum.toString(), color = Deselected)
         }
         Row(
             verticalAlignment = Alignment.CenterVertically,
