@@ -133,20 +133,35 @@ fun MatchSchedule(homeViewModel: HomeViewModel, modifier: Modifier = Modifier, o
                             .fillMaxWidth()
                             .padding(bottom = 10.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically // Aligns everything nicely in the center
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
 
                         // 1. Header Title
                         Text(
                             text = "Bluff Country Regional",
                             color = TextPrimary,
-                            fontSize = 22.sp, // Slightly reduced to fit the search bar
+                            fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
                             textAlign = TextAlign.Start,
-                            modifier = Modifier.weight(1f) // Takes up remaining left space
                         )
 
                         Spacer(modifier = Modifier.width(8.dp))
+
+                        // Info Icon
+                        Badge(
+                            containerColor = BadgeBackground.copy(0.5f),
+                            modifier = Modifier
+                                .padding(1.dp)
+                                .weight(1f)
+                        ) {
+                            Text(
+                                text = "i",
+                                color = BadgeContent,
+                                fontSize = 14.sp,
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(384.dp))
 
                         // 2. Search Bar
                         BasicTextField(
@@ -198,17 +213,6 @@ fun MatchSchedule(homeViewModel: HomeViewModel, modifier: Modifier = Modifier, o
                                     shape = RoundedCornerShape(smallCornerRadius)
                                 )
                         )
-
-                        Spacer(modifier = Modifier.width(8.dp))
-
-                        // 3. Info Icon
-                        Badge(
-                            containerColor = BadgeBackground.copy(0.5f),
-                            modifier = Modifier
-                                .padding(16.dp)
-                        ) {
-                            Text("i", color = BadgeContent, fontSize = 14.sp)
-                        }
                     }
 
                     if (!teamState.isNullOrEmpty()) {
