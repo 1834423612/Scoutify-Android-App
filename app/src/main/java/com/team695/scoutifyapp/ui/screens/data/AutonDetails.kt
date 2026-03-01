@@ -245,7 +245,7 @@ fun DrawCanvas(
                             drawRect(
                                 color = Color.Red,
                                 topLeft = offset,
-                                size = androidx.compose.ui.geometry.Size(100f, 100f)
+                                size = androidx.compose.ui.geometry.Size(50f, 50f)
                             )
                         }
                     }
@@ -334,7 +334,7 @@ fun RobotActionPanel(
             isSelected = selected == "Ball",
             onClick = { selected = "Ball"; onBall() }
         ) {
-            BulletIcon(bodyColor = Color(0xFF888899), tipColor = AccentYellow)
+            ShootIcon()
         }
 
         // ── Intake button ────────────────────────────────────────────────────
@@ -342,9 +342,9 @@ fun RobotActionPanel(
             label = "Intake",
             isSelected = selected == "Intake",
             onClick = { selected = "Intake"; onIntake() },
-            borderColor = if (selected == "Intake") BorderActive else Color.Transparent
+            borderColor = Color.Transparent
         ) {
-            ChevronIcon(color = AccentBlue, direction = ChevronDirection.LEFT)
+            IntakeIcon()
         }
 
         // ── Broke button ─────────────────────────────────────────────────────
@@ -443,69 +443,192 @@ private fun BulletIcon(bodyColor: Color, tipColor: Color) {
     }
 }
 
-// ── Icon: Chevron Arrow ───────────────────────────────────────────────────────
-enum class ChevronDirection { LEFT, RIGHT }
 
 @Composable
-private fun ChevronIcon(color: Color, direction: ChevronDirection) {
+private fun ShootIcon() {
     Canvas(modifier = Modifier.size(36.dp)) {
         val w = size.width
         val h = size.height
-        val cx = w / 2f
-        val cy = h / 2f
 
-        val arrowPath = if (direction == ChevronDirection.LEFT) {
-            Path().apply {
-                // Fat left-pointing chevron/arrow
-                moveTo(w * 0.80f, cy - h * 0.30f)
-                lineTo(w * 0.35f, cy)
-                lineTo(w * 0.80f, cy + h * 0.30f)
-                lineTo(w * 0.80f, cy + h * 0.15f)
-                lineTo(w * 0.55f, cy)
-                lineTo(w * 0.80f, cy - h * 0.15f)
-                close()
-            }
-        } else {
-            Path().apply {
-                moveTo(w * 0.20f, cy - h * 0.30f)
-                lineTo(w * 0.65f, cy)
-                lineTo(w * 0.20f, cy + h * 0.30f)
-                lineTo(w * 0.20f, cy + h * 0.15f)
-                lineTo(w * 0.45f, cy)
-                lineTo(w * 0.20f, cy - h * 0.15f)
-                close()
-            }
-        }
-        drawPath(arrowPath, color)
+        val barTop = h * 0.2f
+        val barBottom = h * 0.8f
+        val barHeight = barBottom - barTop
 
-        // Small orange/red accent bar at the tip (mimics the orange bar in "Intake")
+        val rectRight = w * 0.70f
+        val radius = barHeight / 2f
+
+        val yellow = Color(0xFFE6D36F)
+
+        // Main black rectangle
         drawRect(
-            color = AccentOrange,
-            topLeft = Offset(w * 0.12f, cy - h * 0.30f),
-            size = Size(w * 0.10f, h * 0.60f)
+            color = Color.Black,
+            topLeft = Offset(0f, barTop),
+            size = Size(rectRight, barHeight)
+        )
+
+        // White borders (top & bottom)
+        drawLine(
+            color = Color.White,
+            start = Offset(0f, barTop),
+            end = Offset(rectRight, barTop),
+            strokeWidth = 3f
+        )
+
+        drawLine(
+            color = Color.White,
+            start = Offset(0f, barBottom),
+            end = Offset(rectRight, barBottom),
+            strokeWidth = 3f
+        )
+
+        // Black rounded end (half circle)
+        drawArc(
+            color = Color.Black,
+            startAngle = -90f,
+            sweepAngle = 180f,
+            useCenter = true,
+            topLeft = Offset(rectRight - radius, barTop),
+            size = Size(barHeight, barHeight)
+        )
+
+        // Yellow outer ring
+        drawArc(
+            color = yellow,
+            startAngle = -90f,
+            sweepAngle = 180f,
+            useCenter = false,
+            topLeft = Offset(rectRight - radius - 6f, barTop - 6f),
+            size = Size(barHeight + 12f, barHeight + 12f),
+            style = androidx.compose.ui.graphics.drawscope.Stroke(width = 6f)
+        )
+
+        // Yellow circular cap at front
+        drawCircle(
+            color = yellow,
+            radius = radius * 0.6f,
+            center = Offset(rectRight + radius * 0.6f, h / 2f)
         )
     }
 }
 
+
+@Composable
+private fun IntakeIcon() {
+    Canvas(modifier = Modifier.size(36.dp)) {
+        val w = size.width
+        val h = size.height
+
+        // Main black rectangle
+        drawRect(
+            color = Color.Black,
+            size = Size(w * 0.85f, h * 0.7f),
+            topLeft = Offset(0f, h * 0.15f)
+        )
+
+        // White border (top & bottom)
+        drawLine(
+            color = Color.White,
+            start = Offset(0f, h * 0.15f),
+            end = Offset(w * 0.85f, h * 0.15f),
+            strokeWidth = 4f
+        )
+
+        drawLine(
+            color = Color.White,
+            start = Offset(0f, h * 0.85f),
+            end = Offset(w * 0.85f, h * 0.85f),
+            strokeWidth = 4f
+        )
+
+        // Light blue angled shape (middle slanted part)
+        val bluePath = Path().apply {
+            moveTo(w * 0.78f, h * 0.15f)
+            lineTo(w * 0.82f, h * 0.15f)
+            lineTo(w * 0.79f, h * 0.85f)
+            lineTo(w * 0.75f, h * 0.85f)
+            close()
+        }
+        drawPath(bluePath, color = Color(0xFF87B6E6))
+
+        // Right triangle end
+        val trianglePath = Path().apply {
+            moveTo(w * 0.85f, h * 0.15f)
+            lineTo(w * 0.95f, h * 0.5f)
+            lineTo(w * 0.85f, h * 0.85f)
+            close()
+        }
+        drawPath(trianglePath, color = Color(0xFF87B6E6))
+    }
+}
 // ── Icon: Broke ───────────────────────────────────────────────────────────────
 @Composable
 private fun BrokeIcon() {
     Canvas(modifier = Modifier.size(36.dp)) {
+//        val w = size.width
+//        val h = size.height
+//        val cy = h / 2f
+//
+//        // Red/orange body rectangle
+//        drawRect(
+//            color = AccentOrange,
+//            topLeft = Offset(w * 0.10f, cy - h * 0.20f),
+//            size = Size(w * 0.55f, h * 0.40f)
+//        )
+//        // Small dark stripe (break indicator)
+//        drawRect(
+//            color = Color(0xFF1E1E2E),
+//            topLeft = Offset(w * 0.30f, cy - h * 0.20f),
+//            size = Size(w * 0.06f, h * 0.40f)
+//        )
         val w = size.width
         val h = size.height
-        val cy = h / 2f
 
-        // Red/orange body rectangle
+        val barTop = h * 0.2f
+        val barBottom = h * 0.8f
+        val barRight = w * 0.85f
+
+        // Main black bar
         drawRect(
-            color = AccentOrange,
-            topLeft = Offset(w * 0.10f, cy - h * 0.20f),
-            size = Size(w * 0.55f, h * 0.40f)
+            color = Color.Black,
+            topLeft = Offset(0f, barTop),
+            size = Size(barRight, barBottom - barTop)
         )
-        // Small dark stripe (break indicator)
-        drawRect(
-            color = Color(0xFF1E1E2E),
-            topLeft = Offset(w * 0.30f, cy - h * 0.20f),
-            size = Size(w * 0.06f, h * 0.40f)
+
+        // White borders (top & bottom)
+        drawLine(
+            color = Color.White,
+            start = Offset(0f, barTop),
+            end = Offset(barRight, barTop),
+            strokeWidth = 3f
         )
+
+        drawLine(
+            color = Color.White,
+            start = Offset(0f, barBottom),
+            end = Offset(barRight, barBottom),
+            strokeWidth = 3f
+        )
+
+        val accentColor = Color(0xFFFF6F5A)
+
+        // Coral slanted strip
+        val slanted = Path().apply {
+            moveTo(w * 0.78f, barTop)
+            lineTo(w * 0.82f, barTop)
+            lineTo(w * 0.79f, barBottom)
+            lineTo(w * 0.75f, barBottom)
+            close()
+        }
+        drawPath(slanted, accentColor)
+
+        // Right coral angled end
+        val endShape = Path().apply {
+            moveTo(barRight, barTop)
+            lineTo(w * 0.97f, h * 0.35f)
+            lineTo(w * 0.95f, barBottom)
+            lineTo(barRight, barBottom)
+            close()
+        }
+        drawPath(endShape, accentColor)
     }
 }
