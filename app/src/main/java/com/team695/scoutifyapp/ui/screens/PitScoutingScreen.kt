@@ -24,18 +24,20 @@ import androidx.compose.ui.unit.sp
 import com.team695.scoutifyapp.ui.components.form.*
 import com.team695.scoutifyapp.ui.theme.*
 import com.team695.scoutifyapp.ui.viewModels.PitScoutingViewModel
+import com.team695.scoutifyapp.data.types.TaskStatus
+import com.team695.scoutifyapp.data.types.Task
 
 @Composable
 fun PitScoutingScreen(
     viewModel: PitScoutingViewModel
 ) {
     val formState by viewModel.formState.collectAsState()
+    val screenState by viewModel.screenState.collectAsState()
     
-    var selectedTask by remember { mutableStateOf(1) }
-    var selectedTab by remember { mutableStateOf("1") }
     var selectedStatus by remember { mutableStateOf(TaskStatus.IN_PROGRESS) }
+    var newTeamNumber by remember { mutableStateOf("") }
 
-    // Sample tasks - in production, these would come from a repository
+    // Sample tasks data
     val sampleTasks = listOf(
         Task(1, "695", "Johnson Regional", "16m", 60, TaskStatus.IN_PROGRESS),
         Task(2, "254", "Johnson Regional", "5m", 30, TaskStatus.IN_PROGRESS),
@@ -50,11 +52,12 @@ fun PitScoutingScreen(
             .fillMaxSize()
             .background(BgPrimary)
     ) {
-        // Tasks Sidebar
+        // Tasks Sidebar with status filter
         TasksSidebar(
             tasks = sampleTasks.filter { it.status == selectedStatus },
-            selectedTaskId = selectedTask,
-            onTaskSelected = { selectedTask = it }
+            selectedStatus = selectedStatus,
+            onStatusChanged = { selectedStatus = it },
+            allTasks = sampleTasks
         )
 
         // Main Content
@@ -66,11 +69,17 @@ fun PitScoutingScreen(
         ) {
             // Header with tabs
             ContentHeader(
+                tabs = screenState.tabs,
+                selectedTabId = screenState.selectedTabId,
                 formState = formState,
-                selectedTab = selectedTab,
-                onTabChange = { selectedTab = it },
-                onAddTab = { },
-                onCloseTab = { }
+                onTabSelected = { tabId -> viewModel.switchToTab(tabId) },
+                onTabClosed = { tabId -> viewModel.closeTab(tabId) },
+                onAddTab = { 
+                    if (newTeamNumber.isNotBlank()) {
+                        viewModel.createNewTab(newTeamNumber)
+                        newTeamNumber = ""
+                    }
+                }
             )
 
             // Show loading or error state
@@ -111,7 +120,6 @@ fun PitScoutingScreen(
                             .padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        // Form Information Section
                         item {
                             FormInformationSection(
                                 eventName = formState.eventName,
@@ -119,7 +127,6 @@ fun PitScoutingScreen(
                             )
                         }
 
-                        // Dynamic form fields
                         items(formState.fields) { field ->
                             DynamicFormField(
                                 field = field,
@@ -139,29 +146,204 @@ fun PitScoutingScreen(
                 }
             }
 
-            // Action Buttons
+            // Action Buttons with Submission Message
             FormActionsBar(
                 onClearForm = { viewModel.clearForm() },
-                onSaveDraft = { 
-                    val submission = viewModel.saveDraft()
-                    // In production, save to database or send to API
-                },
-                onSubmitForm = {
-                    val submission = viewModel.submitForm()
-                    // In production, send to API
-                }
+                onSaveDraft = { viewModel.saveDraft() },
+                onSubmitForm = { viewModel.submitForm() }
             )
+
+            // Submission Message Toast
+            val currentTabId = screenState.selectedTabId
+            if (currentTabId != null) {
+                val message = screenState.submissionMessages[currentTabId]
+                if (!message.isNullOrBlank()) {
+                    SubmissionMessageToast(
+                        message = message,
+                        onDismiss = { viewModel.clearSubmissionMessage(currentTabId) }
+                    )
+                }
+            }
         }
     }
 }
 
 @Composable
+fun TasksSidebar(
+    tasks: List<Task>,
+    selectedStatus: TaskStatus,
+    allTasks: List<Task>,
+    onStatusChanged: (TaskStatus) -> Unit,
+    onTaskSelected: (Int) -> Unit = {}
+) {
+    Column(
+        modifier = Modifier
+            .width(200.dp)
+            .fillMaxHeight()
+            .background(BgSecondary)
+            .border(1.dp, BorderColor)
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text(
+            text = "Pit Scouting Progress",
+            style = TextStyle(
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = TextPrimary
+            ),
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        // Status Filter Buttons
+        StatusFilterButton(
+            label = "In Progress (${allTasks.count { it.status == TaskStatus.IN_PROGRESS }})",
+            isSelected = selectedStatus == TaskStatus.IN_PROGRESS,
+            onClick = { onStatusChanged(TaskStatus.IN_PROGRESS) },
+            color = AccentPrimary
+        )
+
+        StatusFilterButton(
+            label = "Incomplete (${allTasks.count { it.status == TaskStatus.INCOMPLETE }})",
+            isSelected = selectedStatus == TaskStatus.INCOMPLETE,
+            onClick = { onStatusChanged(TaskStatus.INCOMPLETE) },
+            color = AccentWarning
+        )
+
+        StatusFilterButton(
+            label = "Completed (${allTasks.count { it.status == TaskStatus.DONE }})",
+            isSelected = selectedStatus == TaskStatus.DONE,
+            onClick = { onStatusChanged(TaskStatus.DONE) },
+            color = AccentGreen
+        )
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Task List
+        Text(
+            text = "Teams",
+            style = TextStyle(
+                fontSize = 11.sp,
+                color = TextSecondary
+            ),
+            modifier = Modifier.padding(top = 8.dp)
+        )
+
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            items(tasks) { task ->
+                TaskListItem(task = task, onClick = { onTaskSelected(task.id) })
+            }
+        }
+    }
+}
+
+@Composable
+fun StatusFilterButton(
+    label: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    color: Color
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                if (isSelected) color.copy(alpha = 0.2f) else BgTertiary,
+                RoundedCornerShape(6.dp)
+            )
+            .border(
+                1.dp,
+                if (isSelected) color else BorderColor,
+                RoundedCornerShape(6.dp)
+            )
+            .clickable { onClick() }
+            .padding(10.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = label,
+            style = TextStyle(
+                fontSize = 10.sp,
+                color = if (isSelected) color else TextSecondary,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+            )
+        )
+    }
+}
+
+@Composable
+fun TaskListItem(
+    task: Task,
+    onClick: () -> Unit = {}
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(BgCard, RoundedCornerShape(4.dp))
+            .border(1.dp, BorderColor, RoundedCornerShape(4.dp))
+            .clickable { onClick() }
+            .padding(8.dp)
+    ) {
+        Column(
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(
+                text = "Team ${task.teamNumber}",
+                style = TextStyle(
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = TextPrimary
+                )
+            )
+            Text(
+                text = "Time: ${task.timeRemaining}",
+                style = TextStyle(
+                    fontSize = 10.sp,
+                    color = TextSecondary
+                )
+            )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(4.dp)
+                    .background(BgTertiary, RoundedCornerShape(2.dp))
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(task.progressPercent / 100f)
+                        .background(getStatusColor(task.status), RoundedCornerShape(2.dp))
+                )
+            }
+            Text(
+                text = "${task.progressPercent}%",
+                style = TextStyle(
+                    fontSize = 9.sp,
+                    color = TextSecondary
+                )
+            )
+        }
+    }
+}
+
+private fun getStatusColor(status: TaskStatus): Color {
+    return when (status) {
+        TaskStatus.IN_PROGRESS -> AccentPrimary
+        TaskStatus.INCOMPLETE -> AccentWarning
+        TaskStatus.DONE -> AccentGreen
+    }
+}
+
+@Composable
 fun ContentHeader(
+    tabs: List<com.team695.scoutifyapp.data.types.PitScoutingTab>,
+    selectedTabId: String?,
     formState: com.team695.scoutifyapp.data.types.PitFormState,
-    selectedTab: String,
-    onTabChange: (String) -> Unit,
-    onAddTab: () -> Unit,
-    onCloseTab: (String) -> Unit
+    onTabSelected: (String) -> Unit,
+    onTabClosed: (String) -> Unit,
+    onAddTab: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -203,12 +385,14 @@ fun ContentHeader(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            TeamTab(
-                label = if (formState.teamNumber.isNotBlank()) "Team ${formState.teamNumber}" else "New Team",
-                isSelected = selectedTab == "1",
-                onClick = { onTabChange("1") },
-                onClose = { onCloseTab("1") }
-            )
+            tabs.forEach { tab ->
+                TeamTab(
+                    label = if (tab.teamNumber.isNotBlank()) "Team ${tab.teamNumber}" else "New Team",
+                    isSelected = selectedTabId == tab.tabId,
+                    onClick = { onTabSelected(tab.tabId) },
+                    onClose = { onTabClosed(tab.tabId) }
+                )
+            }
 
             Box(
                 modifier = Modifier
@@ -279,7 +463,7 @@ fun TeamTab(
                 contentDescription = "Close Tab",
                 modifier = Modifier
                     .size(14.dp)
-                    .clickable { onClose() },
+                    .clickable(enabled = true) { onClose() },
                 tint = TextSecondary
             )
         }
@@ -338,7 +522,6 @@ fun FormInformationSection(
         }
     }
 }
-
 
 @Composable
 fun FormActionsBar(
@@ -407,3 +590,34 @@ fun FormActionButton(
         )
     }
 }
+
+@Composable
+fun SubmissionMessageToast(
+    message: String,
+    onDismiss: () -> Unit
+) {
+    LaunchedEffect(message) {
+        kotlinx.coroutines.delay(3000)
+        onDismiss()
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(BgSecondary.copy(alpha = 0.95f))
+            .border(1.dp, BorderColor)
+            .padding(16.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = message,
+            style = TextStyle(
+                fontSize = 12.sp,
+                color = TextPrimary,
+                fontWeight = FontWeight.Medium
+            )
+        )
+    }
+}
+
+

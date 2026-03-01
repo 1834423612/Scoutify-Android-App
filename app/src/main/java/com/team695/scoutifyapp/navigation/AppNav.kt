@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.team695.scoutifyapp.config.DebugConfig
 import com.team695.scoutifyapp.data.api.NetworkMonitor
+import com.team695.scoutifyapp.data.api.client.ScoutifyClient
 import com.team695.scoutifyapp.ui.InputScreen
 import com.team695.scoutifyapp.ui.screens.CommentsScreen
 import com.team695.scoutifyapp.ui.screens.home.HomeScreen
@@ -21,6 +22,7 @@ import com.team695.scoutifyapp.ui.viewModels.PitScoutingViewModel
 import com.team695.scoutifyapp.ui.viewModels.ViewModelFactory
 import com.team695.scoutifyapp.data.repository.GameDetailRepository
 import com.team695.scoutifyapp.data.repository.MatchRepository
+import com.team695.scoutifyapp.data.repository.PitScoutingRepository
 import com.team695.scoutifyapp.data.repository.TaskRepository
 import com.team695.scoutifyapp.data.repository.UserRepository
 import com.team695.scoutifyapp.ui.screens.data.DataScreen
@@ -110,8 +112,12 @@ fun AppNav(
                 navController = navController,
                 gameDetailRepository = gameDetailRepository
             ) {
+                val pitScoutingRepository = PitScoutingRepository(
+                    surveyService = ScoutifyClient.surveyService,
+                    networkMonitor = networkMonitor
+                )
                 val pitScoutingViewModel: PitScoutingViewModel = viewModel(
-                    factory = ViewModelFactory { PitScoutingViewModel() }
+                    factory = ViewModelFactory { PitScoutingViewModel(repository = pitScoutingRepository) }
                 )
                 PitScoutingScreen(viewModel = pitScoutingViewModel)
             }

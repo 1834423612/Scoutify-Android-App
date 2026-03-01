@@ -13,7 +13,7 @@ object DebugConfig {
      * When true, bypasses all authentication checks
      * WARNING: Set to false before production release!
      */
-    const val BYPASS_AUTH = true  // Change to false for production
+    const val BYPASS_AUTH = false  // Change to false for production
     
     /**
      * Mock user used when BYPASS_AUTH is enabled
