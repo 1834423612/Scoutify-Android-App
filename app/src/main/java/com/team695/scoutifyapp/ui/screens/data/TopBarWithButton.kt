@@ -34,8 +34,6 @@ fun TopbarWithButton(
     buttonLabel: String,
     buttonColor: Color,
     onButtonPressed: () -> Unit,
-    dataViewModel: DataViewModel,
-    formState: GameFormState
 ) {
     // Top bar
     Row(

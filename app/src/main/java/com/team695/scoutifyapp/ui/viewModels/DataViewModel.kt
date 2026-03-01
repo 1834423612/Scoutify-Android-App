@@ -34,7 +34,8 @@ class DataViewModel(
         GameFormState(
             matchNum = -1,
             teamNumber = "LOADING",
-            gameDetails = GameDetails()
+            gameDetails = GameDetails(),
+            teleopSection = TeleopSection.UNSTARTED
         )
     )
     val formState: StateFlow<GameFormState> = _formState.asStateFlow()
@@ -49,7 +50,8 @@ class DataViewModel(
                 it.copy(
                     teamNumber = task?.teamNum.toString() ?: "FAILED",
                     matchNum = task?.matchNum ?: -2,
-                    gameDetails = gameDetails
+                    gameDetails = gameDetails,
+                    teleopSection = if(gameDetails.teleopCompleted == true) TeleopSection.ENDED else TeleopSection.UNSTARTED
                 )
             }
         }
@@ -58,7 +60,13 @@ class DataViewModel(
             .debounce(2000L)
             .distinctUntilChanged() // Only save if the state actually changed
             .onEach { currentFormState: GameFormState ->
-                gameDetailRepository.updateDbFromGameDetails(_formState.value.gameDetails)
+                //save game details
+                gameDetailRepository.updateDbFromGameDetails(currentFormState.gameDetails)
+
+                //update task progress
+                if(currentFormState.gameDetails.task_id != null) {
+                    taskRepository.updateTaskProgress(id=currentFormState.gameDetails.task_id, progress = currentFormState.totalProgress)
+                }
             }
             .launchIn(viewModelScope) // Run this in the background tied to the ViewModel's lifecycle
     }
@@ -149,6 +157,14 @@ class DataViewModel(
                     endgameClimbSuccess = null,
                     endgameClimbPosition = null,
                 )
+            )
+        }
+    }
+
+    fun endTeleop() {
+        _formState.update {
+            it.copy(
+                teleopRunning = false,
             )
         }
     }

@@ -54,6 +54,7 @@ class TaskRepository(
             val user: String = db.userQueries.selectUser().executeAsOne().name ?: ""
             return Task.convertToServerFormat(gameConstants,teamNumber.toInt(),user,695,gameType[0])
         }
+
         return db.taskQueries.selectAllTasks().executeAsList().map {
             convert(it)
         }
@@ -74,6 +75,12 @@ class TaskRepository(
                     )
                 }
             }
+        }
+    }
+
+    suspend fun updateTaskProgress(id: Int, progress: Int) {
+        withContext(Dispatchers.IO) {
+            db.taskQueries.updateTaskProgress(id = id.toLong(), progress = progress.toLong())
         }
     }
 
@@ -115,7 +122,9 @@ class TaskRepository(
             if (taskList.isNotEmpty()) {
                 return@withContext Result.success(taskList[0].createTaskFromDb())
             } else {
-                return@withContext Result.failure(Exception("Could not find task for id = $taskId"))
+                return@withContext Result.failure(
+                    Exception("Could not find task for id = $taskId")
+                )
             }
         }
     }

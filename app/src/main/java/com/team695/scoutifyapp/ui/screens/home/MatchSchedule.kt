@@ -70,6 +70,9 @@ import com.team695.scoutifyapp.ui.theme.TextSecondary
 import com.team695.scoutifyapp.ui.theme.mediumCornerRadius
 import com.team695.scoutifyapp.ui.theme.smallCornerRadius
 import com.team695.scoutifyapp.ui.viewModels.HomeViewModel
+import kotlin.math.abs
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.DurationUnit
 
 @Composable
 fun MatchSchedule(homeViewModel: HomeViewModel, modifier: Modifier = Modifier, onCommentClicked: () -> Unit) {
@@ -77,8 +80,10 @@ fun MatchSchedule(homeViewModel: HomeViewModel, modifier: Modifier = Modifier, o
     val matchState by homeViewModel.matchState.collectAsStateWithLifecycle()
     val readyState by homeViewModel.isReady.collectAsStateWithLifecycle()
 
-    val filteredMatches = matchState?.filter { m ->
-        searchQuery.isBlank() || m.redAlliance.any{it.toString().contains(searchQuery)} || m.blueAlliance.any{it.toString().contains(searchQuery) }
+    val filteredMatches = remember(searchQuery, matchState) {
+        matchState?.sorted()?.filter { m ->
+            searchQuery.isBlank() || m.redAlliance.any{it.toString().contains(searchQuery)} || m.blueAlliance.any{it.toString().contains(searchQuery) }
+        }
     }
 
     Box(
@@ -225,7 +230,7 @@ fun MatchSchedule(homeViewModel: HomeViewModel, modifier: Modifier = Modifier, o
                         )
                     }
                 }
-            } else if (filteredMatches?.isEmpty() == true) {
+            } else if (filteredMatches?.isEmpty() ?: true) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -242,13 +247,19 @@ fun MatchSchedule(homeViewModel: HomeViewModel, modifier: Modifier = Modifier, o
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(smallCornerRadius)
                 ) {
-                    items(filteredMatches!!) {
+
+                    val highlightedMatch = calculateHighlight(
+                        matches = filteredMatches,
+                        time = System.currentTimeMillis()
+                    )
+
+                    items(filteredMatches) {
                         MatchItem(
                             matchNum = it.matchNumber,
                             time = it.time.toLong(),
                             redAlliance = it.redAlliance,
                             blueAlliance = it.blueAlliance,
-                            showHighlight = showMatchHighlight(it),
+                            showHighlight = highlightedMatch.matchNumber == it.matchNumber,
                             onCommentClicked = onCommentClicked
                         )
                     }
@@ -260,7 +271,7 @@ fun MatchSchedule(homeViewModel: HomeViewModel, modifier: Modifier = Modifier, o
 
 @Composable
 fun TeamNumber(number: String) {
-    val highlightedTeams = setOf("695", "4211", "1787", "254")
+    val highlightedTeams = setOf("695", "1787")
     val isHighlighted = number in highlightedTeams
     Box(
         contentAlignment = Alignment.Center,
@@ -391,13 +402,32 @@ fun MatchItem(
                 modifier = Modifier
                     .fillMaxHeight()
                     .padding(vertical=8.dp)
-
-
             )
         }
     }
 }
 
+fun calculateHighlight(matches: List<Match>, time: Long): Match {
+    var l = 0
+    var r = matches.size - 1
+
+    while (l < r) {
+        val mid = (l+r)/2
+        val match_t = matches[mid].time.toLong()
+
+        if (match_t <= time && (time-match_t) < 9.minutes.toLong(DurationUnit.MILLISECONDS)) {
+            return matches[mid]
+        }
+
+        if (match_t < time) {
+            l = mid + 1
+        } else {
+            r = mid - 1
+        }
+    }
+
+    return matches[l]
+}
 fun showMatchHighlight(m: Match): Boolean {
     return m.redAlliance.any{it == 695} || m.blueAlliance.any{it == 695}
 }

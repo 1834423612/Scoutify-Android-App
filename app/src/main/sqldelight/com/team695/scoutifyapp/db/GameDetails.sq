@@ -59,9 +59,12 @@ CREATE TABLE gameDetailsEntity (
     endgame_attempts_climb INTEGER AS Boolean,
     endgame_climb_success INTEGER AS Boolean,
     endgame_climb_position TEXT,
+    endgame_climb_code TEXT,
 
     teleop_fuel_count INTEGER AS Int,
     teleop_flag INTEGER AS Boolean,
+    teleop_completed INTEGER AS Boolean,
+
     -- Postgame
     postgame_shoot_anywhere INTEGER AS Boolean,
     postgame_shoot_while_moving INTEGER AS Boolean,
@@ -128,8 +131,10 @@ INSERT OR REPLACE INTO gameDetailsEntity(
     endgame_attempts_climb,
     endgame_climb_success,
     endgame_climb_position,
+    endgame_climb_code,
     teleop_fuel_count,
     teleop_flag,
+    teleop_completed,
     postgame_shoot_anywhere,
     postgame_shoot_while_moving,
     postgame_stockpile_neutral,
@@ -140,7 +145,7 @@ INSERT OR REPLACE INTO gameDetailsEntity(
     postgame_over_bump,
     postgame_flag
 )
-VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 selectDetailsForTask:
 SELECT * FROM gameDetailsEntity

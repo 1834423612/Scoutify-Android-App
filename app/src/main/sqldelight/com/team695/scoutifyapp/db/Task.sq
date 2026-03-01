@@ -47,3 +47,9 @@ selectTaskById:
 SELECT *
 FROM taskEntity
 WHERE taskEntity.id = ?;
+
+--9. Update the progress of a task
+updateTaskProgress:
+UPDATE taskEntity
+SET progress = ?
+WHERE taskEntity.id = ?;

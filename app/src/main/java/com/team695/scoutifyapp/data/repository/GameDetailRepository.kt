@@ -51,8 +51,7 @@ class GameDetailRepository(
         }
     }
 
-    suspend fun pushGameDetails(): List<GameDetailsActions> {
-
+    suspend fun pushGameDetails(): Result<List<GameDetailsActions>> {
         fun findTeamField(match: MatchEntity, team: Long): String? {
             return when (team) {
                 match.r1.toLong() -> "r1"
@@ -65,41 +64,54 @@ class GameDetailRepository(
             }
         }
 
-        val gameDetails = db.gameDetailsQueries.selectAllGameDetails().executeAsList()
-        val gameDetailsConverted = mutableListOf<GameDetailsActions>()
+        return withContext(Dispatchers.IO) {
+            try {
+                val gameDetails = db.gameDetailsQueries.selectAllGameDetails().executeAsList()
 
-        for (i in gameDetails) {
+                val gameDetailsConverted = mutableListOf<GameDetailsActions>()
 
-            val gameConstants = GameConstantsStore.constants   // non-null
+                for (i in gameDetails) {
 
-            val task = db.taskQueries.selectTaskById(i.task_id.toLong()).executeAsOne()
-            val matchNumber = task.matchNum
-            val teamNumber = task.teamNum.toLong()
+                    val gameConstants = GameConstantsStore.constants   // non-null
 
-            val match = db.matchQueries
-                .selectMatchByNumberAndTeam(matchNumber, teamNumber)
-                .executeAsOne()
+                    val task = db.taskQueries.selectTaskById(i.task_id.toLong()).executeAsOne()
+                    val matchNumber = task.matchNum
+                    val teamNumber = task.teamNum.toLong()
 
-            val field = findTeamField(match, teamNumber)
+                    val match = db.matchQueries
+                        .selectMatchByNumberAndTeam(matchNumber, teamNumber)
+                        .executeAsOne()
 
-            val alliance: Char = field?.first() ?: ' '          // Char
-            val alliancePosition: Int = field?.last()?.digitToInt() ?: 0
+                    val field = findTeamField(match, teamNumber)
 
-            val user: String = db.userQueries.selectUser().executeAsOne().name ?: ""
+                    val alliance: Char = field?.first() ?: ' '          // Char
+                    val alliancePosition: Int = field?.last()?.digitToInt() ?: 0
 
-            gameDetailsConverted.addAll(
-                i.convertToList(
-                    gameConstants,
-                    match.gameType[0],
-                    matchNumber.toInt(),
-                    alliance,
-                    alliancePosition,
-                    user
+                    val user: String = db.userQueries.selectUser().executeAsOne().name ?: ""
+
+                    gameDetailsConverted.addAll(
+                        i.convertToList(
+                            gameConstants,
+                            match.gameType[0],
+                            matchNumber.toInt(),
+                            alliance,
+                            alliancePosition,
+                            user
+                        )
+                    )
+                }
+
+                service.updateGameDetails(
+                    acToken = ScoutifyClient.tokenManager.getToken()!!,
+                    gameDetails = gameDetailsConverted
                 )
-            )
-        }
 
-        return gameDetailsConverted
+                return@withContext Result.success(gameDetailsConverted)
+            } catch (e: Exception) {
+                Log.d("Game details", "Error when trying to push game details: $e")
+                return@withContext Result.failure(e)
+            }
+        }
     }
 
     suspend fun updateDbFromGameDetails(details: GameDetails) {
@@ -157,9 +169,11 @@ class GameDetailRepository(
                 endgame_attempts_climb = details.endgameAttemptsClimb,
                 endgame_climb_success = details.endgameClimbSuccess,
                 endgame_climb_position = details.endgameClimbPosition,
+                endgame_climb_code = details.endgameClimbCode,
 
                 teleop_fuel_count = details.teleopFuelCount,
                 teleop_flag = details.teleopFlag,
+                teleop_completed = details.teleopCompleted,
 
                 // Postgame
                 postgame_shoot_anywhere = details.postgameShootAnywhere,
@@ -172,6 +186,8 @@ class GameDetailRepository(
                 postgame_over_bump = details.postgameOverBump,
                 postgame_flag = details.postgameFlag,
             )
+
+            pushGameDetails()
         }
     }
 
@@ -183,12 +199,11 @@ class GameDetailRepository(
 
         return withContext(Dispatchers.IO) {
             try {
-                val result: ApiResponse<GameConstants> = service.setGameConstants(
+                val result: ApiResponse<GameConstants> = service.getGameConstants(
                     acToken = ScoutifyClient.tokenManager.getToken()!!
                 )
 
                 if (result.data != null) {
-                    print(result.data)
                     if (result.data != GameConstantsStore.constants) {
                         db.transaction {
                             db.taskQueries.clearAllTasks()
@@ -213,6 +228,7 @@ class GameDetailRepository(
                 }
             } catch (e: Exception) {
                 pulledConstants = false
+                isReady.value = true
                 Log.e("Game Constants", "Error when trying to fetch gameConstants: $e")
                 return@withContext Result.failure(e)
             }
