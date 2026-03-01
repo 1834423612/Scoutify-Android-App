@@ -41,6 +41,8 @@ configure<ApplicationExtension> {
         buildConfigField("String", "CASDOOR_CLIENT_SECRET", "\"${requireSecret("casdoor_client_secret")}\"")
         buildConfigField("String", "CASDOOR_REDIRECT_URI", "\"${requireSecret("casdoor_redirect_uri")}\"")
         buildConfigField("String", "CASDOOR_APP_NAME", "\"${requireSecret("casdoor_app_name")}\"")
+        buildConfigField("String", "API_AC_KEY", "\"${requireSecret("api_ac_key")}\"")
+        buildConfigField("String", "API_AC_SECRET", "\"${requireSecret("api_ac_secret")}\"")
 
         proguardFiles()
     }
@@ -93,6 +95,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.accompanist.systemuicontroller)
     implementation(libs.androidx.webkit)
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -107,6 +110,8 @@ dependencies {
     implementation(libs.sqldelight.coroutines)
     implementation(libs.sqldelight.primitive.adapters)
     implementation(libs.androidx.security.crypto)
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+
     // datastore
     implementation(libs.androidx.datastore)
 }

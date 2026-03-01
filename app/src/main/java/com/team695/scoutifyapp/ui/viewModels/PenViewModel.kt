@@ -1,4 +1,5 @@
 package com.team695.scoutifyapp.ui.viewModels
+
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
@@ -24,6 +25,8 @@ data class JsonOffset(
     val x: Float,
     val y: Float
 )
+
+
 sealed class Stroke {
     data class Path(val points: List<Offset>) : Stroke()
     data class Labeled(val points: Pair<Offset, String>) : Stroke()
@@ -40,6 +43,7 @@ class PenViewModel : ViewModel() {
     var justUndid by mutableStateOf(false)
         private set
     var paths by mutableStateOf<List<Stroke>>(emptyList())
+        private set
 
     var undoTree by mutableStateOf<List<Stroke>>(emptyList())
         private set

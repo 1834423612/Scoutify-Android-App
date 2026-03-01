@@ -16,7 +16,8 @@ plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.compose.compiler) apply false
     alias(libs.plugins.kotlin.android) apply false
-    kotlin("plugin.serialization") version "2.3.10"
+    kotlin("plugin.serialization") version "2.3.10" //version "1.9.22"   // or your Kotlin version
+
 }
 
 //plugins {

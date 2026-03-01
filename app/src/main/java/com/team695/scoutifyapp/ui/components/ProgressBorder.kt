@@ -12,9 +12,9 @@ import com.team695.scoutifyapp.ui.theme.mediumCornerRadius
 
 
 fun Modifier.progressBorder(
-    progress: Float
+    progress: Int
 ): Modifier {
-    if(progress == 1f) {
+    if(progress == 100) {
         return this.then(
             other = Modifier
                 .border(
@@ -23,7 +23,7 @@ fun Modifier.progressBorder(
                     shape = RoundedCornerShape(mediumCornerRadius))
         )
     }
-    else if (progress == 0f) {
+    else if (progress == 0) {
         return this.then(
             other = Modifier
                 .border(
@@ -36,7 +36,7 @@ fun Modifier.progressBorder(
         other = Modifier
             .border(
                 width = 1.dp,
-                brush = borderGradient(progress),
+                brush = borderGradient(progress/100F),
                 shape = RoundedCornerShape(mediumCornerRadius))
     )
 }

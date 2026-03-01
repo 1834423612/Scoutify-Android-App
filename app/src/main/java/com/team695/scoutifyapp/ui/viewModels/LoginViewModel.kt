@@ -2,6 +2,7 @@ package com.team695.scoutifyapp.ui.viewModels
 
 import android.net.Uri
 import android.util.Base64
+import android.util.Log
 import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -58,7 +59,6 @@ class LoginViewModel(private val repository: UserRepository): ViewModel() {
             .build()
             .toString()
 
-
         _loginState.value = LoginStatus(
             verifier = verifier,
             loginUrl = loginUrl
@@ -97,7 +97,7 @@ class LoginViewModel(private val repository: UserRepository): ViewModel() {
                 )
             }
 
-            println("Error in casdoor token exchange: ${e.message}")
+            Log.e("Login", "Error in casdoor token exchange: ${e.message}")
         }
     }
 

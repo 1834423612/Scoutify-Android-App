@@ -10,7 +10,7 @@ enum class SectionType {
 @Parcelize
 data class GameSection(
     val type: SectionType,
-    var progress: Float = 0f,
+    var progress: Int = 0,
 ) : Parcelable {
     val name: String get() = type.name.lowercase().replaceFirstChar { it.uppercase() }
 }
