@@ -52,19 +52,8 @@ fun StoppedDetails(
                     fraction = formState.teleopCachedMilliseconds.toFloat() / TRANSITION_END_TIME
                 ),
                 onButtonPressed = {
-                    //warn user if they haven't completed Auton
-                    if(formState.gameDetails.teleopProgress > 0) {
-                        dataViewModel.toggleWarningModal(title = "Are you sure?", text = "Restarting teleop will reset your data.")
-                    }
-                    else if(formState.gameDetails.autonProgress < 1) {
-                        dataViewModel.toggleWarningModal(title = "Are you sure?", text = "You haven't completed Auton yet")
-                    }
-                    else {
-                        dataViewModel.startTeleop()
-                    }
+                    dataViewModel.toggleWarningModal(title = "Are you sure?", text = "You cannot pause teleop")
                 },
-                dataViewModel = dataViewModel,
-                formState = formState
             )
         }
     }

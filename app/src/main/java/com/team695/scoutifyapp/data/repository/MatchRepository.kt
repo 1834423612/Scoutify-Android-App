@@ -1,5 +1,6 @@
 package com.team695.scoutifyapp.data.repository
 
+import android.util.Log
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.team695.scoutifyapp.data.api.NetworkMonitor
@@ -15,6 +16,7 @@ import com.team695.scoutifyapp.data.api.service.NetworkService
 import com.team695.scoutifyapp.data.api.service.TaskService
 import com.team695.scoutifyapp.data.extensions.convertIsoToUnix
 import com.team695.scoutifyapp.db.AppDatabase
+import com.team695.scoutifyapp.db.MatchEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
@@ -31,7 +33,14 @@ class MatchRepository(
         .mapToList(Dispatchers.IO)
         .map { entries ->
             entries.map { entity ->
-                entity.createMatchFromDb()
+                val time: Long? = db.matchQueries.selectMatchTimeByNumber(entity.matchNumber)
+                    .executeAsOne()
+
+                val tEntity = entity.copy(
+                    time = time ?: 0L
+                )
+
+                tEntity.createMatchFromDb()
             }
         }
         .flowOn(Dispatchers.IO)
@@ -53,7 +62,14 @@ class MatchRepository(
             }
         }
     }
+    fun getAllianceForMatch(matchNumber: Long,teamNumber: Long): String {
 
+        Log.d("MATCH_NUM:", matchNumber.toString())
+
+        val matchEntity: MatchEntity = db.matchQueries.selectMatchByNumber(matchNumber=matchNumber).executeAsOne()
+        if(matchEntity.r1==teamNumber||matchEntity.r2==teamNumber||matchEntity.r3==teamNumber) return "R"
+        return "B"
+    }
     suspend fun fetchMatches(): Result<List<Match>> {
         return withContext(Dispatchers.IO) {
             val oldMatches = db.matchQueries.selectAllMatches()
@@ -81,6 +97,7 @@ class MatchRepository(
             }
         }
     }
+
 
     suspend fun clearMatches() {
         return withContext(Dispatchers.IO) {

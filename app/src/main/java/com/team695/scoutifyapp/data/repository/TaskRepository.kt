@@ -35,12 +35,17 @@ class TaskRepository(
         .mapToList(Dispatchers.IO)
         .map { entities ->
             entities.map { entity ->
+
                 entity.createTaskFromDb()
             }
         }
         .flowOn(Dispatchers.IO)
 
 
+    val teams: Flow<List<Long>> = db.taskQueries.selectScoutedTeams()
+        .asFlow()
+        .mapToList(Dispatchers.IO)
+        .flowOn(Dispatchers.IO)
 
     suspend fun pushTasks(): List<ServerFormatTask> {
         fun convert(Task: TaskEntity): ServerFormatTask{
@@ -49,7 +54,7 @@ class TaskRepository(
             val matchNumber = Task.matchNum
             val teamNumber = Task.teamNum.toLong()
             val gameType = db.matchQueries
-                .selectMatchByNumberAndTeam(matchNumber, teamNumber)
+                .selectMatchByNumber(matchNumber)
                 .executeAsOne().gameType
             val user: String = db.userQueries.selectUser().executeAsOne().name ?: ""
             return Task.convertToServerFormat(gameConstants,teamNumber.toInt(),user,695,gameType[0])
@@ -78,8 +83,15 @@ class TaskRepository(
         }
     }
 
+    suspend fun updateTaskProgress(id: Int, progress: Int) {
+        withContext(Dispatchers.IO) {
+            db.taskQueries.updateTaskProgress(id = id.toLong(), progress = progress.toLong())
+        }
+    }
+
     suspend fun fetchTasks(): Result<List<Task>?> {
         return withContext(Dispatchers.IO) {
+
             val oldTasks = db.taskQueries.selectAllTasks()
                 .executeAsList()
                 .map { entity ->
@@ -116,7 +128,9 @@ class TaskRepository(
             if (taskList.isNotEmpty()) {
                 return@withContext Result.success(taskList[0].createTaskFromDb())
             } else {
-                return@withContext Result.failure(Exception("Could not find task for id = $taskId"))
+                return@withContext Result.failure(
+                    Exception("Could not find task for id = $taskId")
+                )
             }
         }
     }

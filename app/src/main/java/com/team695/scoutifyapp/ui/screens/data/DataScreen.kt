@@ -46,6 +46,7 @@ import androidx.compose.material3.adaptive.navigation.NavigableListDetailPaneSca
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
@@ -77,6 +78,7 @@ import com.team695.scoutifyapp.ui.theme.LightGunmetal
 import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.theme.mediumCornerRadius
 import com.team695.scoutifyapp.ui.theme.smallCornerRadius
+import com.team695.scoutifyapp.ui.viewModels.PregameViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -141,15 +143,26 @@ fun DataScreen(
                         nextSection = TeleopSection.ENDGAME
                     }
                     TeleopSection.ENDGAME -> {
-                        switchTime = Int.MAX_VALUE
-                        nextSection = TeleopSection.ENDGAME
+                        switchTime = ENDGAME_END_TIME
+                        nextSection = TeleopSection.ENDED
                     }
                     else -> {
                         switchTime = Int.MAX_VALUE
-                        nextSection = TeleopSection.STOPPED
+                        nextSection = TeleopSection.ENDED
                     }
                 }
-                if (formState.teleopTotalMilliseconds + deltaTime > switchTime) {
+
+                val newTime = formState.teleopTotalMilliseconds + deltaTime
+                if (newTime > switchTime) {
+                    if(nextSection == TeleopSection.ENDED) {
+                        dataViewModel.endTeleop()
+                        //mark teleop as done
+                        dataViewModel.formEvent(
+                            gameDetails = formState.gameDetails.copy(
+                                teleopCompleted = true
+                            )
+                        )
+                    }
                     dataViewModel.setTeleopSection(teleopSection = nextSection, teleopTotalMilliseconds = switchTime)
                 }
                 dataViewModel.updateTime(deltaTime = (frameTimeMillis-startTime).toInt())
@@ -208,6 +221,7 @@ fun DataScreen(
                 }
             )
         }
+        TeleopLockScreen(isOverlayActive = formState.teleopRunning)
     }
 }
 
@@ -271,19 +285,24 @@ private fun ListContent(
                 itemsIndexed(sections) { index: Int, section: GameSection ->
 
                     var isFlagged: Boolean = false
+                    var progress: Float = 0f
 
                     when(section.type) {
                         SectionType.PREGAME -> {
                             isFlagged = formState.gameDetails.pregameFlag == true //use == because flag could be null
+                            progress = formState.gameDetails.pregameProgress
                         }
                         SectionType.AUTON -> {
                             isFlagged = formState.gameDetails.autonFlag == true
+                            progress = formState.autonProgress
                         }
                         SectionType.TELEOP -> {
                             isFlagged = formState.gameDetails.teleopFlag == true
+                            progress = (formState.teleopSectionProgress + formState.gameDetails.endgameProgress)/2
                         }
                         SectionType.POSTGAME -> {
                             isFlagged = formState.gameDetails.postgameFlag == true
+                            progress = formState.gameDetails.postgameProgress
                         }
                     }
 
@@ -300,7 +319,7 @@ private fun ListContent(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(60.dp)
-                            .progressBorder(progress=section.progress)
+                            .progressBorder(progress=(progress*100).toInt())
                             .background(color = DarkGunmetal, shape = RoundedCornerShape(mediumCornerRadius))
                             .clip(RoundedCornerShape(mediumCornerRadius))
                             .buttonHighlight(
@@ -402,7 +421,7 @@ private fun DetailContent(
             onContinue = {
                 dataViewModel.toggleWarningModal(title = "", text = "")
                 when(formState.teleopSection) {
-                    TeleopSection.STOPPED -> {
+                    TeleopSection.UNSTARTED -> {
                         dataViewModel.startTeleop()
                     }
                     TeleopSection.TRANSITION -> {
@@ -420,7 +439,7 @@ private fun DetailContent(
                     TeleopSection.SHIFT4 -> {
                         dataViewModel.setTeleopSection(teleopSection = TeleopSection.ENDGAME, teleopTotalMilliseconds = SHIFT4_END_TIME)
                     }
-                    TeleopSection.ENDGAME -> {
+                    TeleopSection.ENDGAME, TeleopSection.ENDED -> {
                         dataViewModel.startTeleop()
                     }
                 }
@@ -438,17 +457,26 @@ private fun DetailContent(
                 //animated stuff goes here
                 when(section.type) {
                     SectionType.PREGAME -> {
+                        val pregameViewModel = remember(formState.matchNum) {
+                            PregameViewModel().apply {
+                                position = formState.gameDetails.startingLocation ?:.5
+                            }
+                        }
                         PregameDetails(
                             dataViewModel = dataViewModel,
-                            formState = formState
+                            formState = formState,
+                            viewModel = pregameViewModel
                         )
                     }
                     SectionType.AUTON -> {
-
+                        AutonDetails(
+                            dataViewModel = dataViewModel,
+                            formState = formState,
+                        )
                     }
                     SectionType.TELEOP -> {
                         when(formState.teleopSection) {
-                            TeleopSection.STOPPED -> {
+                            TeleopSection.UNSTARTED -> {
                                 StoppedDetails(
                                     dataViewModel = dataViewModel,
                                     formState = formState
@@ -484,7 +512,7 @@ private fun DetailContent(
                                     formState = formState
                                 )
                             }
-                            TeleopSection.ENDGAME -> {
+                            TeleopSection.ENDGAME, TeleopSection.ENDED -> {
                                 EndgameDetails(
                                     dataViewModel = dataViewModel,
                                     formState = formState

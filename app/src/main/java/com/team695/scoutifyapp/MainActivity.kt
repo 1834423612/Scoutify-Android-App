@@ -10,6 +10,7 @@ import com.team695.scoutifyapp.data.api.client.CasdoorClient
 import com.team695.scoutifyapp.data.api.client.ScoutifyClient
 import com.team695.scoutifyapp.data.api.model.GameConstantsStore
 import com.team695.scoutifyapp.data.api.model.User
+import com.team695.scoutifyapp.data.api.service.CommentService
 import com.team695.scoutifyapp.data.api.service.LoginService
 import com.team695.scoutifyapp.data.api.service.MatchService
 import com.team695.scoutifyapp.ui.theme.ScoutifyTheme
@@ -24,6 +25,7 @@ import com.team695.scoutifyapp.data.api.service.GameDetailsService
 import com.team695.scoutifyapp.data.api.service.UserService
 import com.team695.scoutifyapp.data.charAdapter
 import com.team695.scoutifyapp.data.intAdapter
+import com.team695.scoutifyapp.data.repository.CommentRepository
 import com.team695.scoutifyapp.data.repository.GameDetailRepository
 import com.team695.scoutifyapp.db.GameConstantsEntity
 import com.team695.scoutifyapp.ui.extensions.androidID
@@ -32,7 +34,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        Log.d("MAIN", "Android ID: ${applicationContext.androidID}")
+        Log.d("MAIN", "Android_ID: ${applicationContext.androidID}")
 
         ScoutifyClient.initialize(applicationContext)
 
@@ -78,6 +80,7 @@ class MainActivity : ComponentActivity() {
                 match_numberAdapter = intAdapter,
                 team_numberAdapter  = intAdapter,
                 alliance_positionAdapter = intAdapter,
+                submittedAdapter = intAdapter
             ),
             gameConstantsEntityAdapter = GameConstantsEntity.Adapter(
                 frc_season_master_sm_yearAdapter = intAdapter,
@@ -95,6 +98,7 @@ class MainActivity : ComponentActivity() {
         val matchService: MatchService = ScoutifyClient.matchService
         val loginService: LoginService = CasdoorClient.loginService
         val userService: UserService = ScoutifyClient.userService
+        val commentService: CommentService = ScoutifyClient.commentService
         val gameDetailsService: GameDetailsService = ScoutifyClient.gameDetailsService
 
         val userRepository = UserRepository(
@@ -106,6 +110,7 @@ class MainActivity : ComponentActivity() {
         val taskRepository = TaskRepository(service = taskService, db = db)
         val matchRepository = MatchRepository(service = matchService, db = db)
         val gameDetailRepository = GameDetailRepository(service = gameDetailsService, db = db)
+        val commentRepository = CommentRepository(db = db, service = commentService)
 
         val networkMonitor = NetworkMonitor(applicationContext)
 
@@ -116,6 +121,7 @@ class MainActivity : ComponentActivity() {
                     matchRepository = matchRepository,
                     userRepository = userRepository,
                     gameDetailRepository = gameDetailRepository,
+                    commentRepository = commentRepository,
                     networkMonitor = networkMonitor,
                 )
             }

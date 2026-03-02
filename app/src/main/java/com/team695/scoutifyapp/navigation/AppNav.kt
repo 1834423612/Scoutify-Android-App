@@ -1,6 +1,7 @@
 package com.team695.scoutifyapp.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.ViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -10,6 +11,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.team695.scoutifyapp.data.api.NetworkMonitor
+import com.team695.scoutifyapp.data.repository.CommentRepository
 import com.team695.scoutifyapp.ui.InputScreen
 import com.team695.scoutifyapp.ui.screens.CommentsScreen
 import com.team695.scoutifyapp.ui.screens.home.HomeScreen
@@ -21,6 +23,7 @@ import com.team695.scoutifyapp.data.repository.GameDetailRepository
 import com.team695.scoutifyapp.data.repository.MatchRepository
 import com.team695.scoutifyapp.data.repository.TaskRepository
 import com.team695.scoutifyapp.data.repository.UserRepository
+import com.team695.scoutifyapp.ui.screens.CommentsViewModel
 import com.team695.scoutifyapp.ui.screens.data.DataScreen
 import com.team695.scoutifyapp.ui.screens.login.LoginScreen
 import com.team695.scoutifyapp.ui.viewModels.DataViewModel
@@ -33,6 +36,7 @@ fun AppNav(
     taskRepository: TaskRepository,
     matchRepository: MatchRepository,
     userRepository: UserRepository,
+    commentRepository: CommentRepository,
     gameDetailRepository: GameDetailRepository,
     networkMonitor: NetworkMonitor,
 ) {
@@ -82,6 +86,7 @@ fun AppNav(
                         DataViewModel(
                             gameDetailRepository = gameDetailRepository,
                             taskRepository = taskRepository,
+                            matchRepository = matchRepository,
                             taskId = taskId
                         )
                     }
@@ -91,12 +96,31 @@ fun AppNav(
             }
         }
         composable(route = "comments") {
+            val matchNumber = navController
+                .previousBackStackEntry
+                ?.savedStateHandle
+                ?.get<Int>("matchNumber")
+
             AuthGuard(
                 userRepository = userRepository,
                 navController = navController,
                 gameDetailRepository = gameDetailRepository
             ) {
-                CommentsScreen()
+                val commentsViewModel: CommentsViewModel = viewModel(
+                    viewModelStoreOwner = owner,
+                    factory = ViewModelFactory { CommentsViewModel(commentRepository = commentRepository, matchRepository = matchRepository) }
+                )
+
+                LaunchedEffect(matchNumber) {
+                    if (matchNumber != -1) {
+                        commentsViewModel.onMatchSelected(matchNumber.toString())
+                    }
+                }
+
+                CommentsScreen(
+                    viewModel = commentsViewModel,
+                    matchNumber = matchNumber
+                )
             }
         }
         composable("pitScouting") {

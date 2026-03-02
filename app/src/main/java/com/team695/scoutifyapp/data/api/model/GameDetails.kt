@@ -1,5 +1,7 @@
 package com.team695.scoutifyapp.data.api.model
+import android.util.Log
 import com.team695.scoutifyapp.db.GameDetailsEntity
+import kotlin.Boolean
 import kotlin.Double
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties
@@ -62,10 +64,13 @@ data class GameDetails(
     val endgameAttemptsClimb: Boolean? = null,
     val endgameClimbSuccess: Boolean? = null,
     val endgameClimbPosition: String? = null,
+    val endgameClimbCode: String? = null,
+
 
     // Teleop
     val teleopFuelCount: Int? = null,
     val teleopFlag: Boolean? = null,
+    val teleopCompleted: Boolean? = null,
 
     val postgameShootWhileMoving: Boolean? = null,
     val postgameStockpileNeutral: Boolean? = null,
@@ -80,9 +85,16 @@ data class GameDetails(
     // Review
     val reviewMatchFlag: Boolean? = null
 ) {
+    val endgameClimbPositionFilled: Boolean get() {
+        if(endgameClimbSuccess == true) {
+            return !endgameClimbCode.isNullOrEmpty()
+        }
+        return true
+    }
+
     val pregameProgress: Float get() {
         val pregameVars = listOf<Any?>(
-            startingLocation,
+            //startingLocation, //TO DO: add this
             robotOnField,
             robotPreloaded
         )
@@ -90,61 +102,30 @@ data class GameDetails(
 
     }
 
-    val autonProgress: Float get() {
-        val autonVars = listOf<Any?>(
-            autonPath,
-            autonAttemptsClimb,
-            autonClimbSuccess,
-            autonClimbPosition
-        )
-        return autonVars.count( {it != null} ).toFloat() / autonVars.size
-
-    }
-    val teleopProgress: Float get() {
-        val teleopVars = listOf<Any?>(
-            //transition
-            transitionCyclingTime,
-            transitionStockpilingTime,
-            transitionDefendingTime,
-            transitionBrokenTime,
-            transitionFirstActive,
-
-            // 1st Shift
-            shift1CyclingTime,
-            shift1StockpilingTime,
-            shift1DefendingTime,
-            shift1BrokenTime,
-
-            // 2nd Shift
-            shift2CyclingTime,
-            shift2StockpilingTime,
-            shift2DefendingTime,
-            shift2BrokenTime,
-
-            // 3rd Shift
-            shift3CyclingTime,
-            shift3StockpilingTime,
-            shift3DefendingTime,
-            shift3BrokenTime,
-
-            // 4th Shift
-            shift4CyclingTime,
-            shift4StockpilingTime,
-            shift4DefendingTime,
-            shift4BrokenTime,
-
-            // Endgame
-            endgameCyclingTime,
-            endgameStockpilingTime,
-            endgameDefendingTime,
-            endgameBrokenTime,
-
+    // returns progress for endgame
+    val endgameProgress: Float get() {
+        val endgameVars = listOf<Any?>(
             endgameAttemptsClimb,
             endgameClimbSuccess,
-            endgameClimbPosition,
         )
+        val filledElements: Int = endgameVars.count( {it != null} ) + if(endgameClimbPositionFilled) 1 else 0
+        val totalElements: Int = endgameVars.size + 1
+        return filledElements.toFloat() / totalElements
+    }
 
-        return teleopVars.count( {it != null} ).toFloat() / teleopVars.size
+    val postgameProgress: Float get() {
+        val postgameVars = listOf<Any?>(
+            postgameShootWhileMoving,
+            postgameStockpileNeutral,
+            postgameStockpileAlliance,
+            postgameStockpileCrossCourt,
+            postgameFeedOutpost,
+            postgameReceiveOutpost,
+            postgameUnderTrench,
+            postgameOverBump,
+            postgameShootAnywhere,
+        )
+        return postgameVars.count( {it != null} ).toFloat() / postgameVars.size
     }
 }
 
@@ -204,6 +185,7 @@ fun GameDetailsEntity.createGameDetailsFromDb(): GameDetails {
         endgameStockpilingTime = this.endgame_stockpiling_time,
         endgameDefendingTime = this.endgame_defending_time,
         endgameBrokenTime = this.endgame_broken_time,
+        endgameClimbCode = this.endgame_climb_code,
 
         endgameAttemptsClimb = this.endgame_attempts_climb,
         endgameClimbSuccess = this.endgame_climb_success,
@@ -212,6 +194,7 @@ fun GameDetailsEntity.createGameDetailsFromDb(): GameDetails {
         // Teleop
         teleopFuelCount = this.teleop_fuel_count,
         teleopFlag = this.teleop_flag,
+        teleopCompleted = this.teleop_completed,
 
         // Postgame
         postgameShootAnywhere = this.postgame_shoot_anywhere,

@@ -129,14 +129,12 @@ fun Shift4Details(
                 onButtonPressed = {
                     //warn user if shift4 shift is not close to ending
                     if(abs(formState.teleopTotalMilliseconds - SHIFT4_END_TIME) > TELEOP_TIME_THRESHOLD) {
-                        dataViewModel.toggleWarningModal(title = "Are you sure?", text = "Shift 4 isn't over yet")
+                        dataViewModel.toggleWarningModal(title = "Are you sure?", text = "Shift 4 isn't over yet.")
                     }
                     else {
                         dataViewModel.setTeleopSection(teleopSection = TeleopSection.ENDGAME, teleopTotalMilliseconds = TRANSITION_END_TIME)
                     }
                 },
-                dataViewModel = dataViewModel,
-                formState = formState
             )
 
             Row(
