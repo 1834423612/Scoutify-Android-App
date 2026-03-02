@@ -35,6 +35,7 @@ class TaskRepository(
         .mapToList(Dispatchers.IO)
         .map { entities ->
             entities.map { entity ->
+
                 entity.createTaskFromDb()
             }
         }

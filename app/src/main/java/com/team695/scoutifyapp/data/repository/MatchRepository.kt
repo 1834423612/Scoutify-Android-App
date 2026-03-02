@@ -33,7 +33,14 @@ class MatchRepository(
         .mapToList(Dispatchers.IO)
         .map { entries ->
             entries.map { entity ->
-                entity.createMatchFromDb()
+                val time: Long? = db.matchQueries.selectMatchTimeByNumber(entity.matchNumber)
+                    .executeAsOne()
+
+                val tEntity = entity.copy(
+                    time = time ?: 0L
+                )
+
+                tEntity.createMatchFromDb()
             }
         }
         .flowOn(Dispatchers.IO)

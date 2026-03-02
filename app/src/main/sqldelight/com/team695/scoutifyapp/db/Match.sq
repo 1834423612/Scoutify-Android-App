@@ -42,6 +42,10 @@ SELECT *
 FROM matchEntity
 WHERE matchNumber = ?;
 
+selectMatchTimeByNumber:
+SELECT time
+FROM matchEntity
+WHERE matchNumber = ?;
 
 clearAllMatches:
 DELETE FROM matchEntity;
