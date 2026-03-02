@@ -35,8 +35,16 @@ class TaskRepository(
         .mapToList(Dispatchers.IO)
         .map { entities ->
             entities.map { entity ->
+                val time: Long? = db.matchQueries
+                    .selectMatchTimeByNumber(
+                        matchNumber = entity.matchNum
+                    ).executeAsOneOrNull()
 
-                entity.createTaskFromDb()
+                val newEntity = entity.copy(
+                    time = time ?: 0L
+                )
+
+                newEntity.createTaskFromDb()
             }
         }
         .flowOn(Dispatchers.IO)
