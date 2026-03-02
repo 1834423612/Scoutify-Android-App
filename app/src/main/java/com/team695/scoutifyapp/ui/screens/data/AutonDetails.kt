@@ -95,10 +95,10 @@ fun AutonDetails(
                         RobotActionPanel(
                             { dataViewModel.undo() },
                             {dataViewModel.redo()},
-                            { formState.utensil = "path" },
-                            { formState.utensil = "shoot" },
-                            { formState.utensil = "intake" },
-                            { formState.utensil = "broke" },
+                            { dataViewModel.setUtensil("path")},
+                            { dataViewModel.setUtensil("shoot") },
+                            {dataViewModel.setUtensil("intake") },
+                            { dataViewModel.setUtensil("broke") },
                             {dataViewModel.reset()},
                         )
                     }

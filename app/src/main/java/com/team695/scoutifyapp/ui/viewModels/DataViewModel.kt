@@ -340,6 +340,14 @@ class DataViewModel(
         }
     }
 
+    fun setUtensil(utensil: String) {
+        _formState.update {
+            it.copy(
+                utensil = utensil
+            )
+        }
+    }
+
     fun reset(){
         _formState.update {
             it.copy(
