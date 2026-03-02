@@ -23,13 +23,15 @@ class CommentRepository (
                     acToken = ScoutifyClient.tokenManager.getToken()!!,
                     comments = allComments.map { it.convertToServerBody() }
                 )
+
+                Log.d("Comments", "Comments uploaded successfully!")
             } catch (e: Exception) {
                 Log.e("Comments", "Error uploading comments: $e")
             }
         }
     }
 
-    suspend fun saveComments (
+    suspend fun saveComments(
         comments: List<CommentBody>
     ) {
         withContext(Dispatchers.IO) {

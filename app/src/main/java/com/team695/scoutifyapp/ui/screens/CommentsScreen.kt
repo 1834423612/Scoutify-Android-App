@@ -228,6 +228,7 @@ fun CommentsContent(
                         .height(55.dp)
                 ) {}
 
+                /* FOR DEBUGGING PURPOSES, UNCOMMENT IF YOU WANT TO PRINT THE COMMENTS DB TO LOGCAT
                 Pressable(
                     onClick = printDB,
                     corner = 4.dp,
@@ -236,6 +237,7 @@ fun CommentsContent(
                         .width(150.dp)
                         .height(55.dp)
                 ) {}
+                 */
             }
 
             Spacer(modifier = Modifier.height(24.dp))
