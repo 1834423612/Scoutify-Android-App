@@ -53,7 +53,7 @@ class TaskRepository(
             val matchNumber = Task.matchNum
             val teamNumber = Task.teamNum.toLong()
             val gameType = db.matchQueries
-                .selectMatchByNumberAndTeam(matchNumber, teamNumber)
+                .selectMatchByNumber(matchNumber)
                 .executeAsOne().gameType
             val user: String = db.userQueries.selectUser().executeAsOne().name ?: ""
             return Task.convertToServerFormat(gameConstants,teamNumber.toInt(),user,695,gameType[0])

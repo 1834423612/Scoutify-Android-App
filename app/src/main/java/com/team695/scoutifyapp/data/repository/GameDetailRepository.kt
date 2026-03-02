@@ -79,7 +79,7 @@ class GameDetailRepository(
                     val teamNumber = task.teamNum.toLong()
 
                     val match = db.matchQueries
-                        .selectMatchByNumberAndTeam(matchNumber, teamNumber)
+                        .selectMatchByNumber(matchNumber )
                         .executeAsOne()
 
                     val field = findTeamField(match, teamNumber)

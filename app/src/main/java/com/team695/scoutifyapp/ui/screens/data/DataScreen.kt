@@ -78,7 +78,6 @@ import com.team695.scoutifyapp.ui.theme.LightGunmetal
 import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.theme.mediumCornerRadius
 import com.team695.scoutifyapp.ui.theme.smallCornerRadius
-import com.team695.scoutifyapp.ui.viewModels.PenViewModel
 import com.team695.scoutifyapp.ui.viewModels.PregameViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
@@ -295,7 +294,7 @@ private fun ListContent(
                         }
                         SectionType.AUTON -> {
                             isFlagged = formState.gameDetails.autonFlag == true
-                            progress = formState.gameDetails.autonProgress
+                            progress = formState.autonProgress
                         }
                         SectionType.TELEOP -> {
                             isFlagged = formState.gameDetails.teleopFlag == true
@@ -463,14 +462,6 @@ private fun DetailContent(
                                 position = formState.gameDetails.startingLocation ?:.5
                             }
                         }
-                        // Sync PenViewModel -> DataViewModel
-                        LaunchedEffect(pregameViewModel.position) {
-                            dataViewModel.formEvent(
-                                formState.gameDetails.copy(
-                                    startingLocation = pregameViewModel.position
-                                )
-                            )
-                        }
                         PregameDetails(
                             dataViewModel = dataViewModel,
                             formState = formState,
@@ -478,26 +469,9 @@ private fun DetailContent(
                         )
                     }
                     SectionType.AUTON -> {
-                        val penViewModel = remember(formState.matchNum) {
-                            PenViewModel().apply {
-                                paths = formState.gameDetails.autonPath
-                                    ?.let { jsonToPaths(it) }
-                                    ?: emptyList()
-                            }
-                        }
-                        // Sync PenViewModel -> DataViewModel
-                        LaunchedEffect(penViewModel.paths) {
-                            val json = penViewModel.pathsToJson()   // <-- use your function
-                            dataViewModel.formEvent(
-                                formState.gameDetails.copy(
-                                    autonPath = json
-                                )
-                            )
-                        }
                         AutonDetails(
                             dataViewModel = dataViewModel,
                             formState = formState,
-                            viewModel= penViewModel//()
                         )
                     }
                     SectionType.TELEOP -> {

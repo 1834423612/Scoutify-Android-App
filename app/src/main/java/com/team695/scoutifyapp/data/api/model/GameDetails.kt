@@ -1,7 +1,6 @@
 package com.team695.scoutifyapp.data.api.model
 import android.util.Log
 import com.team695.scoutifyapp.db.GameDetailsEntity
-import com.team695.scoutifyapp.ui.viewModels.Stroke
 import kotlin.Boolean
 import kotlin.Double
 import kotlin.reflect.KProperty1
@@ -101,18 +100,6 @@ data class GameDetails(
         )
         return pregameVars.count( {it != null} ).toFloat() / pregameVars.size
 
-    }
-
-    val autonProgress: Float get() {
-        //TO DO: add this
-        /*val autonVars = listOf<Any?>(
-            autonPath,
-            autonAttemptsClimb,
-            autonClimbSuccess,
-            autonClimbPosition
-        )
-        return autonVars.count( {it != null} ).toFloat() / autonVars.size */
-        return 1f
     }
 
     // returns progress for endgame

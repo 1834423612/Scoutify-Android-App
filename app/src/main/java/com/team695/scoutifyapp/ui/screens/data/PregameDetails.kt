@@ -309,8 +309,8 @@ fun PregameDetails(
                     ) {
                         var fieldImage = ImageBitmap.imageResource(id = R.drawable.map)
                         var robot=ImageBitmap.imageResource(id = R.drawable.robot)
-                        if(dataViewModel.getAllianceForMatch(formState.matchNum.toLong(), formState.teamNumber.toLong())=="B"){
-                            fieldImage=ImageBitmap.imageResource(id = R.drawable.image_29__1_)
+                        if(formState.alliance == "B"){
+                            fieldImage=ImageBitmap.imageResource(id = R.drawable.blue_map)
                             robot=ImageBitmap.imageResource(id = R.drawable.robot__1_)
                         }
                         FieldCanvas(viewModel, fieldImage,robot)
