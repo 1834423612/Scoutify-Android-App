@@ -13,7 +13,7 @@ data class GameFormState(
     // Metadata
     val matchNum: Int,
     val teamNumber: Int,
-    val alliance: String, // "R" or "B"
+    val alliance: Char, // 'R' or 'B'
 
     //  game detail object
     val gameDetails: GameDetails,

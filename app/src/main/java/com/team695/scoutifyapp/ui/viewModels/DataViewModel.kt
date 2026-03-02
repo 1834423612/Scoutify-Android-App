@@ -44,7 +44,7 @@ class DataViewModel(
         GameFormState(
             matchNum = -1,
             teamNumber = -1,
-            alliance = "R", //default to Red alliance
+            alliance = 'R', //default to Red alliance
             gameDetails = GameDetails(),
             teleopSection = TeleopSection.UNSTARTED,
         )
@@ -59,7 +59,7 @@ class DataViewModel(
             val task: Task? = taskResult.getOrNull()
             val matchNum: Int = task?.matchNum ?: -2
             val teamNum: Int = task?.teamNum ?: -2
-            var alliance = "R"
+            var alliance = 'R'
 
             if(matchNum != -2) {
                 alliance = getAllianceForMatch(matchNum.toLong(), teamNum.toLong())
@@ -88,31 +88,32 @@ class DataViewModel(
             .distinctUntilChanged() // Only save if the state actually changed
             .onEach { currentFormState: GameFormState ->
 
-                //ignore if taskId is not set - still waiting to be loaded from the database
+                // ignore if taskId is not set - still waiting to be loaded from the database
                 if(currentFormState.gameDetails.task_id == null) {
                     return@onEach
                 }
 
-                //update auton path in game details, bypass the state flow
-
+                // update auton path in game details, bypass the state flow
                 val gameDetails: GameDetails = currentFormState.gameDetails.copy(
                     autonPath = pathsToJson()
                 )
 
                 Log.d("DATA_MODEL", gameDetails.toString())
 
-
-                //save game details
+                // save game details
                 gameDetailRepository.updateDbFromGameDetails(gameDetails)
 
-                //update task progress
-                taskRepository.updateTaskProgress(id=currentFormState.gameDetails.task_id, progress = currentFormState.totalProgress)
+                // update task progress
+                taskRepository.updateTaskProgress(
+                    id = currentFormState.gameDetails.task_id,
+                    progress = currentFormState.totalProgress
+                )
             }
             .launchIn(viewModelScope) // Run this in the background tied to the ViewModel's lifecycle
     }
 
     fun formEvent(gameDetails: GameDetails) {
-        if(gameDetails.task_id == null) {
+        if (gameDetails.task_id == null) {
             Log.d("DataViewModel", "Invalid operation", Throwable())
             return
         }
@@ -122,10 +123,14 @@ class DataViewModel(
             )
         }
     }
-    fun getAllianceForMatch(matchNum:Long,teamNum: Long):String{
-        Log.d("MATCH_NUM_2", matchNum.toString())
-        return matchRepository.getAllianceForMatch(matchNum, teamNum)
+
+    fun getAllianceForMatch(matchNum: Long, teamNum: Long): Char {
+        return matchRepository.getAllianceForMatch(
+            matchNumber = matchNum,
+            teamNumber = teamNum
+        )
     }
+
     fun toggleWarningModal(title: String, text: String) {
         _formState.update {
             it.copy(

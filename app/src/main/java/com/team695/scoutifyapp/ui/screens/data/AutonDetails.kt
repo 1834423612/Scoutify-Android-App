@@ -116,11 +116,13 @@ fun AutonDetails(
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    var alliance ="R"
+
                     var fieldImage = ImageBitmap.imageResource(id = R.drawable.map)
-                    if(formState.alliance=="B"){
+
+                    if (formState.alliance == 'B') {
                         fieldImage=ImageBitmap.imageResource(id = R.drawable.blue_map)
                     }
+
                     DrawCanvas(viewModel = dataViewModel, formState = formState, image = fieldImage)
                 }
             }

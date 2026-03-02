@@ -62,14 +62,18 @@ class MatchRepository(
             }
         }
     }
-    fun getAllianceForMatch(matchNumber: Long,teamNumber: Long): String {
 
-        Log.d("MATCH_NUM:", matchNumber.toString())
+    fun getAllianceForMatch(matchNumber: Long, teamNumber: Long): Char {
+        val matchEntity = db.matchQueries
+            .selectMatchByNumber(matchNumber = matchNumber)
+            .executeAsOne()
 
-        val matchEntity: MatchEntity = db.matchQueries.selectMatchByNumber(matchNumber=matchNumber).executeAsOne()
-        if(matchEntity.r1==teamNumber||matchEntity.r2==teamNumber||matchEntity.r3==teamNumber) return "R"
-        return "B"
+        return when(teamNumber) {
+            matchEntity.r1, matchEntity.r2, matchEntity.r3 -> 'R'
+            else -> 'B'
+        }
     }
+
     suspend fun fetchMatches(): Result<List<Match>> {
         return withContext(Dispatchers.IO) {
             val oldMatches = db.matchQueries.selectAllMatches()

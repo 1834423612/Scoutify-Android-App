@@ -120,7 +120,7 @@ fun FieldCanvas(
         )
 
         // Draw robot at tapped position
-        viewModel.position?.let { tapOffset ->
+        viewModel.position.let { tapOffset ->
 
             val robotSize = 80f
 
@@ -308,11 +308,13 @@ fun PregameDetails(
                         contentAlignment = Alignment.Center
                     ) {
                         var fieldImage = ImageBitmap.imageResource(id = R.drawable.map)
-                        var robot=ImageBitmap.imageResource(id = R.drawable.robot)
-                        if(formState.alliance == "B"){
-                            fieldImage=ImageBitmap.imageResource(id = R.drawable.blue_map)
-                            robot=ImageBitmap.imageResource(id = R.drawable.robot__1_)
+                        var robot = ImageBitmap.imageResource(id = R.drawable.robot)
+
+                        if(formState.alliance == 'B') {
+                            fieldImage = ImageBitmap.imageResource(id = R.drawable.blue_map)
+                            robot = ImageBitmap.imageResource(id = R.drawable.robot__1_)
                         }
+
                         FieldCanvas(viewModel, fieldImage,robot)
                     }
                 }
