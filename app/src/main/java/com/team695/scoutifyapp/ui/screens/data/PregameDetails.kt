@@ -310,7 +310,7 @@ fun PregameDetails(
                         var fieldImage = ImageBitmap.imageResource(id = R.drawable.map)
                         var robot = ImageBitmap.imageResource(id = R.drawable.robot)
 
-                        if(formState.alliance == 'B') {
+                        if(formState.gameDetails.alliance == 'B') {
                             fieldImage = ImageBitmap.imageResource(id = R.drawable.blue_map)
                             robot = ImageBitmap.imageResource(id = R.drawable.robot__1_)
                         }

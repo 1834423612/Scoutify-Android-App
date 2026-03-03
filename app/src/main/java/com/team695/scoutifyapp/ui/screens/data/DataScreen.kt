@@ -297,7 +297,7 @@ private fun ListContent(
                         }
                         SectionType.TELEOP -> {
                             isFlagged = formState.gameDetails.teleopFlag == true
-                            progress = (formState.teleopSectionProgress + formState.gameDetails.endgameProgress)/2
+                            progress = formState.teleopSectionProgress * 0.75f + formState.gameDetails.endgameProgress * .25f
                         }
                         SectionType.POSTGAME -> {
                             isFlagged = formState.gameDetails.postgameFlag == true

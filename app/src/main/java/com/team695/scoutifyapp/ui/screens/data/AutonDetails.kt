@@ -119,7 +119,7 @@ fun AutonDetails(
 
                     var fieldImage = ImageBitmap.imageResource(id = R.drawable.map)
 
-                    if (formState.alliance == 'B') {
+                    if (formState.gameDetails.alliance == 'B') {
                         fieldImage=ImageBitmap.imageResource(id = R.drawable.blue_map)
                     }
 

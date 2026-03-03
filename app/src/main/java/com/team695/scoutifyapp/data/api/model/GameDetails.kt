@@ -89,10 +89,12 @@ data class GameDetails(
     val reviewMatchFlag: Boolean? = null
 ) {
     val endgameClimbPositionFilled: Boolean get() {
-        if(endgameClimbSuccess == true) {
-            return !endgameClimbCode.isNullOrEmpty()
+        val isEmpty: Boolean = endgameClimbCode.isNullOrEmpty()
+        return when(endgameClimbSuccess) {
+            true -> !isEmpty
+            false -> isEmpty
+            null -> false
         }
-        return true
     }
 
     val pregameProgress: Float get() {

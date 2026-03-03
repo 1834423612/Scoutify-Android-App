@@ -11,9 +11,7 @@ import kotlin.time.Duration.Companion.nanoseconds
 
 data class GameFormState(
     // Metadata
-    val matchNum: Int,
     val teamNumber: Int,
-    val alliance: Char, // 'R' or 'B'
 
     //  game detail object
     val gameDetails: GameDetails,

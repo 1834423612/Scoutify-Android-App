@@ -42,9 +42,7 @@ class DataViewModel(
 ) : ViewModel() {
     private val _formState = MutableStateFlow(
         GameFormState(
-            matchNum = -1,
             teamNumber = -1,
-            alliance = 'R', //default to Red alliance
             gameDetails = GameDetails(),
             teleopSection = TeleopSection.UNSTARTED,
         )
@@ -58,24 +56,17 @@ class DataViewModel(
             val taskResult: Result<Task> = taskRepository.getTaskById(taskId)
             val task: Task? = taskResult.getOrNull()
             val matchNum: Int = task?.matchNum ?: -2
-            val teamNum: Int = task?.teamNum ?: -2
-            var alliance = 'R'
 
-            if(matchNum != -2) {
-                alliance = getAllianceForMatch(matchNum.toLong(), teamNum.toLong())
+            if(matchNum == -2) {
+                throw Error("Could not find task_id $taskId for game details")
             }
-            else {
-                Log.e("DataViewModel", "Failed to find task for match")
-            }
-
 
             _formState.update {
                 it.copy(
                     teamNumber = task?.teamNum ?: -2,
-                    matchNum = task?.matchNum ?: -2,
-                    alliance = alliance,
                     gameDetails = gameDetails,
                     teleopSection = if(gameDetails.teleopCompleted == true) TeleopSection.ENDED else TeleopSection.UNSTARTED,
+                    teleopTotalMilliseconds = if(gameDetails.teleopCompleted == true) ENDGAME_END_TIME else 0,
                     paths = gameDetails.autonPath
                         ?.let { jsonToPaths( gameDetails.autonPath) }
                         ?: emptyList()
@@ -88,8 +79,13 @@ class DataViewModel(
             .distinctUntilChanged() // Only save if the state actually changed
             .onEach { currentFormState: GameFormState ->
 
-                // ignore if taskId is not set - still waiting to be loaded from the database
-                if(currentFormState.gameDetails.task_id == null) {
+                // ignore if critical fields are not set - still waiting to be loaded from the database
+                if (
+                    currentFormState.gameDetails.task_id == null ||
+                    currentFormState.gameDetails.matchNumber == null ||
+                    currentFormState.gameDetails.alliance == null ||
+                    currentFormState.gameDetails.alliancePosition == null
+                ) {
                     return@onEach
                 }
 

@@ -50,10 +50,11 @@ class GameDetailRepository(
                 .executeAsOneOrNull()
 
             if (taskEntity == null) {
-                throw Error("Could not find task_id ${taskId} for game details")
+                throw Error("Could not find task_id $taskId for game details")
             }
 
             val teamInfo = getTeamInfo(taskEntity)
+            Log.d("GAME_DETAIL_REPOSITORY", teamInfo.first.toString() + teamInfo.second)
 
             val newDetails = GameDetails(
                 task_id = taskId,
