@@ -88,6 +88,9 @@ class NetworkMonitor(
                 while (isActive) {
                     gameDetailRepository.fetch()
                     gameDetailRepository.isReady.first { it }
+                    gameDetailRepository.push()
+                    gameDetailRepository.isReady.first { it }
+
                     retryFetchUntilSuccess()
                     retryPushUntilSuccess()
                     delay(5.minutes)
