@@ -26,8 +26,7 @@ import kotlinx.coroutines.withContext
 class MatchRepository(
     private val service: MatchService,
     private val db: AppDatabase,
-) {
-
+): Repository {
     val matches: Flow<List<Match>> = db.matchQueries.selectAllMatches()
         .asFlow()
         .mapToList(Dispatchers.IO)
@@ -74,7 +73,7 @@ class MatchRepository(
         }
     }
 
-    suspend fun fetchMatches(): Result<List<Match>> {
+    override suspend fun fetch(): Result<List<Match>> {
         return withContext(Dispatchers.IO) {
             val oldMatches = db.matchQueries.selectAllMatches()
                 .executeAsList()

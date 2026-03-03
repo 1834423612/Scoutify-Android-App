@@ -29,7 +29,8 @@ import kotlin.text.first
 class TaskRepository(
     private val service: TaskService,
     private val db: AppDatabase,
-) {
+): Repository {
+
     val tasks: Flow<List<Task>> = db.taskQueries.selectAllTasks()
         .asFlow()
         .mapToList(Dispatchers.IO)
@@ -97,7 +98,7 @@ class TaskRepository(
         }
     }
 
-    suspend fun fetchTasks(): Result<List<Task>?> {
+    override suspend fun fetch(): Result<List<Task>> {
         return withContext(Dispatchers.IO) {
 
             val oldTasks = db.taskQueries.selectAllTasks()
