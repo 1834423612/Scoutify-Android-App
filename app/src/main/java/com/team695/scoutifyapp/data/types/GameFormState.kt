@@ -61,14 +61,15 @@ data class GameFormState(
 
     //returns integer from 0-100
     val totalProgress: Int get() {
-        return (
-                (
-                        gameDetails.pregameProgress +
-                        autonProgress +
-                        (if (gameDetails.teleopCompleted == true) 1 else 0) +
-                        gameDetails.endgameProgress +
-                        gameDetails.postgameProgress
-                        )/5 * 100)
-            .toInt()
+        val teleopProgress = if (gameDetails.teleopCompleted == true) 1 else 0
+        val progress = (
+                gameDetails.pregameProgress +
+                autonProgress +
+                teleopProgress +
+                gameDetails.endgameProgress +
+                gameDetails.postgameProgress
+        ) / 5 * 100
+
+        return progress.toInt()
     }
 }

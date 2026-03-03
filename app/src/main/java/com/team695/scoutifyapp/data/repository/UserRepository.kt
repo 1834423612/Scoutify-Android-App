@@ -53,7 +53,10 @@ class UserRepository(
 
                 val userRes: UserInfoResponse? = reqRes.data
 
-                if (userRes?.androidID == context.androidID) {
+                if (
+                    userRes != null &&
+                    (userRes.androidID == context.androidID || BuildConfig.DEBUG)
+                ) {
                     db.userQueries.insertUser(
                         name = userRes.name,
                         display_name = userRes.displayName,

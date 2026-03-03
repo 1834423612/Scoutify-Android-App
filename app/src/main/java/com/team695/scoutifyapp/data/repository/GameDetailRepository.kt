@@ -7,9 +7,7 @@ import com.team695.scoutifyapp.data.api.client.ScoutifyClient
 import com.team695.scoutifyapp.data.api.model.GameConstants
 import com.team695.scoutifyapp.data.api.model.GameConstantsStore
 import com.team695.scoutifyapp.data.api.model.GameDetails
-import com.team695.scoutifyapp.data.api.model.GameDetailsActions
 import com.team695.scoutifyapp.data.api.model.Task
-import com.team695.scoutifyapp.data.api.model.convertToList
 import com.team695.scoutifyapp.data.api.model.createGameDetailsFromDb
 import com.team695.scoutifyapp.data.api.model.createTaskFromDb
 import com.team695.scoutifyapp.data.api.service.ApiResponse
@@ -17,6 +15,7 @@ import com.team695.scoutifyapp.data.api.service.GameDetailsService
 import com.team695.scoutifyapp.db.AppDatabase
 import com.team695.scoutifyapp.db.GameDetailsEntity
 import com.team695.scoutifyapp.db.MatchEntity
+import com.team695.scoutifyapp.db.TaskEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,6 +23,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import kotlin.text.toLong
 
 
 class GameDetailRepository(
@@ -45,68 +45,44 @@ class GameDetailRepository(
                 return@withContext gameEntityList[0].createGameDetailsFromDb()
             }
 
-            val newDetails = GameDetails(task_id = taskId)
+            val taskEntity: TaskEntity? = db.taskQueries
+                .selectTaskById(taskId.toLong())
+                .executeAsOneOrNull()
+
+            if (taskEntity == null) {
+                throw Error("Could not find task_id ${taskId} for game details")
+            }
+
+            val teamInfo = getTeamInfo(taskEntity)
+
+            val newDetails = GameDetails(
+                task_id = taskId,
+                matchNumber = teamInfo.first,
+                alliance = teamInfo.second!![0],
+                alliancePosition = teamInfo.second!![1].digitToInt()
+            )
+
             updateDbFromGameDetails(newDetails)
             return@withContext newDetails
         }
     }
 
-    override suspend fun push(): Result<List<GameDetailsActions>> {
-        fun findTeamField(match: MatchEntity, team: Long): String? {
-            return when (team) {
-                match.r1.toLong() -> "r1"
-                match.r2.toLong() -> "r2"
-                match.r3.toLong() -> "r3"
-                match.b1.toLong() -> "b1"
-                match.b2.toLong() -> "b2"
-                match.b3.toLong() -> "b3"
-                else -> null
-            }
-        }
-
+    override suspend fun push(): Result<List<GameDetails>> {
         return withContext(Dispatchers.IO) {
             try {
-                val gameDetails = db.gameDetailsQueries.selectAllGameDetails().executeAsList()
-
-                val gameDetailsConverted = mutableListOf<GameDetailsActions>()
-
-                for (i in gameDetails) {
-
-                    val gameConstants = GameConstantsStore.constants   // non-null
-
-                    val task = db.taskQueries.selectTaskById(i.task_id.toLong()).executeAsOne()
-                    val matchNumber = task.matchNum
-                    val teamNumber = task.teamNum.toLong()
-
-                    val match = db.matchQueries
-                        .selectMatchByNumber(matchNumber)
-                        .executeAsOne()
-
-                    val field = findTeamField(match, teamNumber)
-
-                    val alliance: Char = field?.first() ?: ' '          // Char
-                    val alliancePosition: Int = field?.last()?.digitToInt() ?: 0
-
-                    val user: String = db.userQueries.selectUser().executeAsOne().name ?: ""
-
-                    gameDetailsConverted.addAll(
-                        i.convertToList(
-                            gameConstants,
-                            match.gameType[0],
-                            matchNumber.toInt(),
-                            alliance,
-                            alliancePosition,
-                            user
-                        )
-                    )
-                }
+                val gameDetails = db.gameDetailsQueries
+                    .selectAllGameDetails()
+                    .executeAsList()
+                    .map { entity ->
+                        entity.createGameDetailsFromDb()
+                    }
 
                 service.updateGameDetails(
                     acToken = ScoutifyClient.tokenManager.getToken()!!,
-                    gameDetails = gameDetailsConverted
+                    gameDetails = gameDetails
                 )
 
-                return@withContext Result.success(gameDetailsConverted)
+                return@withContext Result.success(gameDetails)
             } catch (e: Exception) {
                 Log.d("Game details", "Error when trying to push game details: $e")
                 return@withContext Result.failure(e)
@@ -118,6 +94,9 @@ class GameDetailRepository(
         withContext(Dispatchers.IO) {
             db.gameDetailsQueries.insertDetails(
                 task_id = details.task_id!!,
+                alliance = details.alliance!!,
+                alliance_position = details.alliancePosition!!,
+                match_number = details.matchNumber!!,
 
                 // Starting
                 starting_location = details.startingLocation,
@@ -240,6 +219,27 @@ class GameDetailRepository(
                 return@withContext Result.failure(e)
             }
         }
+    }
+
+    private fun getTeamInfo(task: TaskEntity): Pair<Int, String?> {
+        val matchNumber = task.matchNum
+        val teamNumber = task.teamNum.toLong()
+
+        val match = db.matchQueries
+            .selectMatchByNumber(matchNumber)
+            .executeAsOne()
+
+        val field = when (teamNumber) {
+            match.r1 -> "r1"
+            match.r2 -> "r2"
+            match.r3 -> "r3"
+            match.b1 -> "b1"
+            match.b2 -> "b2"
+            match.b3 -> "b3"
+            else -> null
+        }
+
+        return Pair(match.matchNumber.toInt(), field)
     }
 
     /*suspend fun fetchGameDetails(): Result<List<Match>> {
