@@ -26,7 +26,6 @@ import androidx.compose.ui.unit.sp
 import com.team695.scoutifyapp.R
 import com.team695.scoutifyapp.data.types.GameFormState
 import com.team695.scoutifyapp.ui.viewModels.DataViewModel
-import com.team695.scoutifyapp.ui.viewModels.PregameViewModel
 
 //@Composable
 //fun PregameDetails(
@@ -93,7 +92,8 @@ import com.team695.scoutifyapp.ui.viewModels.PregameViewModel
 
 @Composable
 fun FieldCanvas(
-    viewModel: PregameViewModel,
+    dataViewModel: DataViewModel,
+    formState: GameFormState,
     fieldImage: ImageBitmap,
     robotImage: ImageBitmap
 ) {
@@ -107,8 +107,12 @@ fun FieldCanvas(
             .pointerInput(Unit) {
                 detectTapGestures { offset ->
                     // Convert tap Y into normalized 0f–1f
-                    viewModel.position = (offset.y.toDouble() / size.height)
-                        .coerceIn(0.0, 1.0)
+                    dataViewModel.formEvent(
+                        gameDetails = formState.gameDetails.copy(
+                            startingLocation = (offset.y.toDouble() / size.height)
+                                .coerceIn(0.0, 1.0)
+                        )
+                    )
                 }
             }
     ) {
@@ -120,22 +124,19 @@ fun FieldCanvas(
         )
 
         // Draw robot at tapped position
-        viewModel.position.let { tapOffset ->
+        val robotSize = 80f
 
-            val robotSize = 80f
+        // Convert normalized Y (0–1) to pixel position
+        val yPx = (formState.gameDetails.startingLocation?: 0.5) * size.height
 
-            // Convert normalized Y (0–1) to pixel position
-            val yPx = viewModel.position * size.height
-
-            drawImage(
-                image = robotImage,
-                dstOffset = IntOffset(
-                    x = (size.width / 2f - robotSize / 2f).toInt(),
-                    y = (yPx - robotSize / 2f).toInt()
-                ),
-                dstSize = IntSize(robotSize.toInt(), robotSize.toInt())
-            )
-        }
+        drawImage(
+            image = robotImage,
+            dstOffset = IntOffset(
+                x = (size.width / 2f - robotSize / 2f).toInt(),
+                y = (yPx - robotSize / 2f).toInt()
+            ),
+            dstSize = IntSize(robotSize.toInt(), robotSize.toInt())
+        )
     }
 }
 
@@ -201,9 +202,8 @@ fun FieldCanvas(
 //
 @Composable
 fun PregameDetails(
-    dataViewModel: DataViewModel,
     formState: GameFormState,
-    viewModel: PregameViewModel
+    dataViewModel: DataViewModel
 ) {
     Box(
         modifier = Modifier
@@ -315,7 +315,12 @@ fun PregameDetails(
                             robot = ImageBitmap.imageResource(id = R.drawable.robot__1_)
                         }
 
-                        FieldCanvas(viewModel, fieldImage,robot)
+                        FieldCanvas(
+                            dataViewModel=dataViewModel,
+                            formState=formState,
+                            fieldImage=fieldImage,
+                            robotImage=robot
+                        )
                     }
                 }
             }

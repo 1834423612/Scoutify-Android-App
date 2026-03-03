@@ -78,7 +78,6 @@ import com.team695.scoutifyapp.ui.theme.LightGunmetal
 import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.theme.mediumCornerRadius
 import com.team695.scoutifyapp.ui.theme.smallCornerRadius
-import com.team695.scoutifyapp.ui.viewModels.PregameViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -457,15 +456,9 @@ private fun DetailContent(
                 //animated stuff goes here
                 when(section.type) {
                     SectionType.PREGAME -> {
-                        val pregameViewModel = remember(formState.matchNum) {
-                            PregameViewModel().apply {
-                                position = formState.gameDetails.startingLocation ?:.5
-                            }
-                        }
                         PregameDetails(
                             dataViewModel = dataViewModel,
                             formState = formState,
-                            viewModel = pregameViewModel
                         )
                     }
                     SectionType.AUTON -> {
