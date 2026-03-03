@@ -29,7 +29,7 @@ import kotlinx.coroutines.withContext
 class GameDetailRepository(
     private val service: GameDetailsService,
     private val db: AppDatabase,
-) {
+): Repository {
 
     val isReady: MutableStateFlow<Boolean> = MutableStateFlow(false)
     var pulledConstants = false
@@ -51,7 +51,7 @@ class GameDetailRepository(
         }
     }
 
-    suspend fun pushGameDetails(): Result<List<GameDetailsActions>> {
+    override suspend fun push(): Result<List<GameDetailsActions>> {
         fun findTeamField(match: MatchEntity, team: Long): String? {
             return when (team) {
                 match.r1.toLong() -> "r1"
@@ -79,7 +79,7 @@ class GameDetailRepository(
                     val teamNumber = task.teamNum.toLong()
 
                     val match = db.matchQueries
-                        .selectMatchByNumber(matchNumber )
+                        .selectMatchByNumber(matchNumber)
                         .executeAsOne()
 
                     val field = findTeamField(match, teamNumber)
@@ -187,8 +187,6 @@ class GameDetailRepository(
                 postgame_over_bump = details.postgameOverBump,
                 postgame_flag = details.postgameFlag,
             )
-
-            pushGameDetails()
         }
     }
 

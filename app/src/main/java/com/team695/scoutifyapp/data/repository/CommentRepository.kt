@@ -3,6 +3,7 @@ package com.team695.scoutifyapp.data.repository
 import android.util.Log
 import com.team695.scoutifyapp.data.api.client.ScoutifyClient
 import com.team695.scoutifyapp.data.api.model.CommentBody
+import com.team695.scoutifyapp.data.api.model.CommentServerBody
 import com.team695.scoutifyapp.data.api.model.convertToServerBody
 import com.team695.scoutifyapp.data.api.service.CommentService
 import com.team695.scoutifyapp.db.AppDatabase
@@ -12,21 +13,26 @@ import kotlinx.coroutines.withContext
 class CommentRepository (
     private val db: AppDatabase,
     private val service: CommentService
-) {
+): Repository {
 
-    suspend fun uploadComments() {
-        withContext(Dispatchers.IO) {
+    override suspend fun push(): Result<List<CommentServerBody>> {
+        return withContext(Dispatchers.IO) {
             try {
-                val allComments = db.commentsQueries.selectAllComments().executeAsList()
+                val submittedComments = db.commentsQueries.selectAllComments().executeAsList()
+                val commentServerFormat = submittedComments.map { it.convertToServerBody() }
 
                 service.uploadComments(
                     acToken = ScoutifyClient.tokenManager.getToken()!!,
-                    comments = allComments.map { it.convertToServerBody() }
+                    comments = commentServerFormat
                 )
 
                 Log.d("Comments", "Comments uploaded successfully!")
+
+                return@withContext Result.success(commentServerFormat)
             } catch (e: Exception) {
                 Log.e("Comments", "Error uploading comments: $e")
+
+                return@withContext Result.failure(e)
             }
         }
     }
@@ -48,8 +54,6 @@ class CommentRepository (
                     )
                 }
             }
-
-            uploadComments()
         }
     }
 
