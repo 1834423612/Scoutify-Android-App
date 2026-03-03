@@ -89,6 +89,7 @@ class NetworkMonitor(
                     gameDetailRepository.fetch()
                     gameDetailRepository.isReady.first { it }
                     retryFetchUntilSuccess()
+                    retryPushUntilSuccess()
                     delay(5.minutes)
                 }
             }
@@ -127,29 +128,30 @@ class NetworkMonitor(
 
     suspend fun retryPushUntilSuccess() {
         withContext(Dispatchers.IO) {
-            var matchResult = matchRepository.push()
-            var taskResult = taskRepository.push()
-            var commentResult = commentRepository.push()
+            val fetches: MutableList<Repository> = mutableListOf()
+
+            repoList.forEach {
+                if (it.push().isFailure) {
+                    fetches.add(it)
+                }
+            }
 
             var duration = 10.seconds
-
-            while (matchResult.isFailure || taskResult.isFailure) {
+            while (fetches.isNotEmpty()) {
                 isConnected.first { it }
 
                 delay(duration)
 
-                if (matchResult.isFailure) {
-                    matchResult = matchRepository.push()
-                }
-
-                if (taskResult.isFailure) {
-                    taskResult = taskRepository.push()
+                fetches.forEach {
+                    if (it.push().isSuccess) {
+                        fetches.remove(it)
+                    }
                 }
 
                 duration = (duration + 10.seconds).coerceAtMost(40.seconds)
             }
 
-            Log.d("HOME", "Fetched data successfully!")
+            Log.d("HOME", "Pushed data successfully!")
         }
     }
 }
