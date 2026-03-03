@@ -96,6 +96,7 @@ dependencies {
     implementation(libs.accompanist.systemuicontroller)
     implementation(libs.androidx.webkit)
     implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation(libs.androidx.lifecycle.process)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

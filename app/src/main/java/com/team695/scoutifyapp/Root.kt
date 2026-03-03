@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeContentPadding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -23,6 +24,7 @@ import com.team695.scoutifyapp.data.repository.TaskRepository
 import com.team695.scoutifyapp.data.repository.UserRepository
 //import com.team695.scoutifyapp.ui.theme.*
 import com.team695.scoutifyapp.ui.theme.Background
+import kotlinx.coroutines.Dispatchers
 
 @Composable
 fun Root(

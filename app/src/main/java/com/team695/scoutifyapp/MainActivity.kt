@@ -4,6 +4,9 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.lifecycle.ProcessLifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.team695.scoutifyapp.data.api.NetworkMonitor
 import com.team695.scoutifyapp.data.api.client.CasdoorClient
@@ -29,6 +32,8 @@ import com.team695.scoutifyapp.data.repository.CommentRepository
 import com.team695.scoutifyapp.data.repository.GameDetailRepository
 import com.team695.scoutifyapp.db.GameConstantsEntity
 import com.team695.scoutifyapp.ui.extensions.androidID
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -112,7 +117,18 @@ class MainActivity : ComponentActivity() {
         val gameDetailRepository = GameDetailRepository(service = gameDetailsService, db = db)
         val commentRepository = CommentRepository(db = db, service = commentService)
 
-        val networkMonitor = NetworkMonitor(applicationContext)
+        val networkMonitor = NetworkMonitor(
+            applicationContext,
+            taskRepository = taskRepository,
+            matchRepository = matchRepository,
+            gameDetailRepository = gameDetailRepository,
+            commentRepository = commentRepository
+        )
+        networkMonitor.startMonitoring()
+
+        ProcessLifecycleOwner.get().lifecycleScope.launch {
+            networkMonitor.networkSync()
+        }
 
         setContent {
             ScoutifyTheme {

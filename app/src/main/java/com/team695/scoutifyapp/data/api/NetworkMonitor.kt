@@ -5,16 +5,38 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
+import android.util.Log
 import com.team695.scoutifyapp.data.api.service.NetworkService
+import com.team695.scoutifyapp.data.repository.CommentRepository
+import com.team695.scoutifyapp.data.repository.GameDetailRepository
+import com.team695.scoutifyapp.data.repository.MatchRepository
+import com.team695.scoutifyapp.data.repository.Repository
+import com.team695.scoutifyapp.data.repository.TaskRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlin.time.Duration.Companion.minutes
+import kotlin.time.Duration.Companion.seconds
 
 
 // IMPLEMENTATION OF NetworkService
 // Please keep in mind that the NetworkMonitor MUST be actively monitoring
 // by calling NetworkMonitor.startMonitoring() in order for NetworkMonitor.isConnected
 // to return the correct network status
-class NetworkMonitor(private val context: Context) : NetworkService {
+class NetworkMonitor(
+    private val context: Context,
+    private val taskRepository: TaskRepository,
+    private val matchRepository: MatchRepository,
+    private val gameDetailRepository: GameDetailRepository,
+    private val commentRepository: CommentRepository
+) : NetworkService {
+    lateinit var repoList: List<Repository>
     private val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE)
             as ConnectivityManager
     private val _isConnected = MutableStateFlow(false)
@@ -37,6 +59,12 @@ class NetworkMonitor(private val context: Context) : NetworkService {
     }
 
     init {
+        repoList = listOf(
+            matchRepository,
+            taskRepository,
+            commentRepository
+        )
+
         startMonitoring()
     }
 
@@ -52,5 +80,76 @@ class NetworkMonitor(private val context: Context) : NetworkService {
     override fun stopMonitoring() {
         // unregister the listener
         connectivityManager.unregisterNetworkCallback(networkCallback)
+    }
+
+    override suspend fun networkSync() {
+        coroutineScope {
+            this.launch(Dispatchers.IO) {
+                while (isActive) {
+                    gameDetailRepository.fetch()
+                    gameDetailRepository.isReady.first { it }
+                    retryFetchUntilSuccess()
+                    delay(5.minutes)
+                }
+            }
+        }
+    }
+
+    private suspend fun retryFetchUntilSuccess() {
+        withContext(Dispatchers.IO) {
+
+            val fetches: MutableList<Repository> = mutableListOf()
+
+            repoList.forEach {
+                if (it.fetch().isFailure) {
+                    fetches.add(it)
+                }
+            }
+
+            var duration = 10.seconds
+            while (fetches.isNotEmpty()) {
+                isConnected.first { it }
+
+                delay(duration)
+
+                fetches.forEach {
+                    if (it.fetch().isSuccess) {
+                        fetches.remove(it)
+                    }
+                }
+
+                duration = (duration + 10.seconds).coerceAtMost(40.seconds)
+            }
+
+            Log.d("HOME", "Fetched data successfully!")
+        }
+    }
+
+    suspend fun retryPushUntilSuccess() {
+        withContext(Dispatchers.IO) {
+            var matchResult = matchRepository.push()
+            var taskResult = taskRepository.push()
+            var commentResult = commentRepository.push()
+
+            var duration = 10.seconds
+
+            while (matchResult.isFailure || taskResult.isFailure) {
+                isConnected.first { it }
+
+                delay(duration)
+
+                if (matchResult.isFailure) {
+                    matchResult = matchRepository.push()
+                }
+
+                if (taskResult.isFailure) {
+                    taskResult = taskRepository.push()
+                }
+
+                duration = (duration + 10.seconds).coerceAtMost(40.seconds)
+            }
+
+            Log.d("HOME", "Fetched data successfully!")
+        }
     }
 }
