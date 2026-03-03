@@ -212,10 +212,14 @@ class GameDetailRepository(
 
                     GameConstantsStore.set(result.data)
 
+                    val year = result.data.frc_season_master_sm_year
+                    val event_code = result.data.competition_master_cm_event_code
+                    val game_type = result.data.game_matchup_gm_game_type
+
                     db.gameConstantsQueries.insertOrUpdateConstants(
-                        frc_season_master_sm_year = result.data.frc_season_master_sm_year,
-                        competition_master_cm_event_code = result.data.competition_master_cm_event_code,
-                        game_matchup_gm_game_type = result.data.game_matchup_gm_game_type
+                        frc_season_master_sm_year = year,
+                        competition_master_cm_event_code = event_code,
+                        game_matchup_gm_game_type = game_type
                     )
 
                     isReady.value = true
@@ -223,11 +227,15 @@ class GameDetailRepository(
                     return@withContext Result.success(result.data)
                 } else {
                     pulledConstants = false
-                    return@withContext Result.failure(Exception("Game constants are empty"))
+
+                    return@withContext Result.failure(
+                        Exception("Game constants are empty")
+                    )
                 }
             } catch (e: Exception) {
                 pulledConstants = false
                 isReady.value = true
+
                 Log.e("Game Constants", "Error when trying to fetch gameConstants: $e")
                 return@withContext Result.failure(e)
             }
