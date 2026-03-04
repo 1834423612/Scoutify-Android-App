@@ -108,27 +108,29 @@ class NetworkMonitor(
     private suspend fun retryFetchUntilSuccess() {
         withContext(Dispatchers.IO) {
 
-            val fetches: MutableList<Repository> = mutableListOf()
+            val fetchList: MutableList<Repository> = mutableListOf()
 
             repoList.forEach {
                 if (it.fetch().isFailure) {
-                    fetches.add(it)
+                    fetchList.add(it)
                 }
             }
 
             var duration = RETRY_BASE_INTERVAL
 
-            while (fetches.isNotEmpty()) {
+            while (fetchList.isNotEmpty()) {
                 isConnected.first { it }
 
                 delay(duration)
 
-                fetches.forEach {
-                    if (it.fetch().isSuccess) {
-                        fetches.remove(it)
+                val iter = fetchList.iterator()
+                while (iter.hasNext()) {
+                    val repo = iter.next()
+
+                    if (repo.fetch().isSuccess) {
+                        iter.remove()
                     }
                 }
-
                 duration = (duration + RETRY_BASE_INTERVAL).coerceAtMost(40.seconds)
             }
 
@@ -138,24 +140,27 @@ class NetworkMonitor(
 
     suspend fun retryPushUntilSuccess() {
         withContext(Dispatchers.IO) {
-            val fetches: MutableList<Repository> = mutableListOf()
+            val pushList: MutableList<Repository> = mutableListOf()
 
             repoList.forEach {
                 if (it.push().isFailure) {
-                    fetches.add(it)
+                    pushList.add(it)
                 }
             }
 
             var duration = RETRY_BASE_INTERVAL
 
-            while (fetches.isNotEmpty()) {
+            while (pushList.isNotEmpty()) {
                 isConnected.first { it }
 
                 delay(duration)
 
-                fetches.forEach {
-                    if (it.push().isSuccess) {
-                        fetches.remove(it)
+                val iter = pushList.iterator()
+                while (iter.hasNext()) {
+                    val repo = iter.next()
+
+                    if (repo.push().isSuccess) {
+                        iter.remove()
                     }
                 }
 

@@ -295,7 +295,8 @@ fun TowerDiagram(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
-                                Log.d("SPACE_KEY", formState.gameDetails.endgameClimbCode ?: "null")
+                                //Log.d("SPACE_KEY", formState.gameDetails.endgameClimbCode ?: "null")
+
                                 val positions = listOf(
                                     "L",
                                     "CL",

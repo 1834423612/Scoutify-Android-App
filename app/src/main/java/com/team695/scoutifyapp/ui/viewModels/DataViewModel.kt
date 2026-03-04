@@ -65,8 +65,8 @@ class DataViewModel(
                 it.copy(
                     teamNumber = task?.teamNum ?: -2,
                     gameDetails = gameDetails,
-                    teleopSection = if(gameDetails.teleopCompleted == true) TeleopSection.ENDED else TeleopSection.UNSTARTED,
-                    teleopTotalMilliseconds = if(gameDetails.teleopCompleted == true) ENDGAME_END_TIME else 0,
+                    teleopSection = if (gameDetails.teleopCompleted == true) TeleopSection.ENDED else TeleopSection.UNSTARTED,
+                    teleopTotalMilliseconds = if (gameDetails.teleopCompleted == true) ENDGAME_END_TIME else 0,
                     paths = gameDetails.autonPath
                         ?.let { jsonToPaths( gameDetails.autonPath) }
                         ?: emptyList()
