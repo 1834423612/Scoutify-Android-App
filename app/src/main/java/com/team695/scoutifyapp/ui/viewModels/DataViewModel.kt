@@ -143,11 +143,22 @@ class DataViewModel(
 
     //deltaTime is in milliseconds
     fun updateTime(deltaTime: Int) {
-        _formState.update {
-            it.copy(
-                teleopTotalMilliseconds = it.teleopTotalMilliseconds + deltaTime,
-                teleopCachedMilliseconds = it.teleopCachedMilliseconds + deltaTime,
-            )
+        if (!_formState.value.teleopRunning) {
+            val dtEndgame = ENDGAME_END_TIME - _formState.value.teleopTotalMilliseconds
+            println("ENDGAME DELTA: $dtEndgame")
+            _formState.update {
+                it.copy(
+                    teleopTotalMilliseconds = ENDGAME_END_TIME,
+                    teleopCachedMilliseconds = it.teleopCachedMilliseconds + dtEndgame
+                )
+            }
+        } else {
+            _formState.update {
+                it.copy(
+                    teleopTotalMilliseconds = it.teleopTotalMilliseconds + deltaTime,
+                    teleopCachedMilliseconds = it.teleopCachedMilliseconds + deltaTime,
+                )
+            }
         }
     }
 

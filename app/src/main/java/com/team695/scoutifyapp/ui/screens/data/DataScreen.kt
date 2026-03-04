@@ -120,31 +120,38 @@ fun DataScreen(
                 val deltaTime = (frameTimeMillis-startTime).toInt()
                 val switchTime: Int
                 val nextSection: TeleopSection
+
                 when(formState.teleopSection) {
                     TeleopSection.TRANSITION -> {
                         switchTime = TRANSITION_END_TIME
                         nextSection = TeleopSection.SHIFT1
                     }
+
                     TeleopSection.SHIFT1 -> {
                         switchTime = SHIFT1_END_TIME
                         nextSection = TeleopSection.SHIFT2
                     }
+
                     TeleopSection.SHIFT2 -> {
                         switchTime = SHIFT2_END_TIME
                         nextSection = TeleopSection.SHIFT3
                     }
+
                     TeleopSection.SHIFT3 -> {
                         switchTime = SHIFT3_END_TIME
                         nextSection = TeleopSection.SHIFT4
                     }
+
                     TeleopSection.SHIFT4 -> {
                         switchTime = SHIFT4_END_TIME
                         nextSection = TeleopSection.ENDGAME
                     }
+
                     TeleopSection.ENDGAME -> {
                         switchTime = ENDGAME_END_TIME
                         nextSection = TeleopSection.ENDED
                     }
+
                     else -> {
                         switchTime = Int.MAX_VALUE
                         nextSection = TeleopSection.ENDED
@@ -152,9 +159,11 @@ fun DataScreen(
                 }
 
                 val newTime = formState.teleopTotalMilliseconds + deltaTime
+
                 if (newTime > switchTime) {
                     if(nextSection == TeleopSection.ENDED) {
                         dataViewModel.endTeleop()
+
                         //mark teleop as done
                         dataViewModel.formEvent(
                             gameDetails = formState.gameDetails.copy(
@@ -162,8 +171,10 @@ fun DataScreen(
                             )
                         )
                     }
+
                     dataViewModel.setTeleopSection(teleopSection = nextSection, teleopTotalMilliseconds = switchTime)
                 }
+
                 dataViewModel.updateTime(deltaTime = (frameTimeMillis-startTime).toInt())
                 startTime = frameTimeMillis
             }
