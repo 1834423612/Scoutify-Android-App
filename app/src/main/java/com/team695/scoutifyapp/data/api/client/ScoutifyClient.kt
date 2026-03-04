@@ -14,7 +14,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object ScoutifyClient {
     lateinit var tokenManager: TokenManager
-    private const val BASE_URL = "https://api.team695.com/"
+    private const val BASE_URL = "http://172.20.10.2:3000/"
     private lateinit var retrofit: Retrofit
 
     fun initialize(context: Context) {

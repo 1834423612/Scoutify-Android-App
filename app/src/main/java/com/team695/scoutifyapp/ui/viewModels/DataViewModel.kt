@@ -78,7 +78,7 @@ class DataViewModel(
             .debounce(2000L)
             .distinctUntilChanged() // Only save if the state actually changed
             .onEach { currentFormState: GameFormState ->
-
+                println("FORM STATE: $currentFormState")
                 // ignore if critical fields are not set - still waiting to be loaded from the database
                 if (
                     currentFormState.gameDetails.task_id == null ||

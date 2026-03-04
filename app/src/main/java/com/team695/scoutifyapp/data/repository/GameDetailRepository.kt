@@ -78,6 +78,8 @@ class GameDetailRepository(
                         entity.createGameDetailsFromDb()
                     }
 
+                println("game detail push: $gameDetails")
+
                 service.updateGameDetails(
                     acToken = ScoutifyClient.tokenManager.getToken()!!,
                     gameDetails = gameDetails

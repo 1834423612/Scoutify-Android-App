@@ -21,12 +21,17 @@ class CommentRepository (
                 val submittedComments = db.commentsQueries.selectAllComments().executeAsList()
                 val commentServerFormat = submittedComments.map { it.convertToServerBody() }
 
-                service.uploadComments(
-                    acToken = ScoutifyClient.tokenManager.getToken()!!,
-                    comments = commentServerFormat
-                )
+                if (submittedComments.isNotEmpty()) {
+                    service.uploadComments(
+                        acToken = ScoutifyClient.tokenManager.getToken()!!,
+                        comments = commentServerFormat
+                    )
 
-                Log.d("Comments", "Comments uploaded successfully!")
+                    Log.d("Comments", "Comments uploaded successfully!")
+                } else {
+                    Log.d("Comments", "No comments to upload!")
+                }
+
 
                 return@withContext Result.success(commentServerFormat)
             } catch (e: Exception) {

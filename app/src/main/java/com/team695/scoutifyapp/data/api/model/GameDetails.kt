@@ -139,6 +139,9 @@ fun GameDetailsEntity.createGameDetailsFromDb(): GameDetails {
     return GameDetails(
         id = this.id,
         task_id = this.task_id,
+        alliance = this.alliance,
+        alliancePosition = this.alliance_position,
+        matchNumber = this.match_number,
 
         // Starting & Preload
         startingLocation = this.starting_location,

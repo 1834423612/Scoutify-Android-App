@@ -48,7 +48,10 @@ class NetworkMonitor(
             network: Network,
             capabilities: NetworkCapabilities
         ) {
-            val validated = capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+            val validated = capabilities.hasCapability(
+                 NetworkCapabilities.NET_CAPABILITY_VALIDATED
+            )
+
             _isConnected.value = validated
         }
 
@@ -93,7 +96,7 @@ class NetworkMonitor(
 
                     retryFetchUntilSuccess()
                     retryPushUntilSuccess()
-                    delay(5.minutes)
+                    delay(10.seconds)
                 }
             }
         }
@@ -125,7 +128,7 @@ class NetworkMonitor(
                 duration = (duration + 10.seconds).coerceAtMost(40.seconds)
             }
 
-            Log.d("HOME", "Fetched data successfully!")
+            Log.d("Network_Monitor", "Fetched data successfully!")
         }
     }
 
@@ -154,7 +157,7 @@ class NetworkMonitor(
                 duration = (duration + 10.seconds).coerceAtMost(40.seconds)
             }
 
-            Log.d("HOME", "Pushed data successfully!")
+            Log.d("Network_Monitor", "Pushed data successfully!")
         }
     }
 }
