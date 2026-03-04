@@ -35,7 +35,7 @@ fun CommentsEntity.convertToServerBody(): CommentServerBody {
             GameConstantsStore.constants.competition_master_cm_event_code,
         game_matchup_gm_game_type = GameConstantsStore.constants.game_matchup_gm_game_type,
         game_matchup_gm_number = match_number,
-        game_matchup_gm_alliance = alliance!![0],
+        game_matchup_gm_alliance = alliance!![0].uppercaseChar(),
         game_matchup_gm_alliance_position = alliance_position!!,
         gc_comment = comment ?: ""
     )

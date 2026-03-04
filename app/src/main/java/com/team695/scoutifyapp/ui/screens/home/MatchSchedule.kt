@@ -87,6 +87,7 @@ fun MatchSchedule(
     val matchState by homeViewModel.matchState.collectAsStateWithLifecycle()
     val readyState by homeViewModel.isReady.collectAsStateWithLifecycle()
     val teamState by homeViewModel.teamsState.collectAsStateWithLifecycle()
+
     val sortedMatches = remember(matchState) {
         matchState?.sorted()
     }

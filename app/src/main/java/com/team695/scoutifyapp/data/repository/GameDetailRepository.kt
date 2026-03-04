@@ -88,7 +88,7 @@ class GameDetailRepository(
             val newDetails = GameDetails(
                 task_id = taskId,
                 matchNumber = teamInfo.first,
-                alliance = teamInfo.second!![0],
+                alliance = teamInfo.second!![0].uppercaseChar(),
                 alliancePosition = teamInfo.second!![1].digitToInt()
             )
 
@@ -102,7 +102,7 @@ class GameDetailRepository(
         withContext(Dispatchers.IO) {
             db.gameDetailsQueries.insertDetails(
                 task_id = details.task_id!!,
-                alliance = details.alliance!!,
+                alliance = details.alliance!!.uppercaseChar(),
                 alliance_position = details.alliancePosition!!,
                 match_number = details.matchNumber!!,
 
