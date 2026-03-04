@@ -119,7 +119,7 @@ fun MatchSchedule(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(150.dp) // Changed back to a fixed height
+                    .height(if (!teamState.isNullOrEmpty()) 150.dp else 100.dp) // Changed back to a fixed height
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.bluffcountry),
@@ -246,6 +246,14 @@ fun MatchSchedule(
                         }
 
                         Spacer(modifier = Modifier.height(12.dp))
+                    }
+                    else {
+                        Text(
+                            text = "Not currently assigned to scout",
+                            color = TextSecondary,
+                            fontSize = 12.sp,
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        )
                     }
                 }
             }

@@ -61,6 +61,8 @@ class DataViewModel(
                 throw Error("Could not find task_id $taskId for game details")
             }
 
+            Log.d("GAME_DETAILS_SAVED", gameDetails.toString())
+
             _formState.update {
                 it.copy(
                     teamNumber = task?.teamNum ?: -2,
