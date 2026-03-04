@@ -86,8 +86,10 @@ class DataViewModel(
                     currentFormState.gameDetails.alliance == null ||
                     currentFormState.gameDetails.alliancePosition == null
                 ) {
+                    Log.d("Dataviewmodel", "Do not save ${currentFormState.gameDetails.robotOnField}")
                     return@onEach
                 }
+                Log.d("Dataviewmodel", "Save ${currentFormState.gameDetails.robotOnField}")
 
                 // update auton path in game details, bypass the state flow
                 val gameDetails: GameDetails = currentFormState.gameDetails.copy(

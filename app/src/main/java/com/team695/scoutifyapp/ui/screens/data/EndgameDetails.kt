@@ -1,5 +1,6 @@
 package com.team695.scoutifyapp.ui.screens.data
 
+import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
@@ -294,6 +295,7 @@ fun TowerDiagram(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
+                                Log.d("SPACE_KEY", formState.gameDetails.endgameClimbCode ?: "null")
                                 val positions = listOf(
                                     "L",
                                     "CL",
