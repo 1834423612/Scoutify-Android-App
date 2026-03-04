@@ -69,15 +69,15 @@ class CommentRepository (
 
         // Print each comment
         allComments.forEach { comment ->
-            println("Comment ID: ${comment.id}")
-            println("Match Number: ${comment.match_number}")
-            println("Team Number: ${comment.team_number}")
-            println("Alliance: ${comment.alliance}")
-            println("Alliance Position: ${comment.alliance_position}")
-            println("Timestamp: ${comment.timestamp}")
-            println("Comment: ${comment.comment}")
-            println("Submitted: ${comment.submitted}")
-            println("----------")
+            Log.d("Comments", "Comment ID: ${comment.id}")
+            Log.d("Comments", "Match Number: ${comment.match_number}")
+            Log.d("Comments", "Team Number: ${comment.team_number}")
+            Log.d("Comments", "Alliance: ${comment.alliance}")
+            Log.d("Comments", "Alliance Position: ${comment.alliance_position}")
+            Log.d("Comments", "Timestamp: ${comment.timestamp}")
+            Log.d("Comments", "Comment: ${comment.comment}")
+            Log.d("Comments", "Submitted: ${comment.submitted}")
+            Log.d("Comments", "----------")
         }
     }
 
