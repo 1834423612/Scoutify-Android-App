@@ -146,7 +146,8 @@ class NetworkMonitor(
                 }
             }
 
-            var duration = 10.seconds
+            var duration = RETRY_BASE_INTERVAL
+
             while (fetches.isNotEmpty()) {
                 isConnected.first { it }
 
@@ -158,7 +159,7 @@ class NetworkMonitor(
                     }
                 }
 
-                duration = (duration + 10.seconds).coerceAtMost(40.seconds)
+                duration = (duration + RETRY_BASE_INTERVAL).coerceAtMost(40.seconds)
             }
 
             Log.d("Network_Monitor", "Pushed all data successfully!")
