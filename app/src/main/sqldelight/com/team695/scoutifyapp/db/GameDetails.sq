@@ -159,3 +159,8 @@ VALUES (?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
 selectDetailsForTask:
 SELECT * FROM gameDetailsEntity
 WHERE task_id = ?;
+
+selectCompletedTasks:
+SELECT gameDetailsEntity.* FROM gameDetailsEntity
+INNER JOIN taskEntity ON gameDetailsEntity.task_id = taskEntity.id
+WHERE taskEntity.progress = 100;

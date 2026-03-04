@@ -24,11 +24,15 @@ import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
 
+val FETCH_INTERVAL = 5.minutes
+val RETRY_BASE_INTERVAL = 10.seconds
 
-// IMPLEMENTATION OF NetworkService
-// Please keep in mind that the NetworkMonitor MUST be actively monitoring
-// by calling NetworkMonitor.startMonitoring() in order for NetworkMonitor.isConnected
-// to return the correct network status
+/*
+  IMPLEMENTATION OF NetworkService
+    Please keep in mind that the NetworkMonitor MUST be actively monitoring
+    by calling NetworkMonitor.startMonitoring() in order for NetworkMonitor.isConnected
+    to return the correct network status
+ */
 class NetworkMonitor(
     private val context: Context,
     private val taskRepository: TaskRepository,
@@ -91,12 +95,11 @@ class NetworkMonitor(
                 while (isActive) {
                     gameDetailRepository.fetch()
                     gameDetailRepository.isReady.first { it }
-                    gameDetailRepository.push()
-                    gameDetailRepository.isReady.first { it }
 
                     retryFetchUntilSuccess()
+                    gameDetailRepository.push()
                     retryPushUntilSuccess()
-                    delay(10.seconds)
+                    delay(FETCH_INTERVAL)
                 }
             }
         }
@@ -113,7 +116,8 @@ class NetworkMonitor(
                 }
             }
 
-            var duration = 10.seconds
+            var duration = RETRY_BASE_INTERVAL
+
             while (fetches.isNotEmpty()) {
                 isConnected.first { it }
 
@@ -125,7 +129,7 @@ class NetworkMonitor(
                     }
                 }
 
-                duration = (duration + 10.seconds).coerceAtMost(40.seconds)
+                duration = (duration + RETRY_BASE_INTERVAL).coerceAtMost(40.seconds)
             }
 
             Log.d("Network_Monitor", "Fetched data successfully!")
@@ -157,7 +161,7 @@ class NetworkMonitor(
                 duration = (duration + 10.seconds).coerceAtMost(40.seconds)
             }
 
-            Log.d("Network_Monitor", "Pushed data successfully!")
+            Log.d("Network_Monitor", "Pushed all data successfully!")
         }
     }
 }

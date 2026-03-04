@@ -27,9 +27,9 @@ class CommentRepository (
                         comments = commentServerFormat
                     )
 
-                    Log.d("Comments", "Comments uploaded successfully!")
+                    Log.d("Comments", "Comments uploaded successfully")
                 } else {
-                    Log.d("Comments", "No comments to upload!")
+                    Log.d("Comments", "No comments to upload")
                 }
 
 

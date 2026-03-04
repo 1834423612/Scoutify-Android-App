@@ -35,6 +35,35 @@ class GameDetailRepository(
     var pulledConstants = false
         private set
 
+    override suspend fun push(): Result<List<GameDetails>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val gameDetails = db.gameDetailsQueries
+                    .selectCompletedTasks()
+                    .executeAsList()
+                    .map { entity ->
+                        entity.createGameDetailsFromDb()
+                    }
+
+                if (gameDetails.isNotEmpty()) {
+                    service.updateGameDetails(
+                        acToken = ScoutifyClient.tokenManager.getToken()!!,
+                        gameDetails = gameDetails
+                    )
+
+                    Log.d("Game Details", "Pushed game details successfully")
+                }  else {
+                    Log.d("Game Details", "No game details to push")
+                }
+
+                return@withContext Result.success(gameDetails)
+            } catch (e: Exception) {
+                Log.d("Game details", "Error when trying to push game details: $e")
+                return@withContext Result.failure(e)
+            }
+        }
+    }
+
     suspend fun getGameDetailsByTaskId(taskId: Int): GameDetails {
         return withContext(Dispatchers.IO) {
             val gameEntityList: List<GameDetailsEntity> = db.gameDetailsQueries
@@ -68,28 +97,6 @@ class GameDetailRepository(
         }
     }
 
-    override suspend fun push(): Result<List<GameDetails>> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val gameDetails = db.gameDetailsQueries
-                    .selectAllGameDetails()
-                    .executeAsList()
-                    .map { entity ->
-                        entity.createGameDetailsFromDb()
-                    }
-
-                service.updateGameDetails(
-                    acToken = ScoutifyClient.tokenManager.getToken()!!,
-                    gameDetails = gameDetails
-                )
-
-                return@withContext Result.success(gameDetails)
-            } catch (e: Exception) {
-                Log.d("Game details", "Error when trying to push game details: $e")
-                return@withContext Result.failure(e)
-            }
-        }
-    }
 
     suspend fun updateDbFromGameDetails(details: GameDetails) {
         withContext(Dispatchers.IO) {
