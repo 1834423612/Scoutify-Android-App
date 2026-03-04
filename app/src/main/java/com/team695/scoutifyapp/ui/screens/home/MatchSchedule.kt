@@ -87,9 +87,12 @@ fun MatchSchedule(
     val matchState by homeViewModel.matchState.collectAsStateWithLifecycle()
     val readyState by homeViewModel.isReady.collectAsStateWithLifecycle()
     val teamState by homeViewModel.teamsState.collectAsStateWithLifecycle()
+    val sortedMatches = remember(matchState) {
+        matchState?.sorted()
+    }
 
     val filteredMatches = remember(searchQuery, matchState) {
-        matchState?.sorted()?.filter { m ->
+        sortedMatches?.filter { m ->
             searchQuery.isBlank()
                     || m.redAlliance.any{ it.toString().contains(searchQuery) }
                     || m.blueAlliance.any{ it.toString().contains(searchQuery) }
@@ -283,7 +286,7 @@ fun MatchSchedule(
                 ) {
 
                     val highlightedMatch = calculateHighlight(
-                        matches = filteredMatches,
+                        matches = sortedMatches!!,
                         time = System.currentTimeMillis()
                     )
 
