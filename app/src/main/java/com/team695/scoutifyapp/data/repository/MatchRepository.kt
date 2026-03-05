@@ -45,6 +45,7 @@ class MatchRepository(
         .flowOn(Dispatchers.IO)
 
     private fun updateDbFromMatchList(matches: List<Match>) {
+        println(matches)
         db.transaction {
             matches.forEach {
                 db.matchQueries.insertMatch(
@@ -82,14 +83,17 @@ class MatchRepository(
                 }
 
             try {
-                val apiMatches: ApiResponse<List<Match>> = service.listMatches(
+                val apiMatches: ApiResponse<List<Match?>> = service.listMatches(
                     acToken = ScoutifyClient.tokenManager.getToken() ?: ""
                 )
                 
                 if (apiMatches.data != null) {
-                    updateDbFromMatchList(apiMatches.data)
+                    val filteredMatches = apiMatches.data
+                        .filter { it != null } as List<Match>
 
-                    return@withContext Result.success(apiMatches.data)
+                    updateDbFromMatchList(filteredMatches)
+
+                    return@withContext Result.success(filteredMatches)
                 }
 
                 return@withContext Result.failure(Exception())
