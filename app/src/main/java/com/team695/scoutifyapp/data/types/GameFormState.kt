@@ -8,6 +8,7 @@ import com.team695.scoutifyapp.data.api.model.GameDetails
 import com.team695.scoutifyapp.data.api.model.Stroke
 import com.team695.scoutifyapp.ui.screens.data.EndgameDetails
 import kotlin.time.Duration.Companion.nanoseconds
+import kotlin.times
 
 data class GameFormState(
     // Metadata
@@ -55,6 +56,10 @@ data class GameFormState(
             TeleopSection.ENDGAME -> 6/7f
             TeleopSection.ENDED -> 1f
         }
+    }
+
+    val teleopAndEndgameProgress: Float get() {
+        return teleopSectionProgress * 0.75f + gameDetails.endgameProgress * .25f
     }
 
     //returns integer from 0-100

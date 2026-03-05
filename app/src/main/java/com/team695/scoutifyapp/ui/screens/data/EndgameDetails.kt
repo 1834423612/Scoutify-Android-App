@@ -35,19 +35,28 @@ import com.team695.scoutifyapp.ui.viewModels.DataViewModel
 import kotlinx.coroutines.delay
 import kotlin.math.min
 import com.team695.scoutifyapp.R
+import com.team695.scoutifyapp.data.types.SHIFT1_END_TIME
+import com.team695.scoutifyapp.ui.theme.LightGunmetal
 import com.team695.scoutifyapp.ui.theme.TextPrimary
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 
 @Composable
 fun EndgameDetails(
     dataViewModel: DataViewModel,
-    formState: GameFormState
+    formState: GameFormState,
+    switchToPostgame: suspend () -> Unit
 ) {
     val currentTimer = min(
         formState.teleopTotalMilliseconds - SHIFT4_END_TIME,
         formState.teleopCachedMilliseconds
     )
     val previousTimer = formState.teleopCachedMilliseconds - currentTimer
+    val coroutineScope = rememberCoroutineScope()
 
     val timers = listOf(
         Timer(
@@ -126,7 +135,16 @@ fun EndgameDetails(
             verticalArrangement = Arrangement.Top
         ) {
 
-            TopbarNoButton(
+            TopbarWithButton (
+                buttonLabel = "Postgame",
+                buttonColor = if( formState.gameDetails.endgameProgress == 1f) ProgressGreen else LightGunmetal,
+                onButtonPressed = {
+                    if( formState.gameDetails.endgameProgress == 1f) {
+                        coroutineScope.launch {
+                            switchToPostgame()
+                        }
+                    }
+                },
                 title = "Teleop (Endgame)"
             )
 
@@ -228,7 +246,11 @@ private fun EndgamePanel(
                 .fillMaxWidth()
                 .weight(1f)
                 .clip(RoundedCornerShape(14.dp))
-                .background(if(formState.gameDetails.endgameClimbPositionFilled) DarkGunmetal else RedAlliance.copy(alpha = 0.15f))
+                .background(
+                    if (formState.gameDetails.endgameClimbPositionFilled) DarkGunmetal else RedAlliance.copy(
+                        alpha = 0.15f
+                    )
+                )
                 .border(1.dp, Border, RoundedCornerShape(14.dp)),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,

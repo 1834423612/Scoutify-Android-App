@@ -36,6 +36,7 @@ import com.team695.scoutifyapp.ui.theme.DarkGunmetal
 import com.team695.scoutifyapp.ui.theme.DarkishGunmetal
 import com.team695.scoutifyapp.ui.theme.Gunmetal
 import com.team695.scoutifyapp.ui.theme.LightGunmetal
+import com.team695.scoutifyapp.ui.theme.ProgressGreen
 import com.team695.scoutifyapp.ui.theme.RedAlliance
 import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.theme.mediumCornerRadius
@@ -47,7 +48,8 @@ import kotlin.math.abs
 @Composable
 fun PostgameDetails(
     dataViewModel: DataViewModel,
-    formState: GameFormState
+    formState: GameFormState,
+    returnToHome: () -> Unit
 ) {
 
 
@@ -61,7 +63,14 @@ fun PostgameDetails(
             verticalArrangement = Arrangement.Top
         ) {
 
-            TopbarNoButton(
+            TopbarWithButton(
+                buttonLabel = "Submit Task",
+                buttonColor = if(formState.totalProgress == 100) ProgressGreen else LightGunmetal,
+                onButtonPressed = {
+                    if(formState.totalProgress == 100) {
+                        returnToHome()
+                    }
+                },
                 title = "Postgame",
             )
 

@@ -43,6 +43,7 @@ import androidx.compose.material3.adaptive.layout.ThreePaneScaffoldDestinationIt
 import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
 import androidx.compose.material3.adaptive.navigation.BackNavigationBehavior
 import androidx.compose.material3.adaptive.navigation.NavigableListDetailPaneScaffold
+import androidx.compose.material3.adaptive.navigation.ThreePaneScaffoldNavigator
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -82,7 +83,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
-
+import kotlin.suspend
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
@@ -216,16 +217,12 @@ fun DataScreen(
                             section = navigator.currentDestination?.contentKey,
                             animatedVisibilityScope = this@AnimatedPane,
                             sharedTransitionScope = this@SharedTransitionLayout,
-                            onClosePane = {
-                                scope.launch {
-                                    navigator.navigateBack(
-                                        backNavigationBehavior = BackNavigationBehavior.PopUntilScaffoldValueChange,
-                                    )
-
-                                }
-                            },
                             formState = formState,
-                            dataViewModel = dataViewModel
+                            dataViewModel = dataViewModel,
+                            returnToHome = {
+                                navController.navigate("home")
+                            },
+                            navigator = navigator
                         )
                     }
                 }
@@ -308,7 +305,7 @@ private fun ListContent(
                         }
                         SectionType.TELEOP -> {
                             isFlagged = formState.gameDetails.teleopFlag == true
-                            progress = formState.teleopSectionProgress * 0.75f + formState.gameDetails.endgameProgress * .25f
+                            progress = formState.teleopAndEndgameProgress
                         }
                         SectionType.POSTGAME -> {
                             isFlagged = formState.gameDetails.postgameFlag == true
@@ -409,7 +406,8 @@ private fun DetailContent(
     animatedVisibilityScope: AnimatedVisibilityScope,
     formState: GameFormState,
     dataViewModel: DataViewModel,
-    onClosePane: () -> Unit
+    returnToHome: () -> Unit,
+    navigator: ThreePaneScaffoldNavigator<GameSection>
 ) {
 
     Column (
@@ -519,7 +517,11 @@ private fun DetailContent(
                             TeleopSection.ENDGAME, TeleopSection.ENDED -> {
                                 EndgameDetails(
                                     dataViewModel = dataViewModel,
-                                    formState = formState
+                                    formState = formState,
+                                    switchToPostgame = suspend {
+                                        navigator.navigateTo(ListDetailPaneScaffoldRole.Detail,
+                                            GameSection(SectionType.POSTGAME, progress = 0))
+                                    }
                                 )
                             }
                         }
@@ -527,7 +529,8 @@ private fun DetailContent(
                     SectionType.POSTGAME -> {
                         PostgameDetails(
                             dataViewModel = dataViewModel,
-                            formState = formState
+                            formState = formState,
+                            returnToHome = returnToHome
                         )
                     }
                 }
