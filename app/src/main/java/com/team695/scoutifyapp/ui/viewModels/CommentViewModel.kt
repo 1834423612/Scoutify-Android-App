@@ -124,6 +124,7 @@ class CommentsViewModel (
 
     // Function to save comments and update 'submitted' to 1
     fun submitComments() {
+        println("submitted comments")
         val matchNum = _selectedMatch.value.toIntOrNull() ?: return
 
         viewModelScope.launch {
@@ -173,7 +174,7 @@ class CommentsViewModel (
         }
     }
 
-    fun printDB () {
+    fun printDB() {
         viewModelScope.launch {
             commentRepository.printAllComments()
         }
