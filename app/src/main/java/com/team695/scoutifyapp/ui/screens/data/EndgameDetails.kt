@@ -57,6 +57,7 @@ fun EndgameDetails(
     )
     val previousTimer = formState.teleopCachedMilliseconds - currentTimer
     val coroutineScope = rememberCoroutineScope()
+    val endgameCompleted = formState.gameDetails.endgameProgress == 1f && formState.gameDetails.teleopCompleted == true
 
     val timers = listOf(
         Timer(
@@ -137,9 +138,9 @@ fun EndgameDetails(
 
             TopbarWithButton (
                 buttonLabel = "Postgame",
-                buttonColor = if( formState.gameDetails.endgameProgress == 1f) ProgressGreen else LightGunmetal,
+                buttonColor = if (endgameCompleted) ProgressGreen else LightGunmetal,
                 onButtonPressed = {
-                    if( formState.gameDetails.endgameProgress == 1f) {
+                    if (endgameCompleted) {
                         coroutineScope.launch {
                             switchToPostgame()
                         }
