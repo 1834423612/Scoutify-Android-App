@@ -29,8 +29,10 @@ import androidx.compose.material3.Badge
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -73,6 +75,8 @@ import com.team695.scoutifyapp.ui.theme.TextSecondary
 import com.team695.scoutifyapp.ui.theme.mediumCornerRadius
 import com.team695.scoutifyapp.ui.theme.smallCornerRadius
 import com.team695.scoutifyapp.ui.viewModels.HomeViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlin.math.abs
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
@@ -90,6 +94,13 @@ fun MatchSchedule(
 
     val sortedMatches = remember(matchState) {
         matchState?.sorted()
+    }
+
+    val matchTime by produceState(System.currentTimeMillis()) {
+        while (isActive) {
+            delay(1.minutes)
+            value = System.currentTimeMillis()
+        }
     }
 
     val filteredMatches = remember(searchQuery, matchState) {
@@ -296,7 +307,7 @@ fun MatchSchedule(
 
                     val highlightedMatch = calculateHighlight(
                         matches = sortedMatches!!,
-                        time = System.currentTimeMillis()
+                        time = matchTime
                     )
 
                     items(filteredMatches) {
