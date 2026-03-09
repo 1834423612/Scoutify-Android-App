@@ -327,7 +327,7 @@ fun TowerDiagram(
                                     "R"
                                 ) //left, center-left, center-right, right
                                 for (pos in positions) {
-                                    val spaceKey = "$level:$pos,"
+                                    val spaceKey = "$level$pos,"
                                     Checkbox(
                                         colors = CheckboxDefaults.colors(
                                             // This changes the color of the border when not checked

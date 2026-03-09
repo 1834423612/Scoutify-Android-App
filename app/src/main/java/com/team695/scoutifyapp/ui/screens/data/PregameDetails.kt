@@ -3,6 +3,7 @@ package com.team695.scoutifyapp.ui.screens.data
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -105,8 +106,17 @@ fun FieldCanvas(
             .border(2.dp, Color.Gray)
             .clip(RectangleShape)
             .pointerInput(Unit) {
+                detectDragGestures(
+                    onDrag = { change, offset ->
+                        dataViewModel.formEvent(
+                            gameDetails = formState.gameDetails.copy(
+                                startingLocation = (offset.y.toDouble() / size.height)
+                                    .coerceIn(0.0, 1.0)
+                            )
+                        )
+                    },
+                )
                 detectTapGestures { offset ->
-                    // Convert tap Y into normalized 0f–1f
                     dataViewModel.formEvent(
                         gameDetails = formState.gameDetails.copy(
                             startingLocation = (offset.y.toDouble() / size.height)
