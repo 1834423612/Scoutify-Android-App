@@ -88,6 +88,12 @@ data class GameDetails(
     // Review
     val reviewMatchFlag: Boolean? = null
 ) {
+    val endgameClimbSuccessFilled: Boolean get() {
+        if(endgameAttemptsClimb == true) {
+            return endgameClimbSuccess == true
+        }
+        return true
+    }
     val endgameClimbPositionFilled: Boolean get() {
         val isEmpty: Boolean = endgameClimbCode.isNullOrEmpty()
         return when(endgameClimbSuccess) {
