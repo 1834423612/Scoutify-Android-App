@@ -107,23 +107,18 @@ fun FieldCanvas(
             .clip(RectangleShape)
             .pointerInput(Unit) {
                 detectDragGestures(
-                    onDrag = { change, offset ->
+                    onDrag = { change, _ ->
+                        val newY = change.position.y
+                        val percentTraveled = newY / size.height
                         dataViewModel.formEvent(
                             gameDetails = formState.gameDetails.copy(
-                                startingLocation = (offset.y.toDouble() / size.height)
+                                startingLocation = percentTraveled
+                                    .toDouble()
                                     .coerceIn(0.0, 1.0)
                             )
                         )
                     },
                 )
-                detectTapGestures { offset ->
-                    dataViewModel.formEvent(
-                        gameDetails = formState.gameDetails.copy(
-                            startingLocation = (offset.y.toDouble() / size.height)
-                                .coerceIn(0.0, 1.0)
-                        )
-                    )
-                }
             }
     ) {
 

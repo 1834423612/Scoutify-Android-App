@@ -4,9 +4,12 @@ import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,11 +17,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupPositionProvider
+import androidx.compose.ui.window.PopupProperties
 import com.team695.scoutifyapp.data.types.ENDGAME_END_TIME
 import com.team695.scoutifyapp.data.types.GameFormState
 import com.team695.scoutifyapp.data.types.SHIFT3_END_TIME
@@ -164,7 +171,8 @@ fun EndgameDetails(
                 // ── Right panel ──
                 EndgamePanel(
                     formState = formState,
-                    dataViewModel = dataViewModel
+                    dataViewModel = dataViewModel,
+                    locked = formState.gameDetails.endgameClimbSuccess != true
                 )
             }
         }
@@ -176,8 +184,10 @@ fun EndgameDetails(
 @Composable
 private fun EndgamePanel(
     formState: GameFormState,
-    dataViewModel: DataViewModel
+    dataViewModel: DataViewModel,
+    locked: Boolean = false,
 ) {
+    val endgamePositionMissing = !locked && formState.gameDetails.endgameClimbCode.isNullOrEmpty()
     Column(
         modifier = Modifier
             .width(220.dp)
@@ -209,15 +219,19 @@ private fun EndgamePanel(
             label = "Did Robot attempt climb?",
             isChecked = formState.gameDetails.endgameAttemptsClimb,
             onCheckedChange = { isChecked: Boolean? ->
-                val nextState: Boolean = when (isChecked) {
+                val endgameAttemptsClimb: Boolean = when (isChecked) {
                     null -> false
                     true -> false
                     false -> true
                 }
 
+                val endgameClimbSuccess: Boolean? = if(!endgameAttemptsClimb) false
+                    else formState.gameDetails.endgameClimbSuccess
+
                 dataViewModel.formEvent(
                     gameDetails = formState.gameDetails.copy(
-                        endgameAttemptsClimb = nextState
+                        endgameAttemptsClimb = endgameAttemptsClimb,
+                        endgameClimbSuccess = endgameClimbSuccess
                     )
                 )
             }
@@ -226,16 +240,22 @@ private fun EndgamePanel(
         CheckboxRow(
             label = "Did Robot succeed climb?",
             isChecked = formState.gameDetails.endgameClimbSuccess,
+            locked = formState.gameDetails.endgameAttemptsClimb != true,
             onCheckedChange = { isChecked: Boolean? ->
-                val nextState: Boolean = when (isChecked) {
+                val endgameClimbSuccess: Boolean = when (isChecked) {
                     null -> false
                     true -> false
                     false -> true
                 }
 
+                val endgameClimbCode: String? = if(!endgameClimbSuccess) null
+                    else formState.gameDetails.endgameClimbCode
+
+
                 dataViewModel.formEvent(
                     gameDetails = formState.gameDetails.copy(
-                        endgameClimbSuccess = nextState
+                        endgameClimbSuccess = endgameClimbSuccess,
+                        endgameClimbCode = endgameClimbCode
                     )
                 )
             }
@@ -248,9 +268,9 @@ private fun EndgamePanel(
                 .weight(1f)
                 .clip(RoundedCornerShape(14.dp))
                 .background(
-                    if (formState.gameDetails.endgameClimbPositionFilled) DarkGunmetal else RedAlliance.copy(
+                    if (endgamePositionMissing) RedAlliance.copy(
                         alpha = 0.15f
-                    )
+                    ) else DarkGunmetal
                 )
                 .border(1.dp, Border, RoundedCornerShape(14.dp)),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -258,14 +278,15 @@ private fun EndgamePanel(
         ) {
             Text(
                 text = "Space Taken",
-                color = if(formState.gameDetails.endgameClimbPositionFilled) TextPrimary else RedAlliance,
+                color = if(endgamePositionMissing) RedAlliance else TextPrimary,
                 fontWeight = FontWeight.Bold,
                 fontSize = 16.sp,
             )
             Spacer(modifier = Modifier.height(16.dp))
             TowerDiagram(
                 formState = formState,
-                dataViewModel = dataViewModel
+                dataViewModel = dataViewModel,
+                locked = locked
             )
         }
     }
@@ -274,7 +295,8 @@ private fun EndgamePanel(
 @Composable
 fun TowerDiagram(
     formState: GameFormState,
-    dataViewModel: DataViewModel
+    dataViewModel: DataViewModel,
+    locked: Boolean
 ) {
     Box(
         modifier = Modifier
@@ -305,65 +327,85 @@ fun TowerDiagram(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
+                if(locked) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .width(320.dp)
+                            .background(Color.DarkGray.copy(alpha = 0.8f))
+                            .pointerInput(Unit) {
+                                detectTapGestures { }
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = "Navigation Locked",
+                            tint = Color.White
+                        )
+                    }
+                }
+                else {
                 // 3x3 Grid Structure
-                Column(
-                    modifier = Modifier.wrapContentSize(),
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    for (level in 4 downTo 1) {
-                        Box(contentAlignment = Alignment.Center) {
+                    Column(
+                        modifier = Modifier.wrapContentSize(),
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        for (level in 4 downTo 1) {
+                            Box(contentAlignment = Alignment.Center) {
 
-                            // Checkboxes for Left, Center, Right
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                //Log.d("SPACE_KEY", formState.gameDetails.endgameClimbCode ?: "null")
+                                // Checkboxes for Left, Center, Right
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+                                    //Log.d("SPACE_KEY", formState.gameDetails.endgameClimbCode ?: "null")
 
-                                val positions = listOf(
-                                    "L",
-                                    "CL",
-                                    "CR",
-                                    "R"
-                                ) //left, center-left, center-right, right
-                                for (pos in positions) {
-                                    val spaceKey = "$level$pos,"
-                                    Checkbox(
-                                        colors = CheckboxDefaults.colors(
-                                            // This changes the color of the border when not checked
-                                            uncheckedColor = Color.White,
-                                            // Optional: Ensure the checkmark and box remain visible when checked
-                                            checkedColor = ProgressGreen
-                                        ),
-                                        checked = formState.gameDetails.endgameClimbCode?.contains(
-                                            spaceKey
-                                        ) ?: false,
-                                        onCheckedChange = {
-                                            val unchecked: Boolean = it
-                                            val position = formState.gameDetails.endgameClimbCode
-                                            if (unchecked) {
-                                                dataViewModel.formEvent(
-                                                    gameDetails = formState.gameDetails.copy(
-                                                        endgameClimbCode = if (position == null) spaceKey else formState.gameDetails.endgameClimbCode + spaceKey
-                                                    )
-                                                )
-                                            }
-                                            else {
-                                                dataViewModel.formEvent(
-                                                    gameDetails = formState.gameDetails.copy(
-                                                        endgameClimbCode = formState.gameDetails.endgameClimbCode?.replaceFirst(
-                                                            oldValue = spaceKey,
-                                                            newValue = ""
+                                    val positions = listOf(
+                                        "L",
+                                        "CL",
+                                        "CR",
+                                        "R"
+                                    ) //left, center-left, center-right, right
+                                    for (pos in positions) {
+                                        val spaceKey = "$level$pos,"
+                                        Checkbox(
+                                            colors = CheckboxDefaults.colors(
+                                                // This changes the color of the border when not checked
+                                                uncheckedColor = Color.White,
+                                                // Optional: Ensure the checkmark and box remain visible when checked
+                                                checkedColor = ProgressGreen
+                                            ),
+                                            checked = formState.gameDetails.endgameClimbCode?.contains(
+                                                spaceKey
+                                            ) ?: false,
+                                            onCheckedChange = {
+                                                val unchecked: Boolean = it
+                                                val position =
+                                                    formState.gameDetails.endgameClimbCode
+                                                if (unchecked) {
+                                                    dataViewModel.formEvent(
+                                                        gameDetails = formState.gameDetails.copy(
+                                                            endgameClimbCode = if (position == null) spaceKey else formState.gameDetails.endgameClimbCode + spaceKey
                                                         )
                                                     )
-                                                )
+                                                } else {
+                                                    dataViewModel.formEvent(
+                                                        gameDetails = formState.gameDetails.copy(
+                                                            endgameClimbCode = formState.gameDetails.endgameClimbCode?.replaceFirst(
+                                                                oldValue = spaceKey,
+                                                                newValue = ""
+                                                            )
+                                                        )
+                                                    )
+                                                }
                                             }
-                                        }
-                                    )
+                                        )
+                                    }
                                 }
                             }
+                            Spacer(modifier = Modifier.height(if (level == 4) 6.dp else 22.dp))
                         }
-                        Spacer(modifier = Modifier.height(if(level == 4) 6.dp else 22.dp))
                     }
                 }
             }
