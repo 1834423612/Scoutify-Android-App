@@ -10,23 +10,24 @@ import androidx.core.content.FileProvider
 import java.io.File
 
 class UpdateReceiver(
-    private var downloadId: Long,
     private val onFail: () -> Long?
 ): BroadcastReceiver() {
-    fun setDownloadId(newId: Long) {
-        downloadId = newId
-    }
+
 
     override fun onReceive(context: Context?, intent: Intent?) {
+        Log.d("UpdateReceiver", "Received file!")
         if (context == null || intent == null) {
             Log.d("UpdateReceiver", "Context or intent is null")
+            onFail()
             return
         }
 
         val id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
 
-        if (downloadId != id) {
+        if (UpdateManager.currentId != id) {
             Log.d("UpdateReceiver", "download ids don't match")
+            onFail()
+            return
         }
 
         val apkFile = File(context.getExternalFilesDir(
@@ -51,11 +52,7 @@ class UpdateReceiver(
 
             context.startActivity(installIntent)
         } else {
-            val newId = onFail()
-
-            if (newId != null) {
-                setDownloadId(newId)
-            }
+            onFail()
         }
     }
 

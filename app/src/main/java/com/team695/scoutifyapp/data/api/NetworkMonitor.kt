@@ -40,7 +40,11 @@ class NetworkMonitor(
     private val gameDetailRepository: GameDetailRepository,
     private val commentRepository: CommentRepository
 ) : NetworkService {
-    lateinit var repoList: List<Repository>
+    var repoList: List<Repository> = listOf(
+        matchRepository,
+        taskRepository,
+        commentRepository
+    )
     private val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE)
             as ConnectivityManager
     private val _isConnected = MutableStateFlow(false)
@@ -66,11 +70,6 @@ class NetworkMonitor(
     }
 
     init {
-        repoList = listOf(
-            matchRepository,
-            taskRepository,
-            commentRepository
-        )
 
         startMonitoring()
     }
@@ -90,17 +89,15 @@ class NetworkMonitor(
     }
 
     override suspend fun networkSync() {
-        coroutineScope {
-            this.launch(Dispatchers.IO) {
-                while (isActive) {
-                    gameDetailRepository.fetch()
-                    gameDetailRepository.isReady.first { it }
+        withContext(Dispatchers.IO) {
+            while (isActive) {
+                // gameDetailRepository.fetch()
+                gameDetailRepository.isReady.first { it }
 
-                    retryFetchUntilSuccess()
-                    gameDetailRepository.push()
-                    retryPushUntilSuccess()
-                    delay(FETCH_INTERVAL)
-                }
+                retryFetchUntilSuccess()
+                gameDetailRepository.push()
+                retryPushUntilSuccess()
+                delay(FETCH_INTERVAL)
             }
         }
     }

@@ -177,7 +177,7 @@ class GameDetailRepository(
         }
     }
 
-    suspend fun setGameConstants(): Result<GameConstants> {
+    override suspend fun fetch(): Result<GameConstants> {
         if (pulledConstants)
             return Result.failure(Exception("already pulled game constants"))
 

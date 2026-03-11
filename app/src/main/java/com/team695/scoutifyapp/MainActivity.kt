@@ -1,13 +1,18 @@
 package com.team695.scoutifyapp
 
+import android.Manifest
 import android.app.DownloadManager
 import android.content.Context
 import android.content.IntentFilter
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
@@ -41,6 +46,25 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+    private val requestNotificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // TODO: Add notification to say permission is granted
+        } else {
+            // TODO: Add notification to say permission is not granted
+        }
+    }
+
+    // 2. Declare the function at the class level, OUTSIDE of onCreate()
+    private fun checkAndRequestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+
+        } else {
+
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -135,17 +159,31 @@ class MainActivity : ComponentActivity() {
         networkMonitor.startMonitoring()
 
         ProcessLifecycleOwner.get().lifecycleScope.launch {
-            networkMonitor.networkSync()
+            checkAndRequestNotificationPermission()
+
+            this.launch {
+                networkMonitor.networkSync()
+            }
+
+            if (
+                ContextCompat.checkSelfPermission(
+                    applicationContext,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
 
             val id = UpdateManager.downloadUpdate(applicationContext)
-            val receiver = UpdateReceiver(id) {
+
+            val receiver = UpdateReceiver {
                 UpdateManager.downloadUpdate(applicationContext)
             }
 
             applicationContext.registerReceiver(
                 receiver,
                 IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE),
-                RECEIVER_NOT_EXPORTED
+                RECEIVER_EXPORTED
             )
         }
 

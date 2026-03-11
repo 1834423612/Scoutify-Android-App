@@ -6,10 +6,11 @@ import android.content.Context
 import android.os.Environment
 import androidx.core.net.toUri
 
-const val APK_URL = ""
+const val APK_URL = "https://www.dropbox.com/scl/fi/2mncyhhjibl5u54azv54q/app-release.apk?rlkey=edgfc4nyxo8mszolk36pz3r1f&st=6fif6nnf&dl=1"
 
-@SuppressLint("StaticFieldLeak")
 object UpdateManager {
+
+    var currentId: Long = 0
     fun downloadUpdate(context: Context): Long {
         val request = DownloadManager.Request(APK_URL.toUri())
             .setTitle("Scoutify Update")
@@ -21,6 +22,8 @@ object UpdateManager {
             )
 
         val manager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
-        return manager.enqueue(request)
+        currentId = manager.enqueue(request)
+
+        return currentId
     }
 }
