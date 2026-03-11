@@ -9,7 +9,14 @@ import android.util.Log
 import androidx.core.content.FileProvider
 import java.io.File
 
-class UpdateReceiver(private val downloadId: Long): BroadcastReceiver() {
+class UpdateReceiver(
+    private var downloadId: Long,
+    private val onFail: () -> Long?
+): BroadcastReceiver() {
+    fun setDownloadId(newId: Long) {
+        downloadId = newId
+    }
+
     override fun onReceive(context: Context?, intent: Intent?) {
         if (context == null || intent == null) {
             Log.d("UpdateReceiver", "Context or intent is null")
@@ -43,7 +50,14 @@ class UpdateReceiver(private val downloadId: Long): BroadcastReceiver() {
             }
 
             context.startActivity(installIntent)
-        }
+        } else {
+            val newId = onFail()
 
+            if (newId != null) {
+                setDownloadId(newId)
+            }
+        }
     }
+
+
 }

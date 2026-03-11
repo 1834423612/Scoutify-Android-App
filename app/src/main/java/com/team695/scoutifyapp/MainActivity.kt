@@ -138,7 +138,9 @@ class MainActivity : ComponentActivity() {
             networkMonitor.networkSync()
 
             val id = UpdateManager.downloadUpdate(applicationContext)
-            val receiver = UpdateReceiver(id)
+            val receiver = UpdateReceiver(id) {
+                UpdateManager.downloadUpdate(applicationContext)
+            }
 
             applicationContext.registerReceiver(
                 receiver,
