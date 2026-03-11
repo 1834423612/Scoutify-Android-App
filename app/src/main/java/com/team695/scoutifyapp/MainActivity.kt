@@ -1,5 +1,8 @@
 package com.team695.scoutifyapp
 
+import android.app.DownloadManager
+import android.content.Context
+import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -30,6 +33,8 @@ import com.team695.scoutifyapp.data.charAdapter
 import com.team695.scoutifyapp.data.intAdapter
 import com.team695.scoutifyapp.data.repository.CommentRepository
 import com.team695.scoutifyapp.data.repository.GameDetailRepository
+import com.team695.scoutifyapp.data.update.UpdateManager
+import com.team695.scoutifyapp.data.update.UpdateReceiver
 import com.team695.scoutifyapp.db.GameConstantsEntity
 import com.team695.scoutifyapp.ui.extensions.androidID
 import kotlinx.coroutines.Dispatchers
@@ -131,6 +136,15 @@ class MainActivity : ComponentActivity() {
 
         ProcessLifecycleOwner.get().lifecycleScope.launch {
             networkMonitor.networkSync()
+
+            val id = UpdateManager.downloadUpdate(applicationContext)
+            val receiver = UpdateReceiver(id)
+
+            applicationContext.registerReceiver(
+                receiver,
+                IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE),
+                RECEIVER_NOT_EXPORTED
+            )
         }
 
         setContent {
