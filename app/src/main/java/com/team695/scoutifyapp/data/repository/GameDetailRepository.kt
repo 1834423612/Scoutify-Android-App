@@ -1,5 +1,6 @@
 package com.team695.scoutifyapp.data.repository
 
+import android.content.Context
 import android.util.Log
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
@@ -12,6 +13,7 @@ import com.team695.scoutifyapp.data.api.model.createGameDetailsFromDb
 import com.team695.scoutifyapp.data.api.model.createTaskFromDb
 import com.team695.scoutifyapp.data.api.service.ApiResponse
 import com.team695.scoutifyapp.data.api.service.GameDetailsService
+import com.team695.scoutifyapp.data.update.UpdateManager
 import com.team695.scoutifyapp.db.AppDatabase
 import com.team695.scoutifyapp.db.GameDetailsEntity
 import com.team695.scoutifyapp.db.MatchEntity
@@ -195,6 +197,8 @@ class GameDetailRepository(
                             db.taskQueries.clearAllTasks()
                             db.matchQueries.clearAllMatches()
                         }
+
+                        UpdateManager.downloadUpdate()
                     }
 
                     GameConstantsStore.set(result.data)
@@ -202,11 +206,15 @@ class GameDetailRepository(
                     val year = result.data.frc_season_master_sm_year
                     val event_code = result.data.competition_master_cm_event_code
                     val game_type = result.data.game_matchup_gm_game_type
+                    val app_version = result.data.app_version
+
+
 
                     db.gameConstantsQueries.insertOrUpdateConstants(
                         frc_season_master_sm_year = year,
                         competition_master_cm_event_code = event_code,
-                        game_matchup_gm_game_type = game_type
+                        game_matchup_gm_game_type = game_type,
+                        app_version = app_version
                     )
 
                     isReady.value = true

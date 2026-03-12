@@ -3,6 +3,7 @@ package com.team695.scoutifyapp
 import android.Manifest
 import android.app.DownloadManager
 import android.content.Context
+import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Build
@@ -56,14 +57,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // 2. Declare the function at the class level, OUTSIDE of onCreate()
-    private fun checkAndRequestNotificationPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-
-        } else {
-
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -158,9 +151,9 @@ class MainActivity : ComponentActivity() {
         )
         networkMonitor.startMonitoring()
 
-        ProcessLifecycleOwner.get().lifecycleScope.launch {
-            checkAndRequestNotificationPermission()
+        UpdateManager.context = applicationContext
 
+        ProcessLifecycleOwner.get().lifecycleScope.launch {
             this.launch {
                 networkMonitor.networkSync()
             }
@@ -171,20 +164,26 @@ class MainActivity : ComponentActivity() {
                     Manifest.permission.POST_NOTIFICATIONS
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
-                requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                requestNotificationPermissionLauncher.launch(
+                    Manifest.permission.POST_NOTIFICATIONS
+                )
             }
 
-            val id = UpdateManager.downloadUpdate(applicationContext)
-
-            val receiver = UpdateReceiver {
-                UpdateManager.downloadUpdate(applicationContext)
-            }
+            val receiver = UpdateReceiver(
+            {
+                UpdateManager.downloadUpdate()
+            },
+            { installIntent ->
+                applicationContext.startActivity(installIntent)
+            })
 
             applicationContext.registerReceiver(
                 receiver,
                 IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE),
                 RECEIVER_EXPORTED
             )
+
+            UpdateReceiver.deleteInstalledApk(applicationContext)
         }
 
         setContent {

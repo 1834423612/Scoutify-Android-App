@@ -10,10 +10,9 @@ import androidx.core.content.FileProvider
 import java.io.File
 
 class UpdateReceiver(
-    private val onFail: () -> Long?
+    private val onFail: () -> Long?,
+    private val onSuccess: (Intent) -> Unit
 ): BroadcastReceiver() {
-
-
     override fun onReceive(context: Context?, intent: Intent?) {
         Log.d("UpdateReceiver", "Received file!")
         if (context == null || intent == null) {
@@ -31,7 +30,7 @@ class UpdateReceiver(
         }
 
         val apkFile = File(context.getExternalFilesDir(
-            Environment.DIRECTORY_DOWNLOADS), "scoutify_update.apk"
+            Environment.DIRECTORY_DOWNLOADS), APK_NAME
         )
 
         if (apkFile.exists()) {
@@ -50,11 +49,23 @@ class UpdateReceiver(
                 )
             }
 
+            onSuccess(installIntent)
             context.startActivity(installIntent)
         } else {
             onFail()
         }
     }
 
+    companion object {
+        fun deleteInstalledApk(context: Context) {
+            val downloadDir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
 
+            downloadDir?.listFiles()?.forEach { file ->
+                if (file.name.substring(0, APK_NAME.length) == APK_NAME) {
+                    val deleted = file.delete()
+                    Log.d("Update", "Deleted old APK ${file.name}: $deleted")
+                }
+            }
+        }
+    }
 }

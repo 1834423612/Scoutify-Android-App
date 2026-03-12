@@ -5,13 +5,15 @@ import com.team695.scoutifyapp.db.GameConstantsEntity
 data class GameConstants (
     val frc_season_master_sm_year: Int,
     val competition_master_cm_event_code: String,
-    val game_matchup_gm_game_type: Char
+    val game_matchup_gm_game_type: Char,
+    val app_version: String
 )
 
 val emptyConstants = GameConstants(
     0,
     "",
-    'E'
+    'E',
+    "0.0.0"
 )
 
 object GameConstantsStore {
@@ -29,7 +31,8 @@ object GameConstantsStore {
             GameConstants(
                 frc_season_master_sm_year = gameConsts.frc_season_master_sm_year,
                 competition_master_cm_event_code = gameConsts.competition_master_cm_event_code,
-                game_matchup_gm_game_type = gameConsts.game_matchup_gm_game_type
+                game_matchup_gm_game_type = gameConsts.game_matchup_gm_game_type,
+                app_version = gameConsts.app_version
             )
         )
     }

@@ -91,7 +91,7 @@ class NetworkMonitor(
     override suspend fun networkSync() {
         withContext(Dispatchers.IO) {
             while (isActive) {
-                // gameDetailRepository.fetch()
+                gameDetailRepository.fetch()
                 gameDetailRepository.isReady.first { it }
 
                 retryFetchUntilSuccess()

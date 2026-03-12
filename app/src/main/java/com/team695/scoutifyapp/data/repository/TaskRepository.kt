@@ -66,7 +66,12 @@ class TaskRepository(
                 .selectMatchByNumber(matchNumber)
                 .executeAsOne().gameType
             val user: String = db.userQueries.selectUser().executeAsOne().name ?: ""
-            return Task.convertToServerFormat(gameConstants,teamNumber.toInt(),user,695,gameType[0])
+
+            return Task.convertToServerFormat(
+                gameConstants,teamNumber.toInt(),
+                user,695,
+                gameType[0]
+            )
         }
 
         return db.taskQueries.selectAllTasks().executeAsList().map {
