@@ -1,0 +1,207 @@
+{
+  "_note1": "KEEP THIS FILE! Check it into a version control system (VCS) like git.",
+  "_note2": "ObjectBox manages crucial IDs for your object model. See docs for details.",
+  "_note3": "If you have VCS merge conflicts, you must resolve them according to ObjectBox docs.",
+  "entities": [
+    {
+      "id": "1:4034031024142362992",
+      "lastPropertyId": "17:5278969403055989913",
+      "name": "Match",
+      "properties": [
+        {
+          "id": "1:1118020954144158808",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:3529581031882349717",
+          "name": "teamNumber",
+          "type": 5
+        },
+        {
+          "id": "3:5428964634035923623",
+          "name": "matchNumber",
+          "type": 5
+        },
+        {
+          "id": "4:4153564512559856302",
+          "name": "teamStockpiled",
+          "type": 1
+        },
+        {
+          "id": "5:4254327612577862384",
+          "name": "robotIsOnTheField",
+          "type": 1
+        },
+        {
+          "id": "6:1722419165618517600",
+          "name": "preload",
+          "type": 1
+        },
+        {
+          "id": "7:4292898944699576296",
+          "name": "autonPath",
+          "type": 9
+        },
+        {
+          "id": "8:5456130491058139085",
+          "name": "autonClimb",
+          "type": 9
+        },
+        {
+          "id": "9:7546644555620835320",
+          "name": "robotCrossedLineDuringAuton",
+          "type": 1
+        },
+        {
+          "id": "10:8668038911962228988",
+          "name": "endgameClimb",
+          "type": 9
+        },
+        {
+          "id": "11:5769108104555501040",
+          "name": "shooting",
+          "type": 9
+        },
+        {
+          "id": "12:503050386610958705",
+          "name": "stockpiled",
+          "type": 9
+        },
+        {
+          "id": "13:5895647980703930676",
+          "name": "usedCoral",
+          "type": 1
+        },
+        {
+          "id": "14:2065345564641363509",
+          "name": "usedOutpost",
+          "type": 1
+        },
+        {
+          "id": "15:5543760941533558722",
+          "name": "usedBump",
+          "type": 1
+        },
+        {
+          "id": "16:4913362330522237045",
+          "name": "usedTrench",
+          "type": 1
+        },
+        {
+          "id": "17:5278969403055989913",
+          "name": "comments",
+          "type": 9
+        }
+      ],
+      "relations": [
+        {
+          "id": "1:3593035574585707481",
+          "name": "actions",
+          "targetId": "5:5170023784404211519"
+        }
+      ]
+    },
+    {
+      "id": "2:2549503635883129983",
+      "lastPropertyId": "2:1893981441353023064",
+      "name": "IncidentReport",
+      "properties": [
+        {
+          "id": "1:663392725710576830",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:1893981441353023064",
+          "name": "teamNumber",
+          "type": 5
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "3:5609090553385052215",
+      "lastPropertyId": "2:4571607026907356659",
+      "name": "PitScout",
+      "properties": [
+        {
+          "id": "1:8307968532624871299",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:4571607026907356659",
+          "name": "teamNumber",
+          "type": 5
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "4:1826071152248448813",
+      "lastPropertyId": "2:907716349292474775",
+      "name": "Task",
+      "properties": [
+        {
+          "id": "1:3881561839734615869",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:907716349292474775",
+          "name": "type",
+          "type": 5
+        }
+      ],
+      "relations": []
+    },
+    {
+      "id": "5:5170023784404211519",
+      "lastPropertyId": "4:4499034530065213337",
+      "name": "Action",
+      "properties": [
+        {
+          "id": "1:8712087457618676309",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:2305050822741014108",
+          "name": "type",
+          "type": 5
+        },
+        {
+          "id": "3:2034719271421089275",
+          "name": "timestamp",
+          "type": 6
+        },
+        {
+          "id": "4:4499034530065213337",
+          "name": "matchId",
+          "indexId": "1:3993232858883917540",
+          "type": 11,
+          "flags": 520,
+          "relationTarget": "Match"
+        }
+      ],
+      "relations": []
+    }
+  ],
+  "lastEntityId": "5:5170023784404211519",
+  "lastIndexId": "1:3993232858883917540",
+  "lastRelationId": "1:3593035574585707481",
+  "lastSequenceId": "0:0",
+  "modelVersion": 5,
+  "modelVersionParserMinimum": 5,
+  "retiredEntityUids": [],
+  "retiredIndexUids": [],
+  "retiredPropertyUids": [],
+  "retiredRelationUids": [],
+  "version": 1
+}

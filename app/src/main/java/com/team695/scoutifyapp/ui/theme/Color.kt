@@ -2,22 +2,57 @@ package com.team695.scoutifyapp.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// 🌿 Light theme palette
-val PrimaryLight = Color(0xFF5C7CFA)     // 柔和蓝
-val SecondaryLight = Color(0xFFC9E4CA)   // 浅绿
-val BackgroundLight = Color(0xFFF8F9FA)  // 白灰背景
-val SurfaceLight = Color(0xFFFFFFFF)     // 卡片背景
-val AccentLight = Color(0xFFFFD93D)      // 阳光黄
-val OnPrimaryLight = Color(0xFFFFFFFF)
-val OnSurfaceLight = Color(0xFF212529)   // 深灰文字
-val OutlineLight = Color(0xFFE0E0E0)
+val Background = Color(0xFF001015)
+val BackgroundSecondary = Color(0xFF252525)
+val BackgroundTertiary = Color(0xFF171920)
+val BackgroundCard = BackgroundTertiary.copy(alpha = 0.8f)
+val BackgroundNav = Color(0xFF252525).copy(alpha = 0.5f)
 
-// 🌙 Dark theme palette
-val PrimaryDark = Color(0xFF82A0FA)
-val SecondaryDark = Color(0xFF97C9A6)
-val BackgroundDark = Color(0xFF121212)
-val SurfaceDark = Color(0xFF1E1E1E)
-val AccentDark = Color(0xFFFFD93D)
-val OnPrimaryDark = Color(0xFF000000)
-val OnSurfaceDark = Color(0xFFE0E0E0)
-val OutlineDark = Color(0xFF333333)
+//for Kevin's pit scouting page
+val AccentPrimary = Color(0xFF4a9eff)
+
+val BgPrimary = Color(0xFF0a1628)
+val BgSecondary = Color(0xFF0f2035)
+val AccentDanger = Color(0xFFF87171)
+val BorderColor = Color(0xFF2a4a6a)
+val BgTertiary = Color(0xFF162a42)
+val BgCard = Color(0xFF1a3148)
+
+
+
+val Accent = Color(0xFFEFDC70)
+
+val AccentWarning = Color(0xFFEFDC70)//just copied accent
+val AccentSecondary = Color(0xFF00B2D6)
+
+val AccentGreen = Color(0xFFA3E635)
+val Deselected = Color(0xFFB7B8B9)
+val LightGunmetal = Color(0xFF434343)
+val Gunmetal = Color(0xFF2D3142)
+val DarkishGunmetal = Color(0xFF242832)
+val ProgressGreen = Color(0x962FEDAE)
+
+val DarkGunmetal = Color(0xFF16181D)
+val PaneColor = Color(0xFF08090B)
+val TextPrimary = Color.White
+
+val TextSecondary = Color.Gray
+val RedAlliance = Color(0xFFF87171)
+val BlueAlliance = Color(0xFF60A5FA)
+
+val DarkGreen = Color(0x70244A2A)
+val SelectedItem = Color(0xFF333333)
+
+val UnSelectedItem = Color.Transparent
+val Border = Color(0xFF444444)
+
+val BorderSecondary = Color.DarkGray
+val BadgeBackground = Color.LightGray
+val BadgeContent = Color.Black
+
+val BadgeBackgroundSecondary = Color.Black
+
+val TextFieldBackground = Color.Black.copy(alpha = 0.5f)
+
+val CommentButtonBackground = Color(0xFF444444)
+val TextMuted = Color(0xFFEFDC70)//just copied accent

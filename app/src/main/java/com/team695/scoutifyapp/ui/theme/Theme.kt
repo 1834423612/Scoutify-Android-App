@@ -8,6 +8,18 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.material3.*
+
+private val PitScoutingDarkColors = darkColorScheme(
+    primary = AccentPrimary,
+    secondary = AccentSecondary,
+    background = BgPrimary,
+    surface = BgCard,
+    error = AccentDanger,
+    onBackground = TextPrimary,
+    onSurface = TextPrimary,
+    onPrimary = Color.White
+)
 
 private val LightColors = lightColorScheme(
     primary = PrimaryLight,
@@ -19,26 +31,20 @@ private val LightColors = lightColorScheme(
     outline = OutlineLight,
 )
 
-private val DarkColors = darkColorScheme(
-    primary = PrimaryDark,
-    secondary = SecondaryDark,
-    background = BackgroundDark,
-    surface = SurfaceDark,
-    onPrimary = OnPrimaryDark,
-    onSurface = OnSurfaceDark,
-    outline = OutlineDark,
-)
-
 @Composable
 fun ScoutifyTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colorScheme: ColorScheme = if (darkTheme) DarkColors else LightColors
+    val colorScheme = if (darkTheme) {
+        PitScoutingDarkColors
+    } else {
+        lightColorScheme()
+    }
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = ScoutifyTypography,
+        typography = Typography(),
         content = content
     )
 }

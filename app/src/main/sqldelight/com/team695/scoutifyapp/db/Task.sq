@@ -1,0 +1,59 @@
+-- 1. Define the Table
+CREATE TABLE taskEntity (
+    id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    type TEXT NOT NULL,
+    matchNum INTEGER NOT NULL,
+    teamNum INTEGER NOT NULL,
+    time INTEGER NOT NULL,       -- Stored as Long (Unix Milliseconds)
+    progress INTEGER NOT NULL DEFAULT 0 -- Goes from 0 to 100
+);
+
+-- 2. Select All
+selectAllTasks:
+SELECT *
+FROM taskEntity;
+
+-- 3. Insert Task (Only if it doesn't already exist!)
+insertTask:
+INSERT OR IGNORE INTO taskEntity(id, type, matchNum, teamNum, time, progress)
+VALUES (?, ?, ?, ?, ?, ?);
+
+-- 4. Update Progress
+updateProgress:
+UPDATE taskEntity
+SET progress = ?
+WHERE id = ?;
+
+-- 5. Delete
+deleteTaskById:
+DELETE FROM taskEntity
+WHERE id = ?;
+
+-- 6. Clear All
+clearAllTasks:
+DELETE FROM taskEntity;
+
+-- 7. Get a Task and its details (if they exist)
+selectTaskWithDetails:
+SELECT
+    taskEntity.*,
+    gameDetailsEntity.*
+FROM taskEntity
+LEFT JOIN gameDetailsEntity ON taskEntity.id = gameDetailsEntity.task_id
+WHERE taskEntity.id = ?;
+
+-- 8. Get a Task from id
+selectTaskById:
+SELECT *
+FROM taskEntity
+WHERE taskEntity.id = ?;
+
+selectScoutedTeams:
+SELECT DISTINCT teamNum
+FROM taskEntity;
+
+--9. Update the progress of a task
+updateTaskProgress:
+UPDATE taskEntity
+SET progress = ?
+WHERE taskEntity.id = ?;

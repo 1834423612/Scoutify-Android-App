@@ -5,7 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.team695.scoutifyapp.ui.components.InfoCard
+import com.team695.scoutifyapp.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -16,10 +16,16 @@ fun MatchForm(back: () -> Unit, home: ()-> Unit) {
                 .padding(padding)
                 .padding(16.dp)
         ) {
-            InfoCard(
-                title = "Match Scouting",
-                description = "form2"
-            )
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = BgCard)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("Test", style = MaterialTheme.typography.titleLarge)
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("form2", style = MaterialTheme.typography.bodyMedium)
+                }
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
