@@ -12,6 +12,7 @@ import com.team695.scoutifyapp.data.repository.GameDetailRepository
 import com.team695.scoutifyapp.data.repository.MatchRepository
 import com.team695.scoutifyapp.data.repository.Repository
 import com.team695.scoutifyapp.data.repository.TaskRepository
+import com.team695.scoutifyapp.data.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -38,7 +39,8 @@ class NetworkMonitor(
     private val taskRepository: TaskRepository,
     private val matchRepository: MatchRepository,
     private val gameDetailRepository: GameDetailRepository,
-    private val commentRepository: CommentRepository
+    private val commentRepository: CommentRepository,
+    private val userRepository: UserRepository,
 ) : NetworkService {
     var repoList: List<Repository> = listOf(
         matchRepository,
@@ -70,7 +72,6 @@ class NetworkMonitor(
     }
 
     init {
-
         startMonitoring()
     }
 
@@ -91,6 +92,10 @@ class NetworkMonitor(
     override suspend fun networkSync() {
         withContext(Dispatchers.IO) {
             while (isActive) {
+                userRepository.currentUser.first {
+                    it != null && it.name != "WRONG_USER" && it.name != "LOADING"
+                }
+
                 gameDetailRepository.fetch()
                 gameDetailRepository.isReady.first { it }
 

@@ -147,7 +147,8 @@ class MainActivity : ComponentActivity() {
             taskRepository = taskRepository,
             matchRepository = matchRepository,
             gameDetailRepository = gameDetailRepository,
-            commentRepository = commentRepository
+            commentRepository = commentRepository,
+            userRepository = userRepository
         )
         networkMonitor.startMonitoring()
 

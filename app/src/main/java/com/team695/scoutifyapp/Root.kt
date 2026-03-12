@@ -35,56 +35,6 @@ fun Root(
     commentRepository: CommentRepository,
     networkMonitor: NetworkMonitor
 ) {
-    val context = LocalContext.current
-
-    /*
-    LaunchedEffect(Unit) {
-        // 1. Setup DB Driver (Just for this test)
-
-        val queries = taskService.db.taskQueries
-        val queries2= taskService.db.pitscoutQueries
-        println("--- SQL TEST PitScout START ---")
-
-        println(queries2)
-        println("Inserting 'Test pitsout'...")
-        queries2.insertPitscout("ohcl","0001","{name:'test'}","","Clarence","","","")
-//        val pitscouts=queries2.selectAllPitscout().executeAsList()
-//
-//        println("Found ${queries2.size} tasks:")
-//        queries2.forEach { task ->
-//            println(" -> ID: ${task.id} | Title: ${task.title} | Completed: ${task.isCompleted}")
-//        }
-        val pitscouts = queries2.selectAllPitscout().executeAsList()
-
-        println("Found ${pitscouts.size} pitscout rows:")
-        pitscouts.forEach { row ->
-            println(" -> ID: ${row.id} | Event: ${row.event_id} | Form: ${row.form_id}")
-        }
-
-
-
-        // 2. CLEAR previous test data (Optional, so you don't see duplicates every run)
-        // You might need to add a "deleteAll: DELETE FROM taskEntity;" query to Task.sq first
-        // queries.deleteAll()
-
-        println("--- SQL TEST START ---")
-
-        // 3. INSERT a test task
-        println("Inserting 'Test Task'...")
-        queries.insertTask(title = "Test Task via Kotlin", isCompleted = 0)
-
-        // 4. READ and PRINT all tasks
-        val tasks = queries.selectAllTasks().executeAsList() // .executeAsList() grabs them instantly
-
-        println("Found ${tasks.size} tasks:")
-        tasks.forEach { task ->
-            println(" -> ID: ${task.id} | Title: ${task.title} | Completed: ${task.isCompleted}")
-        }
-
-        println("--- SQL TEST END ---")
-    }
-     */
-
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = Background

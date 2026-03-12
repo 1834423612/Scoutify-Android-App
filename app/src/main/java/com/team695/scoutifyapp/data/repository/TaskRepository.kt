@@ -61,7 +61,7 @@ class TaskRepository(
             val gameConstants = GameConstantsStore.constants   // non-null
 
             val matchNumber = Task.matchNum
-            val teamNumber = Task.teamNum.toLong()
+            val teamNumber = Task.teamNum
             val gameType = db.matchQueries
                 .selectMatchByNumber(matchNumber)
                 .executeAsOne().gameType

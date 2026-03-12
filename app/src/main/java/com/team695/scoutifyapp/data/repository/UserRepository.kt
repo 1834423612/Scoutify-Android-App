@@ -1,6 +1,7 @@
 package com.team695.scoutifyapp.data.repository
 
 import android.content.Context
+import android.util.Log
 import android.webkit.CookieManager
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToOneOrNull
@@ -76,7 +77,7 @@ class UserRepository(
                     return@withContext false
                 }
             } catch (e: Exception) {
-                println("Error when trying to get user info: $e")
+                Log.d("User", "Error when trying to get user info: $e")
                 return@withContext true
             }
         }

@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import com.team695.scoutifyapp.BuildConfig
 import com.team695.scoutifyapp.data.api.client.ScoutifyClient
 import com.team695.scoutifyapp.data.api.model.GameConstants
 import com.team695.scoutifyapp.data.api.model.GameConstantsStore
@@ -198,7 +199,9 @@ class GameDetailRepository(
                             db.matchQueries.clearAllMatches()
                         }
 
-                        UpdateManager.downloadUpdate()
+                        if (BuildConfig.VERSION_NAME != result.data.app_version) {
+                            UpdateManager.downloadUpdate()
+                        }
                     }
 
                     GameConstantsStore.set(result.data)
@@ -239,7 +242,7 @@ class GameDetailRepository(
 
     private fun getTeamInfo(task: TaskEntity): Pair<Int, String?> {
         val matchNumber = task.matchNum
-        val teamNumber = task.teamNum.toLong()
+        val teamNumber = task.teamNum
 
         val match = db.matchQueries
             .selectMatchByNumber(matchNumber)

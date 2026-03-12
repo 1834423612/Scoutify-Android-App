@@ -45,7 +45,6 @@ class MatchRepository(
         .flowOn(Dispatchers.IO)
 
     private fun updateDbFromMatchList(matches: List<Match>) {
-        println(matches)
         db.transaction {
             matches.forEach {
                 db.matchQueries.insertMatch(
@@ -86,7 +85,7 @@ class MatchRepository(
                 val apiMatches: ApiResponse<List<Match?>> = service.listMatches(
                     acToken = ScoutifyClient.tokenManager.getToken() ?: ""
                 )
-                
+
                 if (apiMatches.data != null) {
                     val filteredMatches = apiMatches.data
                         .filter { it != null } as List<Match>
@@ -98,7 +97,7 @@ class MatchRepository(
 
                 return@withContext Result.failure(Exception())
             } catch(e: Exception) {
-                println("Error when trying to fetch matches: $e")
+                Log.d("Match", "Error when trying to fetch matches: $e")
                 updateDbFromMatchList(oldMatches)
                 return@withContext Result.failure(e)
             }

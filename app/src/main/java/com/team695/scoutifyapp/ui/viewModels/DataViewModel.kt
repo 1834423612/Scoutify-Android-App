@@ -80,7 +80,7 @@ class DataViewModel(
             .debounce(2000L)
             .distinctUntilChanged() // Only save if the state actually changed
             .onEach { currentFormState: GameFormState ->
-                println("FORM STATE: $currentFormState")
+                //println("FORM STATE: $currentFormState")
                 // ignore if critical fields are not set - still waiting to be loaded from the database
                 if (
                     currentFormState.gameDetails.task_id == null ||
@@ -145,7 +145,7 @@ class DataViewModel(
     fun updateTime(deltaTime: Int) {
         if (!_formState.value.teleopRunning) {
             val dtEndgame = ENDGAME_END_TIME - _formState.value.teleopTotalMilliseconds
-            println("ENDGAME DELTA: $dtEndgame")
+            //println("ENDGAME DELTA: $dtEndgame")
             _formState.update {
                 it.copy(
                     teleopTotalMilliseconds = ENDGAME_END_TIME,

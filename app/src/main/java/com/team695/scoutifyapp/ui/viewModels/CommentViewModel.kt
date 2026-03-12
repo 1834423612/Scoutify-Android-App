@@ -1,5 +1,6 @@
 package com.team695.scoutifyapp.ui.screens
 
+import android.util.Log
 import androidx.compose.runtime.*
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -124,7 +125,8 @@ class CommentsViewModel (
 
     // Function to save comments and update 'submitted' to 1
     fun submitComments() {
-        println("submitted comments")
+        Log.d("Comments", "Submitted comments")
+
         val matchNum = _selectedMatch.value.toIntOrNull() ?: return
 
         viewModelScope.launch {
