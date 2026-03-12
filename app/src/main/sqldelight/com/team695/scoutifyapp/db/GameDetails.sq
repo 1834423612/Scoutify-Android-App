@@ -1,9 +1,13 @@
 import kotlin.Boolean;
+import kotlin.Char;
 import kotlin.Int;
 
 CREATE TABLE gameDetailsEntity (
     id INTEGER AS Int NOT NULL PRIMARY KEY AUTOINCREMENT,
     task_id INTEGER AS Int NOT NULL UNIQUE,
+    match_number INTEGER AS Int,
+    alliance TEXT AS Char,
+    alliance_position INTEGER AS Int,
 
     -- Starting & Preload
     starting_location REAL,
@@ -95,6 +99,9 @@ insertDetails:
 INSERT OR REPLACE INTO gameDetailsEntity(
     task_id,
     starting_location,
+    match_number,
+    alliance,
+    alliance_position,
     robot_on_field,
     robot_preloaded,
     pregame_flag,
@@ -147,8 +154,13 @@ INSERT OR REPLACE INTO gameDetailsEntity(
     postgame_over_bump,
     postgame_flag
 )
-VALUES (?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 selectDetailsForTask:
 SELECT * FROM gameDetailsEntity
 WHERE task_id = ?;
+
+selectCompletedTasks:
+SELECT gameDetailsEntity.* FROM gameDetailsEntity
+INNER JOIN taskEntity ON gameDetailsEntity.task_id = taskEntity.id
+WHERE taskEntity.progress = 100;

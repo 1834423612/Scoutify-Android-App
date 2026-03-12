@@ -19,6 +19,7 @@ class TasksViewModel(
     private val repository: TaskRepository
 ) : ViewModel() {
 
+    /*
     init {
         /*
         start a coroutine which will perform the
@@ -36,6 +37,7 @@ class TasksViewModel(
         }
     }
 
+    /*
     private suspend fun retryFetchUntilSuccess() {
         withContext(Dispatchers.IO) {
             var result = repository.fetchTasks()
@@ -47,8 +49,12 @@ class TasksViewModel(
         }
     }
 
+     */
+
     override fun onCleared() {
         super.onCleared()
         networkMonitor.stopMonitoring()
     }
+
+     */
 }

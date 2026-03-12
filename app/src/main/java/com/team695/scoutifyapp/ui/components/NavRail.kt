@@ -60,7 +60,6 @@ fun NavRail(
     val currentRoute = navBackStackEntry?.destination?.route
 
     val user by userRepository.currentUser.collectAsState(initial = null)
-    println(user)
 
     val roundedShape = RoundedCornerShape(
         topStart = 0.dp,

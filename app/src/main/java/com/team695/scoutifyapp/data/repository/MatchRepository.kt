@@ -26,8 +26,7 @@ import kotlinx.coroutines.withContext
 class MatchRepository(
     private val service: MatchService,
     private val db: AppDatabase,
-) {
-
+): Repository {
     val matches: Flow<List<Match>> = db.matchQueries.selectAllMatches()
         .asFlow()
         .mapToList(Dispatchers.IO)
@@ -62,15 +61,19 @@ class MatchRepository(
             }
         }
     }
-    fun getAllianceForMatch(matchNumber: Long,teamNumber: Long): String {
 
-        Log.d("MATCH_NUM:", matchNumber.toString())
+    fun getAllianceForMatch(matchNumber: Long, teamNumber: Long): Char {
+        val matchEntity = db.matchQueries
+            .selectMatchByNumber(matchNumber = matchNumber)
+            .executeAsOne()
 
-        val matchEntity: MatchEntity = db.matchQueries.selectMatchByNumber(matchNumber=matchNumber).executeAsOne()
-        if(matchEntity.r1==teamNumber||matchEntity.r2==teamNumber||matchEntity.r3==teamNumber) return "R"
-        return "B"
+        return when(teamNumber) {
+            matchEntity.r1, matchEntity.r2, matchEntity.r3 -> 'R'
+            else -> 'B'
+        }
     }
-    suspend fun fetchMatches(): Result<List<Match>> {
+
+    override suspend fun fetch(): Result<List<Match>> {
         return withContext(Dispatchers.IO) {
             val oldMatches = db.matchQueries.selectAllMatches()
                 .executeAsList()
@@ -79,19 +82,22 @@ class MatchRepository(
                 }
 
             try {
-                val apiMatches: ApiResponse<List<Match>> = service.listMatches(
+                val apiMatches: ApiResponse<List<Match?>> = service.listMatches(
                     acToken = ScoutifyClient.tokenManager.getToken() ?: ""
                 )
-                
-                if (apiMatches.data != null) {
-                    updateDbFromMatchList(apiMatches.data)
 
-                    return@withContext Result.success(apiMatches.data)
+                if (apiMatches.data != null) {
+                    val filteredMatches = apiMatches.data
+                        .filter { it != null } as List<Match>
+
+                    updateDbFromMatchList(filteredMatches)
+
+                    return@withContext Result.success(filteredMatches)
                 }
 
                 return@withContext Result.failure(Exception())
             } catch(e: Exception) {
-                println("Error when trying to fetch matches: $e")
+                Log.d("Match", "Error when trying to fetch matches: $e")
                 updateDbFromMatchList(oldMatches)
                 return@withContext Result.failure(e)
             }

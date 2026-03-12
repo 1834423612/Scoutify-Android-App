@@ -5,12 +5,19 @@ CREATE TABLE gameConstantsEntity (
     id INTEGER NOT NULL PRIMARY KEY DEFAULT 1,
     frc_season_master_sm_year INTEGER AS Int NOT NULL,
     competition_master_cm_event_code TEXT NOT NULL,
-    game_matchup_gm_game_type TEXT AS Char NOT NULL
+    game_matchup_gm_game_type TEXT AS Char NOT NULL,
+    app_version TEXT NOT NULL
 );
 
 insertOrUpdateConstants:
-INSERT OR REPLACE INTO gameConstantsEntity(id, frc_season_master_sm_year, competition_master_cm_event_code, game_matchup_gm_game_type)
-VALUES (1, ?, ?, ?);
+INSERT OR REPLACE INTO gameConstantsEntity(
+    id,
+    frc_season_master_sm_year,
+    competition_master_cm_event_code,
+    game_matchup_gm_game_type,
+    app_version
+)
+VALUES (1, ?, ?, ?, ?);
 
 getConstants:
 SELECT * FROM gameConstantsEntity
@@ -20,5 +27,11 @@ clearConstants:
 DELETE FROM gameConstantsEntity;
 
 seedData:
-INSERT OR IGNORE INTO gameConstantsEntity (id, frc_season_master_sm_year, competition_master_cm_event_code, game_matchup_gm_game_type)
-VALUES (1, 2026, 'practice', 'Q');
+INSERT OR IGNORE INTO gameConstantsEntity (
+    id,
+    frc_season_master_sm_year,
+    competition_master_cm_event_code,
+    game_matchup_gm_game_type,
+    app_version
+)
+VALUES (1, 2026, 'practice', 'Q', '1.0.0');

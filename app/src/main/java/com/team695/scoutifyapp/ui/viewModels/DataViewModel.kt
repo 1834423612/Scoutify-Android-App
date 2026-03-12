@@ -42,9 +42,7 @@ class DataViewModel(
 ) : ViewModel() {
     private val _formState = MutableStateFlow(
         GameFormState(
-            matchNum = -1,
             teamNumber = -1,
-            alliance = "R", //default to Red alliance
             gameDetails = GameDetails(),
             teleopSection = TeleopSection.UNSTARTED,
         )
@@ -58,24 +56,19 @@ class DataViewModel(
             val taskResult: Result<Task> = taskRepository.getTaskById(taskId)
             val task: Task? = taskResult.getOrNull()
             val matchNum: Int = task?.matchNum ?: -2
-            val teamNum: Int = task?.teamNum ?: -2
-            var alliance = "R"
 
-            if(matchNum != -2) {
-                alliance = getAllianceForMatch(matchNum.toLong(), teamNum.toLong())
-            }
-            else {
-                Log.e("DataViewModel", "Failed to find task for match")
+            if(matchNum == -2) {
+                throw Error("Could not find task_id $taskId for game details")
             }
 
+            Log.d("GAME_DETAILS_SAVED", gameDetails.toString())
 
             _formState.update {
                 it.copy(
                     teamNumber = task?.teamNum ?: -2,
-                    matchNum = task?.matchNum ?: -2,
-                    alliance = alliance,
                     gameDetails = gameDetails,
-                    teleopSection = if(gameDetails.teleopCompleted == true) TeleopSection.ENDED else TeleopSection.UNSTARTED,
+                    teleopSection = if (gameDetails.teleopCompleted == true) TeleopSection.ENDED else TeleopSection.UNSTARTED,
+                    teleopTotalMilliseconds = if (gameDetails.teleopCompleted == true) ENDGAME_END_TIME else 0,
                     paths = gameDetails.autonPath
                         ?.let { jsonToPaths( gameDetails.autonPath) }
                         ?: emptyList()
@@ -87,32 +80,40 @@ class DataViewModel(
             .debounce(2000L)
             .distinctUntilChanged() // Only save if the state actually changed
             .onEach { currentFormState: GameFormState ->
-
-                //ignore if taskId is not set - still waiting to be loaded from the database
-                if(currentFormState.gameDetails.task_id == null) {
+                //println("FORM STATE: $currentFormState")
+                // ignore if critical fields are not set - still waiting to be loaded from the database
+                if (
+                    currentFormState.gameDetails.task_id == null ||
+                    currentFormState.gameDetails.matchNumber == null ||
+                    currentFormState.gameDetails.alliance == null ||
+                    currentFormState.gameDetails.alliancePosition == null
+                ) {
+                    Log.d("Dataviewmodel", "Do not save ${currentFormState.gameDetails.robotOnField}")
                     return@onEach
                 }
+                Log.d("Dataviewmodel", "Save ${currentFormState.gameDetails.robotOnField}")
 
-                //update auton path in game details, bypass the state flow
-
+                // update auton path in game details, bypass the state flow
                 val gameDetails: GameDetails = currentFormState.gameDetails.copy(
                     autonPath = pathsToJson()
                 )
 
                 Log.d("DATA_MODEL", gameDetails.toString())
 
-
-                //save game details
+                // save game details
                 gameDetailRepository.updateDbFromGameDetails(gameDetails)
 
-                //update task progress
-                taskRepository.updateTaskProgress(id=currentFormState.gameDetails.task_id, progress = currentFormState.totalProgress)
+                // update task progress
+                taskRepository.updateTaskProgress(
+                    id = currentFormState.gameDetails.task_id,
+                    progress = currentFormState.totalProgress
+                )
             }
             .launchIn(viewModelScope) // Run this in the background tied to the ViewModel's lifecycle
     }
 
     fun formEvent(gameDetails: GameDetails) {
-        if(gameDetails.task_id == null) {
+        if (gameDetails.task_id == null) {
             Log.d("DataViewModel", "Invalid operation", Throwable())
             return
         }
@@ -122,10 +123,14 @@ class DataViewModel(
             )
         }
     }
-    fun getAllianceForMatch(matchNum:Long,teamNum: Long):String{
-        Log.d("MATCH_NUM_2", matchNum.toString())
-        return matchRepository.getAllianceForMatch(matchNum, teamNum)
+
+    fun getAllianceForMatch(matchNum: Long, teamNum: Long): Char {
+        return matchRepository.getAllianceForMatch(
+            matchNumber = matchNum,
+            teamNumber = teamNum
+        )
     }
+
     fun toggleWarningModal(title: String, text: String) {
         _formState.update {
             it.copy(
@@ -138,11 +143,22 @@ class DataViewModel(
 
     //deltaTime is in milliseconds
     fun updateTime(deltaTime: Int) {
-        _formState.update {
-            it.copy(
-                teleopTotalMilliseconds = it.teleopTotalMilliseconds + deltaTime,
-                teleopCachedMilliseconds = it.teleopCachedMilliseconds + deltaTime,
-            )
+        if (!_formState.value.teleopRunning) {
+            val dtEndgame = ENDGAME_END_TIME - _formState.value.teleopTotalMilliseconds
+            //println("ENDGAME DELTA: $dtEndgame")
+            _formState.update {
+                it.copy(
+                    teleopTotalMilliseconds = ENDGAME_END_TIME,
+                    teleopCachedMilliseconds = it.teleopCachedMilliseconds + dtEndgame
+                )
+            }
+        } else {
+            _formState.update {
+                it.copy(
+                    teleopTotalMilliseconds = it.teleopTotalMilliseconds + deltaTime,
+                    teleopCachedMilliseconds = it.teleopCachedMilliseconds + deltaTime,
+                )
+            }
         }
     }
 
@@ -332,6 +348,14 @@ class DataViewModel(
                     justUndid=false
                 )
             }
+        }
+    }
+
+    fun setUtensil(utensil: String) {
+        _formState.update {
+            it.copy(
+                utensil = utensil
+            )
         }
     }
 

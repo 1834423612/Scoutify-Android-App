@@ -2,10 +2,8 @@ package com.team695.scoutifyapp.data.api.service
 
 import com.team695.scoutifyapp.BuildConfig
 import com.team695.scoutifyapp.data.api.model.GameConstants
-import com.team695.scoutifyapp.data.api.model.GameDetailsActions
+import com.team695.scoutifyapp.data.api.model.GameDetails
 import retrofit2.http.Body
-import retrofit2.http.Field
-import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
@@ -24,6 +22,6 @@ interface GameDetailsService {
     @POST("scoutify/admin/game-details")
     suspend fun updateGameDetails(
         @Header("Authorization") acToken: String,
-        @Body gameDetails: List<GameDetailsActions>
+        @Body gameDetails: List<GameDetails>
     ): ApiResponse<Any>
 }

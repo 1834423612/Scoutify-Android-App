@@ -29,8 +29,10 @@ import androidx.compose.material3.Badge
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -73,6 +75,8 @@ import com.team695.scoutifyapp.ui.theme.TextSecondary
 import com.team695.scoutifyapp.ui.theme.mediumCornerRadius
 import com.team695.scoutifyapp.ui.theme.smallCornerRadius
 import com.team695.scoutifyapp.ui.viewModels.HomeViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlin.math.abs
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.DurationUnit
@@ -88,8 +92,19 @@ fun MatchSchedule(
     val readyState by homeViewModel.isReady.collectAsStateWithLifecycle()
     val teamState by homeViewModel.teamsState.collectAsStateWithLifecycle()
 
+    val sortedMatches = remember(matchState) {
+        matchState?.sorted()
+    }
+
+    val matchTime by produceState(System.currentTimeMillis()) {
+        while (isActive) {
+            delay(1.minutes)
+            value = System.currentTimeMillis()
+        }
+    }
+
     val filteredMatches = remember(searchQuery, matchState) {
-        matchState?.sorted()?.filter { m ->
+        sortedMatches?.filter { m ->
             searchQuery.isBlank()
                     || m.redAlliance.any{ it.toString().contains(searchQuery) }
                     || m.blueAlliance.any{ it.toString().contains(searchQuery) }
@@ -115,7 +130,7 @@ fun MatchSchedule(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(150.dp) // Changed back to a fixed height
+                    .height(if (!teamState.isNullOrEmpty()) 150.dp else 100.dp) // Changed back to a fixed height
             ) {
                 Image(
                     painter = painterResource(id = R.drawable.bluffcountry),
@@ -243,6 +258,14 @@ fun MatchSchedule(
 
                         Spacer(modifier = Modifier.height(12.dp))
                     }
+                    else {
+                        Text(
+                            text = "Not currently assigned to scout",
+                            color = TextSecondary,
+                            fontSize = 12.sp,
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                        )
+                    }
                 }
             }
             if (matchState.isNullOrEmpty() || !readyState) {
@@ -283,8 +306,8 @@ fun MatchSchedule(
                 ) {
 
                     val highlightedMatch = calculateHighlight(
-                        matches = filteredMatches,
-                        time = System.currentTimeMillis()
+                        matches = sortedMatches!!,
+                        time = matchTime
                     )
 
                     items(filteredMatches) {
@@ -305,7 +328,7 @@ fun MatchSchedule(
 
 @Composable
 fun TeamNumber(number: String) {
-    val highlightedTeams = setOf("695", "1787")
+    val highlightedTeams = setOf("695")
     val isHighlighted = number in highlightedTeams
     Box(
         contentAlignment = Alignment.Center,
@@ -345,7 +368,7 @@ fun MatchItem(
             .buttonHighlight(
                 corner = mediumCornerRadius
             )
-            .padding(horizontal = 8.dp, vertical = 7.dp),
+            .padding(horizontal = 8.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
 

@@ -27,6 +27,7 @@ import com.team695.scoutifyapp.ui.theme.smallCornerRadius
 fun CheckboxRow(
     label: String,
     isChecked: Boolean?,
+    locked: Boolean = false,
     onCheckedChange: (Boolean?) -> Unit
 ) {
 
@@ -35,14 +36,19 @@ fun CheckboxRow(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
-            .clickable { onCheckedChange(isChecked) } // Large touch target
+            .clickable {
+                if(!locked) {
+                    onCheckedChange(isChecked)
+                }
+            }
             .background(if (isChecked == true) Gunmetal else if (isChecked == false) DarkishGunmetal else RedAlliance.copy(0.1f))
             .buttonHighlight(corner = smallCornerRadius)
             .padding(16.dp)
     ) {
         NullableCheckbox(
             state = isChecked,
-        )
+            locked= locked,
+            )
         Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = label,

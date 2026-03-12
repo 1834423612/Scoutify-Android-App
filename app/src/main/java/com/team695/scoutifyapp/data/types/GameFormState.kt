@@ -8,12 +8,11 @@ import com.team695.scoutifyapp.data.api.model.GameDetails
 import com.team695.scoutifyapp.data.api.model.Stroke
 import com.team695.scoutifyapp.ui.screens.data.EndgameDetails
 import kotlin.time.Duration.Companion.nanoseconds
+import kotlin.times
 
 data class GameFormState(
     // Metadata
-    val matchNum: Int,
     val teamNumber: Int,
-    val alliance: String, // "R" or "B"
 
     //  game detail object
     val gameDetails: GameDetails,
@@ -59,16 +58,21 @@ data class GameFormState(
         }
     }
 
+    val teleopAndEndgameProgress: Float get() {
+        return teleopSectionProgress * 0.75f + gameDetails.endgameProgress * .25f
+    }
+
     //returns integer from 0-100
     val totalProgress: Int get() {
-        return (
-                (
-                        gameDetails.pregameProgress +
-                        autonProgress +
-                        (if (gameDetails.teleopCompleted == true) 1 else 0) +
-                        gameDetails.endgameProgress +
-                        gameDetails.postgameProgress
-                        )/5 * 100)
-            .toInt()
+        val teleopProgress = if (gameDetails.teleopCompleted == true) 1 else 0
+        val progress = (
+                gameDetails.pregameProgress +
+                autonProgress +
+                teleopProgress +
+                gameDetails.endgameProgress +
+                gameDetails.postgameProgress
+        ) / 5 * 100
+
+        return progress.toInt()
     }
 }
