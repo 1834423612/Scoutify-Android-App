@@ -23,5 +23,5 @@ interface MatchService {
             = GameConstantsStore.constants.competition_master_cm_event_code,
         @Query("gameType") gameType: Char
             = GameConstantsStore.constants.game_matchup_gm_game_type,
-    ): ApiResponse<List<Match>>
+    ): ApiResponse<List<Match?>>
 }

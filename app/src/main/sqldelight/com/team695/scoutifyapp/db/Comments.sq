@@ -8,11 +8,15 @@ CREATE TABLE commentsEntity (
     alliance_position INTEGER AS Int, --1, 2, 3
     timestamp INTEGER,
     comment TEXT,
+    submitted INTEGER AS Int,
 
     UNIQUE(match_number, team_number)
 );
 
 --queries
+selectAllComments:
+SELECT * FROM commentsEntity;
+
 selectCommentsByMatchNumber:
 SELECT * FROM commentsEntity
 WHERE match_number = ?;
@@ -21,16 +25,23 @@ selectCommentsById:
 SELECT * FROM commentsEntity
 WHERE id = ?;
 
-insertComments:
+insertComment:
 INSERT OR REPLACE INTO commentsEntity(
         match_number,
         team_number,
         alliance,
         alliance_position,
         timestamp,
-        comment
+        comment,
+        submitted
         )
         VALUES(
-        ?,?,?,?,?,?
+        ?,?,?,?,?,?,?
         );
+
+updateSubmissionStatus:
+UPDATE commentsEntity
+SET submitted = ?
+WHERE match_number = ?;
+
 

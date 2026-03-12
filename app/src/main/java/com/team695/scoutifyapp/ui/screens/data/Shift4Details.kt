@@ -132,7 +132,7 @@ fun Shift4Details(
                         dataViewModel.toggleWarningModal(title = "Are you sure?", text = "Shift 4 isn't over yet.")
                     }
                     else {
-                        dataViewModel.setTeleopSection(teleopSection = TeleopSection.ENDGAME, teleopTotalMilliseconds = TRANSITION_END_TIME)
+                        dataViewModel.setTeleopSection(teleopSection = TeleopSection.ENDGAME, teleopTotalMilliseconds = SHIFT4_END_TIME)
                     }
                 },
             )

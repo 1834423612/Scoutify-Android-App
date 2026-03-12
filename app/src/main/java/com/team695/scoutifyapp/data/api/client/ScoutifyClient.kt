@@ -2,6 +2,7 @@ package com.team695.scoutifyapp.data.api.client
 
 import android.content.Context
 import com.team695.scoutifyapp.data.api.TokenManager
+import com.team695.scoutifyapp.data.api.service.CommentService
 import com.team695.scoutifyapp.data.api.service.GameDetailsService
 import com.team695.scoutifyapp.data.api.service.MatchService
 import com.team695.scoutifyapp.data.api.service.SurveyService
@@ -13,9 +14,9 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object ScoutifyClient {
-    lateinit var tokenManager: TokenManager
     private const val BASE_URL = "https://api.team695.com/"
     private lateinit var retrofit: Retrofit
+    lateinit var tokenManager: TokenManager
 
     fun initialize(context: Context) {
         tokenManager = TokenManager(context.applicationContext)
@@ -65,7 +66,8 @@ object ScoutifyClient {
     val gameDetailsService: GameDetailsService by lazy {
         retrofit.create(GameDetailsService::class.java)
     }
-    val surveyService: SurveyService by lazy {
-        retrofit.create(SurveyService::class.java)
+
+    val commentService: CommentService by lazy {
+        retrofit.create(CommentService::class.java)
     }
 }

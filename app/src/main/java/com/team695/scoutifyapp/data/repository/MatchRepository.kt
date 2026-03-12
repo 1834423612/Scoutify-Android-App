@@ -1,5 +1,6 @@
 package com.team695.scoutifyapp.data.repository
 
+import android.util.Log
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.team695.scoutifyapp.data.api.NetworkMonitor
@@ -15,6 +16,7 @@ import com.team695.scoutifyapp.data.api.service.NetworkService
 import com.team695.scoutifyapp.data.api.service.TaskService
 import com.team695.scoutifyapp.data.extensions.convertIsoToUnix
 import com.team695.scoutifyapp.db.AppDatabase
+import com.team695.scoutifyapp.db.MatchEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
@@ -24,14 +26,20 @@ import kotlinx.coroutines.withContext
 class MatchRepository(
     private val service: MatchService,
     private val db: AppDatabase,
-) {
-
+): Repository {
     val matches: Flow<List<Match>> = db.matchQueries.selectAllMatches()
         .asFlow()
         .mapToList(Dispatchers.IO)
         .map { entries ->
             entries.map { entity ->
-                entity.createMatchFromDb()
+                val time: Long? = db.matchQueries.selectMatchTimeByNumber(entity.matchNumber)
+                    .executeAsOne()
+
+                val tEntity = entity.copy(
+                    time = time ?: 0L
+                )
+
+                tEntity.createMatchFromDb()
             }
         }
         .flowOn(Dispatchers.IO)
@@ -54,7 +62,18 @@ class MatchRepository(
         }
     }
 
-    suspend fun fetchMatches(): Result<List<Match>> {
+    fun getAllianceForMatch(matchNumber: Long, teamNumber: Long): Char {
+        val matchEntity = db.matchQueries
+            .selectMatchByNumber(matchNumber = matchNumber)
+            .executeAsOne()
+
+        return when(teamNumber) {
+            matchEntity.r1, matchEntity.r2, matchEntity.r3 -> 'R'
+            else -> 'B'
+        }
+    }
+
+    override suspend fun fetch(): Result<List<Match>> {
         return withContext(Dispatchers.IO) {
             val oldMatches = db.matchQueries.selectAllMatches()
                 .executeAsList()
@@ -63,24 +82,28 @@ class MatchRepository(
                 }
 
             try {
-                val apiMatches: ApiResponse<List<Match>> = service.listMatches(
+                val apiMatches: ApiResponse<List<Match?>> = service.listMatches(
                     acToken = ScoutifyClient.tokenManager.getToken() ?: ""
                 )
-                
-                if (apiMatches.data != null) {
-                    updateDbFromMatchList(apiMatches.data)
 
-                    return@withContext Result.success(apiMatches.data)
+                if (apiMatches.data != null) {
+                    val filteredMatches = apiMatches.data
+                        .filter { it != null } as List<Match>
+
+                    updateDbFromMatchList(filteredMatches)
+
+                    return@withContext Result.success(filteredMatches)
                 }
 
                 return@withContext Result.failure(Exception())
             } catch(e: Exception) {
-                println("Error when trying to fetch matches: $e")
+                Log.d("Match", "Error when trying to fetch matches: $e")
                 updateDbFromMatchList(oldMatches)
                 return@withContext Result.failure(e)
             }
         }
     }
+
 
     suspend fun clearMatches() {
         return withContext(Dispatchers.IO) {

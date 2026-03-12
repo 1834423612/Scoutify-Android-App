@@ -39,10 +39,9 @@ fun AuthGuard(
         }
     }
 
-    if (user != null && user?.name != "LOADING") {
-
+    if (user?.name != "LOADING") {
         LaunchedEffect(Unit) {
-            gameDetailRepository.setGameConstants()
+            gameDetailRepository.fetch()
         }
     }
 

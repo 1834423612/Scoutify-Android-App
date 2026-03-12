@@ -37,19 +37,15 @@ INSERT OR REPLACE INTO matchEntity(
 VALUES (1, "Q", 0, 9999, 9999, 9999, 9999, 9999, 9999),
     (2, "Q", 0, 9999, 695, 9999, 9999, 9999, 9999);
 
-selectMatchByNumberAndTeam:
+selectMatchByNumber:
 SELECT *
 FROM matchEntity
-WHERE matchNumber = ?
-  AND (
-        r1 = :team
-     OR r2 = :team
-     OR r3 = :team
-     OR b1 = :team
-     OR b2 = :team
-     OR b3 = :team
-  );
+WHERE matchNumber = ?;
 
+selectMatchTimeByNumber:
+SELECT time
+FROM matchEntity
+WHERE matchNumber = ?;
 
 clearAllMatches:
 DELETE FROM matchEntity;

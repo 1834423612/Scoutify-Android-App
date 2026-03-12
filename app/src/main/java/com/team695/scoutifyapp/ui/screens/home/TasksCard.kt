@@ -1,5 +1,6 @@
 package com.team695.scoutifyapp.ui.screens.home
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -32,6 +34,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -70,12 +73,9 @@ fun TasksCard(
 
     val tasksState by homeViewModel.tasksState.collectAsStateWithLifecycle()
 
-    val incompleteTasks = remember(tasksState) {
-        tasksState?.filter { it.progress != 100 }?.sorted()
-    }
-    val completeTasks = remember(tasksState) {
-        tasksState?.filter { it.progress >= 100 }?.sorted()
-    }
+    val incompleteTasks = tasksState?.filter { it.progress != 100 }?.sorted()
+    val completeTasks = tasksState?.filter { it.progress >= 100 }?.sorted()
+    Log.d("TASKS_CARD", "RE-RENDER")
 
     Box(
         modifier = Modifier
@@ -84,8 +84,19 @@ fun TasksCard(
             .clip(RoundedCornerShape(8.dp))
             .border(1.dp, LightGunmetal, RoundedCornerShape(smallCornerRadius))
     ) {
-        ImageBackground(x = -350f, y = 330f)
-        BackgroundGradient()
+        Box(
+            modifier = Modifier.wrapContentWidth(unbounded = true)
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.tasks_background),
+                contentDescription = "background",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .width(375.dp)
+                    .height(900.dp)
+            )
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()

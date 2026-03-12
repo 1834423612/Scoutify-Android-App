@@ -17,5 +17,4 @@ local.properties
 *.salive
 *.log
 /.kotlin
-Docs.yaml
-build_output.txt
+app/release*
