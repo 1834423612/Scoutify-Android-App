@@ -22,6 +22,7 @@ import com.team695.scoutifyapp.ui.viewModels.ViewModelFactory
 import com.team695.scoutifyapp.data.repository.GameDetailRepository
 import com.team695.scoutifyapp.data.repository.MatchRepository
 import com.team695.scoutifyapp.data.repository.TaskRepository
+import com.team695.scoutifyapp.data.repository.TeamNameRepository
 import com.team695.scoutifyapp.data.repository.UserRepository
 import com.team695.scoutifyapp.ui.screens.CommentsViewModel
 import com.team695.scoutifyapp.ui.screens.data.DataScreen
@@ -38,7 +39,8 @@ fun AppNav(
     userRepository: UserRepository,
     commentRepository: CommentRepository,
     gameDetailRepository: GameDetailRepository,
-    networkMonitor: NetworkMonitor,
+    teamNameRepository: TeamNameRepository,
+    networkMonitor: NetworkMonitor
 ) {
     val owner: ViewModelStoreOwner = LocalViewModelStoreOwner.current
         ?: throw IllegalStateException("Root must be attached to a ViewModelStoreOwner")
@@ -108,7 +110,13 @@ fun AppNav(
             ) {
                 val commentsViewModel: CommentsViewModel = viewModel(
                     viewModelStoreOwner = owner,
-                    factory = ViewModelFactory { CommentsViewModel(commentRepository = commentRepository, matchRepository = matchRepository) }
+                    factory = ViewModelFactory {
+                        CommentsViewModel(
+                            commentRepository = commentRepository,
+                            matchRepository = matchRepository,
+                            teamNameRepository = teamNameRepository
+                        )
+                    }
                 )
 
                 LaunchedEffect(matchNumber) {
