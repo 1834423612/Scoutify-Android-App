@@ -1,0 +1,22 @@
+CREATE TABLE teamNamesEntity (
+    team_number TEXT NOT NULL PRIMARY KEY,
+    team_name TEXT NOT NULL
+);
+
+selectAll:
+SELECT * FROM teamNamesEntity;
+
+selectByTeamNumber:
+SELECT * FROM teamNamesEntity
+WHERE team_number = ?;
+
+selectMatchTeams:
+SELECT * FROM teamNamesEntity
+WHERE team_number IN (?, ?, ?, ?, ?, ?);
+
+insertTeam:
+INSERT OR REPLACE INTO teamNamesEntity(team_number, team_name)
+VALUES (?, ?);
+
+deleteAll:
+DELETE FROM teamNamesEntity;

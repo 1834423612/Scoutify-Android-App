@@ -6,6 +6,7 @@ import com.team695.scoutifyapp.data.api.service.CommentService
 import com.team695.scoutifyapp.data.api.service.GameDetailsService
 import com.team695.scoutifyapp.data.api.service.MatchService
 import com.team695.scoutifyapp.data.api.service.TaskService
+import com.team695.scoutifyapp.data.api.service.TeamNameService
 import com.team695.scoutifyapp.data.api.service.UserService
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
@@ -68,5 +69,9 @@ object ScoutifyClient {
 
     val commentService: CommentService by lazy {
         retrofit.create(CommentService::class.java)
+    }
+
+    val teamNameService: TeamNameService by lazy {
+        retrofit.create(TeamNameService::class.java)
     }
 }

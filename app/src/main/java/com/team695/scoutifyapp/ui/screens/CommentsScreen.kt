@@ -47,6 +47,9 @@ fun CommentsScreen(
     val blue2Comment by viewModel.blue2Comment
     val blue3Comment by viewModel.blue3Comment
 
+    val redAllianceNames by viewModel.redAllianceNames
+    val blueAllianceNames by viewModel.blueAllianceNames
+
     val autoSaved by viewModel.autoSaved
     val isSubmitted by viewModel.isSubmitted
     val saveStatus by viewModel.saveStatus
@@ -73,6 +76,8 @@ fun CommentsScreen(
                 blue1Comment = blue1Comment,
                 blue2Comment = blue2Comment,
                 blue3Comment = blue3Comment,
+                redAllianceNames = redAllianceNames,
+                blueAllianceNames = blueAllianceNames,
                 onMatchSelected = { match -> viewModel.onMatchSelected(match) },
                 onCommentChanged = { alliance, position, comment -> viewModel.onCommentChanged(alliance, position, comment) },
                 isSubmitted = isSubmitted,
@@ -96,6 +101,8 @@ fun CommentsContent(
     blue1Comment: String,
     blue2Comment: String,
     blue3Comment: String,
+    redAllianceNames: List<String>,
+    blueAllianceNames: List<String>,
     onMatchSelected: (String) -> Unit,
     onCommentChanged: (String, Int, String) -> Unit,
     isSubmitted: Boolean,
@@ -260,13 +267,13 @@ fun CommentsContent(
                         modifier = Modifier.weight(1f)
                     ) {
                         CommentField(
-                            ("Team " + currentMatch?.redAlliance?.get(0)?.toString()),
+                            ("Team ${currentMatch?.redAlliance?.get(0)?.toString()} (${redAllianceNames[0]})"),
                             red1Comment) { onCommentChanged("Red", 1, it) }
                         CommentField(
-                            ("Team " + currentMatch?.redAlliance?.get(1)?.toString()),
+                            ("Team ${currentMatch?.redAlliance?.get(1)?.toString()} (${redAllianceNames[1]})"),
                             red2Comment) { onCommentChanged("Red", 2, it) }
                         CommentField(
-                            ("Team " + currentMatch?.redAlliance?.get(2)?.toString()),
+                            ("Team ${currentMatch?.redAlliance?.get(2)?.toString()} (${redAllianceNames[2]})"),
                             red3Comment) { onCommentChanged("Red", 3, it) }
                     }
 
@@ -277,13 +284,13 @@ fun CommentsContent(
                         modifier = Modifier.weight(1f)
                     ) {
                         CommentField(
-                            ("Team " + currentMatch?.blueAlliance?.get(0)?.toString()),
+                            ("Team ${currentMatch?.blueAlliance?.get(0)?.toString()} (${blueAllianceNames[0]})"),
                             blue1Comment) { onCommentChanged("Blue", 1, it) }
                         CommentField(
-                            ("Team " + currentMatch?.blueAlliance?.get(1)?.toString()),
+                            ("Team ${currentMatch?.blueAlliance?.get(1)?.toString()} (${blueAllianceNames[1]})"),
                             blue2Comment) { onCommentChanged("Blue", 2, it) }
                         CommentField(
-                            ("Team " + currentMatch?.blueAlliance?.get(2)?.toString()),
+                            ("Team ${currentMatch?.blueAlliance?.get(2)?.toString()} (${blueAllianceNames[2]})"),
                             blue3Comment) { onCommentChanged("Blue", 3, it) }
                     }
                 }

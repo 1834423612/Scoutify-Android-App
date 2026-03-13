@@ -34,11 +34,13 @@ import com.team695.scoutifyapp.db.AppDatabase
 import com.team695.scoutifyapp.db.GameDetailsEntity
 import com.team695.scoutifyapp.db.CommentsEntity
 import com.team695.scoutifyapp.data.api.service.GameDetailsService
+import com.team695.scoutifyapp.data.api.service.TeamNameService
 import com.team695.scoutifyapp.data.api.service.UserService
 import com.team695.scoutifyapp.data.charAdapter
 import com.team695.scoutifyapp.data.intAdapter
 import com.team695.scoutifyapp.data.repository.CommentRepository
 import com.team695.scoutifyapp.data.repository.GameDetailRepository
+import com.team695.scoutifyapp.data.repository.TeamNameRepository
 import com.team695.scoutifyapp.data.update.UpdateManager
 import com.team695.scoutifyapp.data.update.UpdateReceiver
 import com.team695.scoutifyapp.db.GameConstantsEntity
@@ -130,6 +132,7 @@ class MainActivity : ComponentActivity() {
         val userService: UserService = ScoutifyClient.userService
         val commentService: CommentService = ScoutifyClient.commentService
         val gameDetailsService: GameDetailsService = ScoutifyClient.gameDetailsService
+        val teamNameService: TeamNameService = ScoutifyClient.teamNameService
 
         val userRepository = UserRepository(
             loginService = loginService,
@@ -140,7 +143,8 @@ class MainActivity : ComponentActivity() {
         val taskRepository = TaskRepository(service = taskService, db = db)
         val matchRepository = MatchRepository(service = matchService, db = db)
         val gameDetailRepository = GameDetailRepository(service = gameDetailsService, db = db)
-        val commentRepository = CommentRepository(db = db, service = commentService)
+        val commentRepository = CommentRepository(service = commentService, db=db)
+        val teamNameRepository = TeamNameRepository(service = teamNameService, db = db)
 
         val networkMonitor = NetworkMonitor(
             applicationContext,
@@ -148,7 +152,8 @@ class MainActivity : ComponentActivity() {
             matchRepository = matchRepository,
             gameDetailRepository = gameDetailRepository,
             commentRepository = commentRepository,
-            userRepository = userRepository
+            userRepository = userRepository,
+            teamNameRepository = teamNameRepository
         )
         networkMonitor.startMonitoring()
 
@@ -195,7 +200,8 @@ class MainActivity : ComponentActivity() {
                     userRepository = userRepository,
                     gameDetailRepository = gameDetailRepository,
                     commentRepository = commentRepository,
-                    networkMonitor = networkMonitor,
+                    teamNameRepository = teamNameRepository,
+                    networkMonitor = networkMonitor
                 )
             }
         }
