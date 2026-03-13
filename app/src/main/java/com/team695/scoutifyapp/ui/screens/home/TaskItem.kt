@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.team695.scoutifyapp.R
+import com.team695.scoutifyapp.data.api.model.GameConstantsStore
 import com.team695.scoutifyapp.data.api.model.Task
 import com.team695.scoutifyapp.ui.components.buttonHighlight
 import com.team695.scoutifyapp.ui.components.progressBorder
@@ -73,7 +74,8 @@ fun TaskItem(task: Task, onPress: () -> Unit) {
                 modifier = Modifier.size(16.dp)
             )
             Spacer(modifier = Modifier.width(4.dp))
-            Text("Q${task.matchNum}", color = Deselected)
+            Text("${GameConstantsStore.constants.game_matchup_gm_game_type}${task.matchNum}",
+                color = Deselected)
         }
         Row(
             verticalAlignment = Alignment.CenterVertically,

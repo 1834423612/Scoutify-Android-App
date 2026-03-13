@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.ui.graphics.ImageBitmap
 //import androidx.compose.ui.graphics.drawscope.drawImage
-import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import com.team695.scoutifyapp.R
 
@@ -20,26 +19,20 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.team695.scoutifyapp.data.types.GameFormState
-import com.team695.scoutifyapp.ui.theme.AccentGreen
 import com.team695.scoutifyapp.ui.viewModels.DataViewModel
-import com.team695.scoutifyapp.ui.viewModels.PenViewModel
-import com.team695.scoutifyapp.ui.viewModels.Stroke
 
 
 
 
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -48,20 +41,11 @@ import androidx.compose.material.icons.filled.Undo
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.drawscope.DrawScope
-import androidx.compose.ui.graphics.drawscope.Fill
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.graphics.drawscope.rotate
-import androidx.compose.ui.graphics.drawscope.translate
-import androidx.compose.foundation.Canvas
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntSize
+import com.team695.scoutifyapp.data.api.model.Stroke
 
 
 // ─── Root Composable ────────────────────────────────────────────────────────
@@ -70,7 +54,6 @@ import androidx.compose.ui.unit.IntSize
 fun AutonDetails(
     dataViewModel: DataViewModel,
     formState: GameFormState,
-    viewModel: PenViewModel
     ) {
     Box(
         modifier = Modifier
@@ -110,13 +93,14 @@ fun AutonDetails(
                         Spacer(modifier = Modifier.height(8.dp))
 
                         RobotActionPanel(
-                            { viewModel.undo() },
-                            {viewModel.redo()},
-                            { viewModel.utensil = "path" },
-                            { viewModel.utensil = "shoot" },
-                            { viewModel.utensil = "intake" },
-                            { viewModel.utensil = "broke" },
-                            {viewModel.reset()},
+                            { dataViewModel.undo() },
+                            {dataViewModel.redo()},
+                            { dataViewModel.setUtensil("path")},
+                            { dataViewModel.setUtensil("climb") },
+                            { dataViewModel.setUtensil("shoot") },
+                            {dataViewModel.setUtensil("intake") },
+                            { dataViewModel.setUtensil("broke") },
+                            {dataViewModel.reset()},
                         )
                     }
                 }
@@ -133,12 +117,14 @@ fun AutonDetails(
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(16.dp))
-                    var alliance ="R"
+
                     var fieldImage = ImageBitmap.imageResource(id = R.drawable.map)
-                    if(dataViewModel.getAllianceForMatch(formState.matchNum.toLong(), formState.teamNumber.toLong())=="B"){
-                        fieldImage=ImageBitmap.imageResource(id = R.drawable.image_29__1_)
+
+                    if (formState.gameDetails.alliance == 'B') {
+                        fieldImage=ImageBitmap.imageResource(id = R.drawable.blue_map)
                     }
-                    DrawCanvas(viewModel, fieldImage)
+
+                    DrawCanvas(viewModel = dataViewModel, formState = formState, image = fieldImage)
                 }
             }
         }
@@ -148,11 +134,12 @@ fun AutonDetails(
 
 @Composable
 fun DrawCanvas(
-    viewModel: PenViewModel,
+    viewModel: DataViewModel,
+    formState: GameFormState,
     image: ImageBitmap
 ) {
-    val paths = viewModel.paths
-    val current = viewModel.currentStroke
+    val paths = formState.paths
+    val current = formState.currentStroke
     Canvas(
         modifier = Modifier
             .fillMaxSize()
@@ -160,29 +147,29 @@ fun DrawCanvas(
             //.aspectRatio(2f)
             .border(2.dp, Color.Gray)
             .clip(RectangleShape)
-            .pointerInput(viewModel.utensil) {
+            .pointerInput(formState.utensil) {
                 detectTapGestures { offset ->
-                    if (viewModel.utensil != "path") {
-                        viewModel.addLabeledPoint(offset, viewModel.utensil)
+                    if (formState.utensil != "path") {
+                        viewModel.addLabeledPoint(offset, formState.utensil)
                     }
                 }
             }
-            .pointerInput(viewModel.utensil,viewModel.lastDragPosition) {
+            .pointerInput(formState.utensil,formState.lastDragPosition) {
                 detectDragGestures(
                     onDragStart = { offset ->
-                        if (viewModel.utensil == "path") {
+                        if (formState.utensil == "path") {
                             viewModel.startPath(offset)
                         }
                     },
                     onDrag = { change, _ ->
-                        if (viewModel.utensil == "path") {
+                        if (formState.utensil == "path") {
                             viewModel.addPathPoint(change.position)
                         }
                         //viewModel.lastDragPosition =  change.position
 
                     },
                     onDragEnd = {
-                        if (viewModel.utensil == "path") {
+                        if (formState.utensil == "path") {
                             viewModel.endPath()
                         }
 //                        else if(viewModel.lastDragPosition != null) {
@@ -247,8 +234,15 @@ fun DrawCanvas(
                         "broke"->{
                             drawRect(
                                 color = Color.Red,
-                                topLeft = offset,
+                                topLeft = offset - Offset(25f,25f),
                                 size = androidx.compose.ui.geometry.Size(50f, 50f)
+                            )
+                        }
+                        "climb"->{
+                            drawRect(
+                                color = Color.Green,
+                                topLeft = offset - Offset(15f,15f),
+                                size = androidx.compose.ui.geometry.Size(30f, 30f)
                             )
                         }
                     }
@@ -289,6 +283,7 @@ fun RobotActionPanel(
     onUndo: () -> Unit = {},
     onRedo: () -> Unit = {},
     onPath: () -> Unit = {},
+    onClimb: () -> Unit = {},
     onBall: () -> Unit = {},
     onIntake: () -> Unit = {},
     onBroke: () -> Unit = {},
@@ -352,6 +347,13 @@ fun RobotActionPanel(
         }
 
         // ── Broke button ─────────────────────────────────────────────────────
+        ActionButton(
+            label = "Climb",
+            isSelected = selected == "Climb",
+            onClick = { selected = "Climb"; onClimb() }
+        ) {
+            ClimbIcon()
+        }
         ActionButton(
             label = "Broke",
             isSelected = selected == "Broke",
@@ -595,7 +597,17 @@ private fun IntakeIcon() {
 @Composable
 private fun BrokeIcon() {
     Image(
-        painter = painterResource(id = R.drawable.group_31), // Temporary placeholder for compilation
+        painter = painterResource(id = R.drawable.group_38__1_), // Temporary placeholder for compilation
+        contentDescription = null, // Decorative background image
+        modifier = Modifier.fillMaxSize(),
+        // Crop ensures the image fills the screen bounds without distorting aspect ratio
+        contentScale = ContentScale.Fit
+    )
+}
+@Composable
+private fun ClimbIcon() {
+    Image(
+        painter = painterResource(id = R.drawable.group_39__1_), // Temporary placeholder for compilation
         contentDescription = null, // Decorative background image
         modifier = Modifier.fillMaxSize(),
         // Crop ensures the image fills the screen bounds without distorting aspect ratio

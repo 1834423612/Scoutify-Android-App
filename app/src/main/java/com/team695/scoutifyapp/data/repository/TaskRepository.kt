@@ -29,13 +29,23 @@ import kotlin.text.first
 class TaskRepository(
     private val service: TaskService,
     private val db: AppDatabase,
-) {
+): Repository {
+
     val tasks: Flow<List<Task>> = db.taskQueries.selectAllTasks()
         .asFlow()
         .mapToList(Dispatchers.IO)
         .map { entities ->
             entities.map { entity ->
-                entity.createTaskFromDb()
+                val time: Long? = db.matchQueries
+                    .selectMatchTimeByNumber(
+                        matchNumber = entity.matchNum
+                    ).executeAsOneOrNull()
+
+                val newEntity = entity.copy(
+                    time = time ?: 0L
+                )
+
+                newEntity.createTaskFromDb()
             }
         }
         .flowOn(Dispatchers.IO)
@@ -51,12 +61,17 @@ class TaskRepository(
             val gameConstants = GameConstantsStore.constants   // non-null
 
             val matchNumber = Task.matchNum
-            val teamNumber = Task.teamNum.toLong()
+            val teamNumber = Task.teamNum
             val gameType = db.matchQueries
-                .selectMatchByNumberAndTeam(matchNumber, teamNumber)
+                .selectMatchByNumber(matchNumber)
                 .executeAsOne().gameType
             val user: String = db.userQueries.selectUser().executeAsOne().name ?: ""
-            return Task.convertToServerFormat(gameConstants,teamNumber.toInt(),user,695,gameType[0])
+
+            return Task.convertToServerFormat(
+                gameConstants,teamNumber.toInt(),
+                user,695,
+                gameType[0]
+            )
         }
 
         return db.taskQueries.selectAllTasks().executeAsList().map {
@@ -88,7 +103,7 @@ class TaskRepository(
         }
     }
 
-    suspend fun fetchTasks(): Result<List<Task>?> {
+    override suspend fun fetch(): Result<List<Task>> {
         return withContext(Dispatchers.IO) {
 
             val oldTasks = db.taskQueries.selectAllTasks()

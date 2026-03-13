@@ -228,6 +228,7 @@ fun CommentsContent(
                         .height(55.dp)
                 ) {}
 
+                /* FOR DEBUGGING PURPOSES, UNCOMMENT IF YOU WANT TO PRINT THE COMMENTS DB TO LOGCAT
                 Pressable(
                     onClick = printDB,
                     corner = 4.dp,
@@ -236,6 +237,7 @@ fun CommentsContent(
                         .width(150.dp)
                         .height(55.dp)
                 ) {}
+                 */
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -258,13 +260,13 @@ fun CommentsContent(
                         modifier = Modifier.weight(1f)
                     ) {
                         CommentField(
-                            ("Team " + currentMatch?.redAlliance?.get(0)?.toString()) ?: "Red 1",
+                            ("Team " + currentMatch?.redAlliance?.get(0)?.toString()),
                             red1Comment) { onCommentChanged("Red", 1, it) }
                         CommentField(
-                            ("Team " + currentMatch?.redAlliance?.get(1)?.toString()) ?: "Red 2",
+                            ("Team " + currentMatch?.redAlliance?.get(1)?.toString()),
                             red2Comment) { onCommentChanged("Red", 2, it) }
                         CommentField(
-                            ("Team " + currentMatch?.redAlliance?.get(2)?.toString()) ?: "Red 3",
+                            ("Team " + currentMatch?.redAlliance?.get(2)?.toString()),
                             red3Comment) { onCommentChanged("Red", 3, it) }
                     }
 
@@ -275,13 +277,13 @@ fun CommentsContent(
                         modifier = Modifier.weight(1f)
                     ) {
                         CommentField(
-                            ("Team " + currentMatch?.blueAlliance?.get(0)?.toString()) ?: "Blue 1",
+                            ("Team " + currentMatch?.blueAlliance?.get(0)?.toString()),
                             blue1Comment) { onCommentChanged("Blue", 1, it) }
                         CommentField(
-                            ("Team " + currentMatch?.blueAlliance?.get(1)?.toString()) ?: "Blue 2",
+                            ("Team " + currentMatch?.blueAlliance?.get(1)?.toString()),
                             blue2Comment) { onCommentChanged("Blue", 2, it) }
                         CommentField(
-                            ("Team " + currentMatch?.blueAlliance?.get(2)?.toString()) ?: "Blue 3",
+                            ("Team " + currentMatch?.blueAlliance?.get(2)?.toString()),
                             blue3Comment) { onCommentChanged("Blue", 3, it) }
                     }
                 }

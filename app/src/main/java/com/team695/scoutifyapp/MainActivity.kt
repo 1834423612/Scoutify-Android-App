@@ -1,15 +1,28 @@
 package com.team695.scoutifyapp
 
+import android.Manifest
+import android.app.DownloadManager
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.ProcessLifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.team695.scoutifyapp.data.api.NetworkMonitor
 import com.team695.scoutifyapp.data.api.client.CasdoorClient
 import com.team695.scoutifyapp.data.api.client.ScoutifyClient
 import com.team695.scoutifyapp.data.api.model.GameConstantsStore
 import com.team695.scoutifyapp.data.api.model.User
+import com.team695.scoutifyapp.data.api.service.CommentService
 import com.team695.scoutifyapp.data.api.service.LoginService
 import com.team695.scoutifyapp.data.api.service.MatchService
 import com.team695.scoutifyapp.ui.theme.ScoutifyTheme
@@ -26,10 +39,25 @@ import com.team695.scoutifyapp.data.charAdapter
 import com.team695.scoutifyapp.data.intAdapter
 import com.team695.scoutifyapp.data.repository.CommentRepository
 import com.team695.scoutifyapp.data.repository.GameDetailRepository
+import com.team695.scoutifyapp.data.update.UpdateManager
+import com.team695.scoutifyapp.data.update.UpdateReceiver
 import com.team695.scoutifyapp.db.GameConstantsEntity
 import com.team695.scoutifyapp.ui.extensions.androidID
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
+    private val requestNotificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        if (isGranted) {
+            // TODO: Add notification to say permission is granted
+        } else {
+            // TODO: Add notification to say permission is not granted
+        }
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -48,6 +76,9 @@ class MainActivity : ComponentActivity() {
             gameDetailsEntityAdapter = GameDetailsEntity.Adapter(
                 idAdapter = intAdapter,
                 task_idAdapter = intAdapter,
+                match_numberAdapter = intAdapter,
+                allianceAdapter = charAdapter,
+                alliance_positionAdapter = intAdapter,
                 auton_fuel_countAdapter = intAdapter,
                 transition_cycling_timeAdapter = intAdapter,
                 transition_stockpiling_timeAdapter = intAdapter,
@@ -97,6 +128,7 @@ class MainActivity : ComponentActivity() {
         val matchService: MatchService = ScoutifyClient.matchService
         val loginService: LoginService = CasdoorClient.loginService
         val userService: UserService = ScoutifyClient.userService
+        val commentService: CommentService = ScoutifyClient.commentService
         val gameDetailsService: GameDetailsService = ScoutifyClient.gameDetailsService
 
         val userRepository = UserRepository(
@@ -108,9 +140,52 @@ class MainActivity : ComponentActivity() {
         val taskRepository = TaskRepository(service = taskService, db = db)
         val matchRepository = MatchRepository(service = matchService, db = db)
         val gameDetailRepository = GameDetailRepository(service = gameDetailsService, db = db)
-        val commentRepository = CommentRepository(db = db)
+        val commentRepository = CommentRepository(db = db, service = commentService)
 
-        val networkMonitor = NetworkMonitor(applicationContext)
+        val networkMonitor = NetworkMonitor(
+            applicationContext,
+            taskRepository = taskRepository,
+            matchRepository = matchRepository,
+            gameDetailRepository = gameDetailRepository,
+            commentRepository = commentRepository,
+            userRepository = userRepository
+        )
+        networkMonitor.startMonitoring()
+
+        UpdateManager.context = applicationContext
+
+        ProcessLifecycleOwner.get().lifecycleScope.launch {
+            this.launch {
+                networkMonitor.networkSync()
+            }
+
+            if (
+                ContextCompat.checkSelfPermission(
+                    applicationContext,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                requestNotificationPermissionLauncher.launch(
+                    Manifest.permission.POST_NOTIFICATIONS
+                )
+            }
+
+            val receiver = UpdateReceiver(
+            {
+                UpdateManager.downloadUpdate()
+            },
+            { installIntent ->
+                applicationContext.startActivity(installIntent)
+            })
+
+            applicationContext.registerReceiver(
+                receiver,
+                IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE),
+                RECEIVER_EXPORTED
+            )
+
+            UpdateReceiver.deleteInstalledApk(applicationContext)
+        }
 
         setContent {
             ScoutifyTheme {

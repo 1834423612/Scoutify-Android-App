@@ -43,6 +43,7 @@ import androidx.compose.material3.adaptive.layout.ThreePaneScaffoldDestinationIt
 import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
 import androidx.compose.material3.adaptive.navigation.BackNavigationBehavior
 import androidx.compose.material3.adaptive.navigation.NavigableListDetailPaneScaffold
+import androidx.compose.material3.adaptive.navigation.ThreePaneScaffoldNavigator
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -78,13 +79,11 @@ import com.team695.scoutifyapp.ui.theme.LightGunmetal
 import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.theme.mediumCornerRadius
 import com.team695.scoutifyapp.ui.theme.smallCornerRadius
-import com.team695.scoutifyapp.ui.viewModels.PenViewModel
-import com.team695.scoutifyapp.ui.viewModels.PregameViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.parcelize.Parcelize
-
+import kotlin.suspend
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3AdaptiveApi::class)
@@ -122,31 +121,38 @@ fun DataScreen(
                 val deltaTime = (frameTimeMillis-startTime).toInt()
                 val switchTime: Int
                 val nextSection: TeleopSection
+
                 when(formState.teleopSection) {
                     TeleopSection.TRANSITION -> {
                         switchTime = TRANSITION_END_TIME
                         nextSection = TeleopSection.SHIFT1
                     }
+
                     TeleopSection.SHIFT1 -> {
                         switchTime = SHIFT1_END_TIME
                         nextSection = TeleopSection.SHIFT2
                     }
+
                     TeleopSection.SHIFT2 -> {
                         switchTime = SHIFT2_END_TIME
                         nextSection = TeleopSection.SHIFT3
                     }
+
                     TeleopSection.SHIFT3 -> {
                         switchTime = SHIFT3_END_TIME
                         nextSection = TeleopSection.SHIFT4
                     }
+
                     TeleopSection.SHIFT4 -> {
                         switchTime = SHIFT4_END_TIME
                         nextSection = TeleopSection.ENDGAME
                     }
+
                     TeleopSection.ENDGAME -> {
                         switchTime = ENDGAME_END_TIME
                         nextSection = TeleopSection.ENDED
                     }
+
                     else -> {
                         switchTime = Int.MAX_VALUE
                         nextSection = TeleopSection.ENDED
@@ -154,9 +160,11 @@ fun DataScreen(
                 }
 
                 val newTime = formState.teleopTotalMilliseconds + deltaTime
+
                 if (newTime > switchTime) {
                     if(nextSection == TeleopSection.ENDED) {
                         dataViewModel.endTeleop()
+
                         //mark teleop as done
                         dataViewModel.formEvent(
                             gameDetails = formState.gameDetails.copy(
@@ -164,8 +172,10 @@ fun DataScreen(
                             )
                         )
                     }
+
                     dataViewModel.setTeleopSection(teleopSection = nextSection, teleopTotalMilliseconds = switchTime)
                 }
+
                 dataViewModel.updateTime(deltaTime = (frameTimeMillis-startTime).toInt())
                 startTime = frameTimeMillis
             }
@@ -207,16 +217,12 @@ fun DataScreen(
                             section = navigator.currentDestination?.contentKey,
                             animatedVisibilityScope = this@AnimatedPane,
                             sharedTransitionScope = this@SharedTransitionLayout,
-                            onClosePane = {
-                                scope.launch {
-                                    navigator.navigateBack(
-                                        backNavigationBehavior = BackNavigationBehavior.PopUntilScaffoldValueChange,
-                                    )
-
-                                }
-                            },
                             formState = formState,
-                            dataViewModel = dataViewModel
+                            dataViewModel = dataViewModel,
+                            returnToHome = {
+                                navController.navigate("home")
+                            },
+                            navigator = navigator
                         )
                     }
                 }
@@ -295,11 +301,11 @@ private fun ListContent(
                         }
                         SectionType.AUTON -> {
                             isFlagged = formState.gameDetails.autonFlag == true
-                            progress = formState.gameDetails.autonProgress
+                            progress = formState.autonProgress
                         }
                         SectionType.TELEOP -> {
                             isFlagged = formState.gameDetails.teleopFlag == true
-                            progress = (formState.teleopSectionProgress + formState.gameDetails.endgameProgress)/2
+                            progress = formState.teleopAndEndgameProgress
                         }
                         SectionType.POSTGAME -> {
                             isFlagged = formState.gameDetails.postgameFlag == true
@@ -400,7 +406,8 @@ private fun DetailContent(
     animatedVisibilityScope: AnimatedVisibilityScope,
     formState: GameFormState,
     dataViewModel: DataViewModel,
-    onClosePane: () -> Unit
+    returnToHome: () -> Unit,
+    navigator: ThreePaneScaffoldNavigator<GameSection>
 ) {
 
     Column (
@@ -458,46 +465,15 @@ private fun DetailContent(
                 //animated stuff goes here
                 when(section.type) {
                     SectionType.PREGAME -> {
-                        val pregameViewModel = remember(formState.matchNum) {
-                            PregameViewModel().apply {
-                                position = formState.gameDetails.startingLocation ?:.5
-                            }
-                        }
-                        // Sync PenViewModel -> DataViewModel
-                        LaunchedEffect(pregameViewModel.position) {
-                            dataViewModel.formEvent(
-                                formState.gameDetails.copy(
-                                    startingLocation = pregameViewModel.position
-                                )
-                            )
-                        }
                         PregameDetails(
                             dataViewModel = dataViewModel,
                             formState = formState,
-                            viewModel = pregameViewModel
                         )
                     }
                     SectionType.AUTON -> {
-                        val penViewModel = remember(formState.matchNum) {
-                            PenViewModel().apply {
-                                paths = formState.gameDetails.autonPath
-                                    ?.let { jsonToPaths(it) }
-                                    ?: emptyList()
-                            }
-                        }
-                        // Sync PenViewModel -> DataViewModel
-                        LaunchedEffect(penViewModel.paths) {
-                            val json = penViewModel.pathsToJson()   // <-- use your function
-                            dataViewModel.formEvent(
-                                formState.gameDetails.copy(
-                                    autonPath = json
-                                )
-                            )
-                        }
                         AutonDetails(
                             dataViewModel = dataViewModel,
                             formState = formState,
-                            viewModel= penViewModel//()
                         )
                     }
                     SectionType.TELEOP -> {
@@ -541,7 +517,11 @@ private fun DetailContent(
                             TeleopSection.ENDGAME, TeleopSection.ENDED -> {
                                 EndgameDetails(
                                     dataViewModel = dataViewModel,
-                                    formState = formState
+                                    formState = formState,
+                                    switchToPostgame = suspend {
+                                        navigator.navigateTo(ListDetailPaneScaffoldRole.Detail,
+                                            GameSection(SectionType.POSTGAME, progress = 0))
+                                    }
                                 )
                             }
                         }
@@ -549,7 +529,8 @@ private fun DetailContent(
                     SectionType.POSTGAME -> {
                         PostgameDetails(
                             dataViewModel = dataViewModel,
-                            formState = formState
+                            formState = formState,
+                            returnToHome = returnToHome
                         )
                     }
                 }

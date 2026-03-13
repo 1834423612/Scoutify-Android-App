@@ -45,7 +45,7 @@ data class ServerFormatTask(
     val task_completed: Int,
     val gm_game_type: Char,
     val task_id: Int,
-    val ett_ts: String,
+    val ett_ts: String?,
 ) {
     fun convertToAppFormat(): Task {
         return Task(
@@ -53,7 +53,7 @@ data class ServerFormatTask(
             type = if (checkin_task == "Scout") TaskType.SCOUTING else TaskType.PIT,
             matchNum = gm_number,
             teamNum = tm_number,
-            time = ett_ts.convertIsoToUnix(),
+            time = ett_ts?.convertIsoToUnix() ?: 0,
             progress = task_completed
         )
     }

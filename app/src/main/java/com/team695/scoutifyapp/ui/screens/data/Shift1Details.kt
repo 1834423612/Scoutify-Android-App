@@ -37,7 +37,10 @@ fun Shift1Details(
     dataViewModel: DataViewModel,
     formState: GameFormState
 ) {
-    val currentTimer = min(formState.teleopTotalMilliseconds - TRANSITION_END_TIME, formState.teleopCachedMilliseconds)
+    val currentTimer = min(
+        formState.teleopTotalMilliseconds - TRANSITION_END_TIME,
+        formState.teleopCachedMilliseconds
+    )
     val previousTimer = formState.teleopCachedMilliseconds - currentTimer
 
     val timers = listOf(
@@ -59,8 +62,10 @@ fun Shift1Details(
             onClick = {
                 dataViewModel.formEvent(
                     gameDetails = formState.gameDetails.copy(
-                        transitionCyclingTime = (formState.gameDetails.transitionCyclingTime ?: 0) + previousTimer,
-                        shift1CyclingTime = (formState.gameDetails.shift1CyclingTime ?: 0) + currentTimer
+                        transitionCyclingTime = (formState.gameDetails.transitionCyclingTime ?: 0) +
+                                previousTimer,
+                        shift1CyclingTime = (formState.gameDetails.shift1CyclingTime ?: 0) +
+                                currentTimer
                     )
                 )
                 dataViewModel.resetCacheTime()
@@ -73,8 +78,10 @@ fun Shift1Details(
 
                 dataViewModel.formEvent(
                     gameDetails = formState.gameDetails.copy(
-                        transitionStockpilingTime = (formState.gameDetails.transitionStockpilingTime ?: 0) + previousTimer,
-                        shift1StockpilingTime = (formState.gameDetails.shift1StockpilingTime ?: 0) + currentTimer
+                        transitionStockpilingTime = (formState.gameDetails.transitionStockpilingTime ?: 0) +
+                                previousTimer,
+                        shift1StockpilingTime = (formState.gameDetails.shift1StockpilingTime ?: 0) +
+                                currentTimer
                     )
                 )
                 dataViewModel.resetCacheTime()
@@ -86,8 +93,10 @@ fun Shift1Details(
             onClick = {
                 dataViewModel.formEvent(
                     gameDetails = formState.gameDetails.copy(
-                        transitionDefendingTime = (formState.gameDetails.transitionDefendingTime ?: 0) + previousTimer,
-                        shift1DefendingTime = (formState.gameDetails.shift1DefendingTime ?: 0) + currentTimer
+                        transitionDefendingTime = (formState.gameDetails.transitionDefendingTime ?: 0) +
+                                previousTimer,
+                        shift1DefendingTime = (formState.gameDetails.shift1DefendingTime ?: 0) +
+                                currentTimer
                     )
                 )
                 dataViewModel.resetCacheTime()
@@ -99,8 +108,10 @@ fun Shift1Details(
             onClick = {
                 dataViewModel.formEvent(
                     gameDetails = formState.gameDetails.copy(
-                        transitionBrokenTime = (formState.gameDetails.transitionBrokenTime ?: 0) + previousTimer,
-                        shift1BrokenTime = (formState.gameDetails.shift1BrokenTime ?: 0) + currentTimer
+                        transitionBrokenTime = (formState.gameDetails.transitionBrokenTime ?: 0) +
+                                previousTimer,
+                        shift1BrokenTime = (formState.gameDetails.shift1BrokenTime ?: 0) +
+                                currentTimer
                     )
                 )
                 dataViewModel.resetCacheTime()
@@ -128,11 +139,21 @@ fun Shift1Details(
                 ),
                 onButtonPressed = {
                     //warn user if shift1 shift is not close to ending
-                    if(abs(formState.teleopTotalMilliseconds - SHIFT1_END_TIME) > TELEOP_TIME_THRESHOLD) {
-                        dataViewModel.toggleWarningModal(title = "Are you sure?", text = "Shift 1 isn't over yet.")
+                    if (
+                        abs (
+                            formState.teleopTotalMilliseconds - SHIFT1_END_TIME
+                        ) > TELEOP_TIME_THRESHOLD
+                    ) {
+                        dataViewModel.toggleWarningModal(
+                            title = "Are you sure?",
+                            text = "Shift 1 isn't over yet."
+                        )
                     }
                     else {
-                        dataViewModel.setTeleopSection(teleopSection = TeleopSection.SHIFT2, teleopTotalMilliseconds = TRANSITION_END_TIME)
+                        dataViewModel.setTeleopSection(
+                            teleopSection = TeleopSection.SHIFT2,
+                            teleopTotalMilliseconds = SHIFT1_END_TIME
+                        )
                     }
                 },
             )

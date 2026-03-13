@@ -1,5 +1,6 @@
 package com.team695.scoutifyapp.ui.screens.home
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -72,12 +73,9 @@ fun TasksCard(
 
     val tasksState by homeViewModel.tasksState.collectAsStateWithLifecycle()
 
-    val incompleteTasks = remember(tasksState) {
-        tasksState?.filter { it.progress != 100 }?.sorted()
-    }
-    val completeTasks = remember(tasksState) {
-        tasksState?.filter { it.progress >= 100 }?.sorted()
-    }
+    val incompleteTasks = tasksState?.filter { it.progress != 100 }?.sorted()
+    val completeTasks = tasksState?.filter { it.progress >= 100 }?.sorted()
+    Log.d("TASKS_CARD", "RE-RENDER")
 
     Box(
         modifier = Modifier

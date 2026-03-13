@@ -1,7 +1,6 @@
 package com.team695.scoutifyapp.data.api.model
 import android.util.Log
 import com.team695.scoutifyapp.db.GameDetailsEntity
-import com.team695.scoutifyapp.ui.viewModels.Stroke
 import kotlin.Boolean
 import kotlin.Double
 import kotlin.reflect.KProperty1
@@ -12,6 +11,9 @@ data class GameDetails(
     val id: Int? = null,
     val task_id: Int? = null,
 
+    val matchNumber: Int? = null,
+    val alliance: Char? = null,
+    val alliancePosition: Int? = null,
     // Starting & Preload
     val startingLocation: Double? = null,
     val robotOnField: Boolean? = null,
@@ -86,11 +88,19 @@ data class GameDetails(
     // Review
     val reviewMatchFlag: Boolean? = null
 ) {
-    val endgameClimbPositionFilled: Boolean get() {
-        if(endgameClimbSuccess == true) {
-            return !endgameClimbCode.isNullOrEmpty()
+    val endgameClimbSuccessFilled: Boolean get() {
+        if(endgameAttemptsClimb == true) {
+            return endgameClimbSuccess == true
         }
         return true
+    }
+    val endgameClimbPositionFilled: Boolean get() {
+        val isEmpty: Boolean = endgameClimbCode.isNullOrEmpty()
+        return when(endgameClimbSuccess) {
+            true -> !isEmpty
+            false -> isEmpty
+            null -> false
+        }
     }
 
     val pregameProgress: Float get() {
@@ -101,18 +111,6 @@ data class GameDetails(
         )
         return pregameVars.count( {it != null} ).toFloat() / pregameVars.size
 
-    }
-
-    val autonProgress: Float get() {
-        //TO DO: add this
-        /*val autonVars = listOf<Any?>(
-            autonPath,
-            autonAttemptsClimb,
-            autonClimbSuccess,
-            autonClimbPosition
-        )
-        return autonVars.count( {it != null} ).toFloat() / autonVars.size */
-        return 1f
     }
 
     // returns progress for endgame
@@ -147,6 +145,9 @@ fun GameDetailsEntity.createGameDetailsFromDb(): GameDetails {
     return GameDetails(
         id = this.id,
         task_id = this.task_id,
+        alliance = this.alliance,
+        alliancePosition = this.alliance_position,
+        matchNumber = this.match_number,
 
         // Starting & Preload
         startingLocation = this.starting_location,
@@ -220,5 +221,5 @@ fun GameDetailsEntity.createGameDetailsFromDb(): GameDetails {
         postgameUnderTrench = this.postgame_under_trench,
         postgameOverBump = this.postgame_over_bump,
         postgameFlag = this.postgame_flag,
-        )
+    )
 }

@@ -131,7 +131,7 @@ fun Shift2Details(
                         dataViewModel.toggleWarningModal(title = "Are you sure?", text = "Shift 2 isn't over yet.")
                     }
                     else {
-                        dataViewModel.setTeleopSection(teleopSection = TeleopSection.SHIFT3, teleopTotalMilliseconds = TRANSITION_END_TIME)
+                        dataViewModel.setTeleopSection(teleopSection = TeleopSection.SHIFT3, teleopTotalMilliseconds = SHIFT2_END_TIME)
                     }
                 },
             )

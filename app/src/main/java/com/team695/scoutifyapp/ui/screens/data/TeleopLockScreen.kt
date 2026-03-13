@@ -62,7 +62,7 @@ fun TeleopLockScreen(isOverlayActive: Boolean) {
             Box(
                 modifier = Modifier
                     .fillMaxHeight()
-                    .width(350.dp)
+                    .width(320.dp)
                     .background(Color.DarkGray.copy(alpha = 0.8f))
                     .pointerInput(Unit) {
                         detectTapGestures { }
