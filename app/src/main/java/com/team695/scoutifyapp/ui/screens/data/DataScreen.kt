@@ -271,8 +271,10 @@ private fun ListContent(
             ) {
 
                 Text(
-                    text = "Team ${formState.teamNumber}",
-                    color = TextPrimary,
+                    text = formState.gameDetails.alliance.toString() +
+                            formState.gameDetails.alliancePosition.toString() +
+                            " - Team ${formState.teamNumber}",
+                    color = formState.allianceColor,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )

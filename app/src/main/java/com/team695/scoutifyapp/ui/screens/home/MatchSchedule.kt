@@ -251,7 +251,7 @@ fun MatchSchedule(
                             horizontalArrangement = Arrangement.Center
                         ) {
                             items(teamState ?: emptyList()) { team ->
-                                TeamNumber(number = team.toString())
+                                TeamNumber(team = team.toString(), highlightedTeams = teamState)
                                 Spacer(modifier = Modifier.width(8.dp))
                             }
                         }
@@ -313,6 +313,7 @@ fun MatchSchedule(
                     items(filteredMatches) {
                         MatchItem(
                             matchNum = it.matchNumber,
+                            teamState = teamState,
                             time = it.time.toLong(),
                             redAlliance = it.redAlliance,
                             blueAlliance = it.blueAlliance,
@@ -327,9 +328,9 @@ fun MatchSchedule(
 }
 
 @Composable
-fun TeamNumber(number: String) {
-    val highlightedTeams = setOf("695")
-    val isHighlighted = number in highlightedTeams
+fun TeamNumber(team: String, highlightedTeams: List<Long>?) {
+    val teamAsNumber: Long? = team.toLongOrNull()
+    val isHighlighted: Boolean = if(highlightedTeams != null && teamAsNumber != null) highlightedTeams.contains(teamAsNumber) else false
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
@@ -342,7 +343,7 @@ fun TeamNumber(number: String) {
             )
     ) {
         Text(
-            text = number,
+            text = team,
             color = if (isHighlighted) Accent else Deselected,
 
         )
@@ -352,6 +353,7 @@ fun TeamNumber(number: String) {
 @Composable
 fun MatchItem(
     matchNum: Int,
+    teamState: List<Long>?,
     time: Long,
     redAlliance: List<Int>,
     blueAlliance: List<Int>,
@@ -406,7 +408,10 @@ fun MatchItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             for (t in redAlliance) {
-                TeamNumber(t.toString())
+                TeamNumber(
+                    team = t.toString(),
+                    highlightedTeams = teamState
+                )
             }
         }
 
@@ -435,7 +440,9 @@ fun MatchItem(
             verticalAlignment = Alignment.CenterVertically
         ) {
             for (t in blueAlliance) {
-                TeamNumber(t.toString())
+                TeamNumber(
+                    team = t.toString(),
+                    highlightedTeams = teamState)
             }
         }
 
@@ -484,7 +491,4 @@ fun calculateHighlight(matches: List<Match>,    time: Long): Match {
     }
 
     return matches[l]
-}
-fun showMatchHighlight(m: Match): Boolean {
-    return m.redAlliance.any{it == 695} || m.blueAlliance.any{it == 695}
 }
