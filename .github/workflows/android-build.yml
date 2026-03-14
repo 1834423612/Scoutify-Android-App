@@ -2,9 +2,9 @@ name: Android CI/CD
 
 on:
   push:
-    branches: [ "master", "features-master" ]
+    branches: [ "master", "main" ]
   pull_request:
-    branches: [ "master", "features-master" ]
+    branches: [ "master", "main" ]
   workflow_dispatch:
 
 env:
@@ -69,7 +69,7 @@ jobs:
     name: Build Release
     runs-on: ubuntu-latest
     needs: build-and-test
-    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/features-master'
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout code
