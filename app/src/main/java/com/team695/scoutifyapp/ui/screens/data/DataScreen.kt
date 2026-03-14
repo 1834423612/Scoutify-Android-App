@@ -271,7 +271,7 @@ private fun ListContent(
             ) {
 
                 Text(
-                    text = "Game Sections",
+                    text = "Team ${formState.teamNumber}",
                     color = TextPrimary,
                     fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
