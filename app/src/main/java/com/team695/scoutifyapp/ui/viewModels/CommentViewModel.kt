@@ -94,6 +94,7 @@ class CommentsViewModel (
     fun onCommentChanged(alliance: String, position: Int, comment: String) {
         // check if the thang is being changed ts
         if (_isSubmitted.value) {
+            Log.d("COMMENTS", "Submit")
             _isSubmitted.value = false
 
             val matchNum = _selectedMatch.value.toIntOrNull()
@@ -238,7 +239,6 @@ class CommentsViewModel (
 
         viewModelScope.launch(Dispatchers.IO) {
             val match = matches.value.getOrNull(matchNum - 1)
-            Log.d("COMMENTS", "Matchn: $match")
             match?.let {
                 // top 10 greatest 10x engineers of all time:
                 val redList = List(3) { index -> it.redAlliance.getOrNull(index)?.toString() ?: "Unknown" }

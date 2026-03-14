@@ -276,7 +276,7 @@ fun CommentsContent(
                                     currentMatch?.redAlliance?.get(alliancePosition)?.toString()
                                 } (${redAllianceNames.getOrNull(alliancePosition)})"),
                                 comment
-                            ) { onCommentChanged("Red", alliancePosition, it) }
+                            ) { onCommentChanged("Red", alliancePosition+1, it) }
                         }
                     }
 
@@ -292,7 +292,7 @@ fun CommentsContent(
                                     currentMatch?.blueAlliance?.get(alliancePosition)?.toString()
                                 } (${blueAllianceNames.getOrNull(alliancePosition)})"),
                                 comment
-                            ) { onCommentChanged("Blue", alliancePosition, it) }
+                            ) { onCommentChanged("Blue", alliancePosition+1, it) }
                         }
                     }
                 }
