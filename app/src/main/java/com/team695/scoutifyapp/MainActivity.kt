@@ -155,6 +155,7 @@ class MainActivity : ComponentActivity() {
             userRepository = userRepository,
             teamNameRepository = teamNameRepository
         )
+
         networkMonitor.startMonitoring()
 
         UpdateManager.context = applicationContext
@@ -205,6 +206,8 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
+
+
 
     }
 }

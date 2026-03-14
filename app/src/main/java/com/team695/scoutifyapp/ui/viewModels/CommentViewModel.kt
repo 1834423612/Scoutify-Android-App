@@ -25,6 +25,8 @@ class CommentsViewModel (
     private val matchRepository: MatchRepository,
     private val teamNameRepository: TeamNameRepository
 ) : ViewModel() {
+
+
     // get match stuff
     val matches: StateFlow<List<Match>> =
         matchRepository.matches
@@ -78,6 +80,8 @@ class CommentsViewModel (
     val isSubmitted: State<Boolean> = _isSubmitted
     // Auto-save timeout job
     private var autoSaveJob: Job? = null
+
+
 
 
     // Function to handle match selection
@@ -244,17 +248,26 @@ class CommentsViewModel (
                 val redList = List(3) { index -> it.redAlliance.getOrNull(index)?.toString() ?: "Unknown" }
                 val blueList = List(3) { index -> it.blueAlliance.getOrNull(index)?.toString() ?: "Unknown" }
 
-                // Update State<List<String>>
-                _redAllianceNames.value = redList
-                _blueAllianceNames.value = blueList
-
                 // Fetch the team objects from the repository
                 val matchTeams = teamNameRepository.getMatchTeams(
                     redList,
                     blueList
                 )
 
-                // Do something with matchTeams if needed
+                // Update State<List<String>>
+                _redAllianceNames.value = listOf<String>(matchTeams[0] ?: "Uknown", matchTeams[1] ?: "Uknown", matchTeams[2] ?: "Uknown")
+                _blueAllianceNames.value = listOf<String>(matchTeams[3] ?: "Uknown", matchTeams[4] ?: "Uknown", matchTeams[5] ?: "Uknown")
+            }
+        }
+    }
+
+    // load matches on first time visiting
+    init {
+        viewModelScope.launch {
+            matches.collect { list ->
+                if (list.isNotEmpty()) {
+                    updateTeamNames()
+                }
             }
         }
     }

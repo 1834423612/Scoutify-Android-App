@@ -108,6 +108,8 @@ class NetworkMonitor(
                 delay(FETCH_INTERVAL)
             }
         }
+
+
     }
 
     private suspend fun retryFetchUntilSuccess() {

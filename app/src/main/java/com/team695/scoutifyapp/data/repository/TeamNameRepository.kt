@@ -39,25 +39,20 @@ class TeamNameRepository (
     suspend fun getMatchTeams(
         redAlliance: List<String>,
         blueAlliance: List<String>
-    ): List<TeamNamesEntity?> {
+    ): List<String?> {
         return withContext(Dispatchers.IO) {
-            val red1: String = redAlliance[0]
-            val red2: String = redAlliance[1]
-            val red3: String = redAlliance[2]
-            val blue1: String = blueAlliance[0]
-            val blue2: String = blueAlliance[1]
-            val blue3: String = blueAlliance[2]
+            val requested = listOf(
+                redAlliance[0], redAlliance[1], redAlliance[2],
+                blueAlliance[0], blueAlliance[1], blueAlliance[2]
+            )
 
-            val requested = listOf(red1, red2, red3, blue1, blue2, blue3)
-
-            // Query the DB for any existing teams
             val teamsFromDb = queries.selectMatchTeams(
-                red1, red2, red3, blue1, blue2, blue3
+                requested[0], requested[1], requested[2],
+                requested[3], requested[4], requested[5]
             ).executeAsList()
 
-            // Map the requested numbers to their DB objects, using null if missing
             requested.map { teamNumber ->
-                teamsFromDb.find { it.team_number == teamNumber }
+                teamsFromDb.find { it.team_number == teamNumber }?.team_name
             }
         }
     }
