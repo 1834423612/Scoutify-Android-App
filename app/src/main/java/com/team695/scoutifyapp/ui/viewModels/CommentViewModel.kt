@@ -12,6 +12,7 @@ import com.team695.scoutifyapp.data.repository.CommentRepository
 import com.team695.scoutifyapp.data.repository.MatchRepository
 import com.team695.scoutifyapp.data.repository.TeamNameRepository
 import com.team695.scoutifyapp.data.types.SaveStatus
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
@@ -235,8 +236,9 @@ class CommentsViewModel (
     private fun updateTeamNames() {
         val matchNum = _selectedMatch.value.toIntOrNull() ?: return
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             val match = matches.value.getOrNull(matchNum - 1)
+            Log.d("COMMENTS", "Matchn: $match")
             match?.let {
                 // top 10 greatest 10x engineers of all time:
                 val redList = List(3) { index -> it.redAlliance.getOrNull(index)?.toString() ?: "Unknown" }

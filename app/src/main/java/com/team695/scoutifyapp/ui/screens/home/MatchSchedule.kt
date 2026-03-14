@@ -464,7 +464,7 @@ fun MatchItem(
     }
 }
 
-fun calculateHighlight(matches: List<Match>, time: Long): Match {
+fun calculateHighlight(matches: List<Match>,    time: Long): Match {
     var l = 0
     var r = matches.size - 1
 

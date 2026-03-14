@@ -118,6 +118,9 @@ fun CommentsContent(
     var expanded by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
 
+    val redComments: List<String> = listOf(red1Comment, red2Comment, red3Comment)
+    val blueComments: List<String> = listOf(blue1Comment, blue2Comment, blue3Comment)
+
     Box(
         modifier = Modifier
             .fillMaxHeight()
@@ -266,32 +269,31 @@ fun CommentsContent(
                         titleColor = RedAlliance,
                         modifier = Modifier.weight(1f)
                     ) {
-                        CommentField(
-                            ("Team ${currentMatch?.redAlliance?.get(0)?.toString()} (${redAllianceNames[0]})"),
-                            red1Comment) { onCommentChanged("Red", 1, it) }
-                        CommentField(
-                            ("Team ${currentMatch?.redAlliance?.get(1)?.toString()} (${redAllianceNames[1]})"),
-                            red2Comment) { onCommentChanged("Red", 2, it) }
-                        CommentField(
-                            ("Team ${currentMatch?.redAlliance?.get(2)?.toString()} (${redAllianceNames[2]})"),
-                            red3Comment) { onCommentChanged("Red", 3, it) }
+
+                        redComments.forEachIndexed { alliancePosition, comment ->
+                            CommentField(
+                                ("Team ${
+                                    currentMatch?.redAlliance?.get(alliancePosition)?.toString()
+                                } (${redAllianceNames.getOrNull(alliancePosition)})"),
+                                comment
+                            ) { onCommentChanged("Red", alliancePosition, it) }
+                        }
                     }
 
-                    // Blue Alliance Column
                     AllianceColumn(
                         title = "Blue Alliance",
                         titleColor = BlueAlliance,
                         modifier = Modifier.weight(1f)
                     ) {
-                        CommentField(
-                            ("Team ${currentMatch?.blueAlliance?.get(0)?.toString()} (${blueAllianceNames[0]})"),
-                            blue1Comment) { onCommentChanged("Blue", 1, it) }
-                        CommentField(
-                            ("Team ${currentMatch?.blueAlliance?.get(1)?.toString()} (${blueAllianceNames[1]})"),
-                            blue2Comment) { onCommentChanged("Blue", 2, it) }
-                        CommentField(
-                            ("Team ${currentMatch?.blueAlliance?.get(2)?.toString()} (${blueAllianceNames[2]})"),
-                            blue3Comment) { onCommentChanged("Blue", 3, it) }
+
+                        blueComments.forEachIndexed { alliancePosition, comment ->
+                            CommentField(
+                                ("Team ${
+                                    currentMatch?.blueAlliance?.get(alliancePosition)?.toString()
+                                } (${blueAllianceNames.getOrNull(alliancePosition)})"),
+                                comment
+                            ) { onCommentChanged("Blue", alliancePosition, it) }
+                        }
                     }
                 }
             }
