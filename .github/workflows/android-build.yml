@@ -112,13 +112,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: app-release-apk
-          path: app/build/outputs/apk/release/app-release.apk
+          path: app/build/outputs/apk/release/*.apk
           retention-days: 30
 
       - name: Upload Release AAB
         uses: actions/upload-artifact@v4
         with:
           name: app-release-aab
-          path: app/build/outputs/bundle/release/app-release.aab
+          path: app/build/outputs/bundle/release/*.aab
           retention-days: 30
 
