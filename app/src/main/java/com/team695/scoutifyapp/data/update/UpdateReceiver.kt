@@ -30,7 +30,7 @@ class UpdateReceiver(
         }
 
         val apkFile = File(context.getExternalFilesDir(
-            Environment.DIRECTORY_DOWNLOADS), APK_NAME
+            Environment.DIRECTORY_DOWNLOADS), UpdateManager.APK_NAME
         )
 
         if (apkFile.exists()) {
@@ -61,7 +61,9 @@ class UpdateReceiver(
             val downloadDir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
 
             downloadDir?.listFiles()?.forEach { file ->
-                if (file.name.substring(0, APK_NAME.length) == APK_NAME) {
+                if (file.name.substring(0, UpdateManager.APK_NAME.length) ==
+                    UpdateManager.APK_NAME
+                ) {
                     val deleted = file.delete()
                     Log.d("Update", "Deleted old APK ${file.name}: $deleted")
                 }

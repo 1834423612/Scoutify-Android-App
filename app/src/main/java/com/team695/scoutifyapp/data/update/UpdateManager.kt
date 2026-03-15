@@ -6,10 +6,10 @@ import android.content.Context
 import android.os.Environment
 import androidx.core.net.toUri
 
-const val APK_URL = "https://www.dropbox.com/scl/fi/2mncyhhjibl5u54azv54q/app-release.apk?rlkey=edgfc4nyxo8mszolk36pz3r1f&st=6fif6nnf&dl=1"
-const val APK_NAME = "scoutify_update.apk"
 @SuppressLint("StaticFieldLeak")
 object UpdateManager {
+    const val APK_NAME = "scoutify_update.apk"
+    private const val APK_URL = "https://github.com/1834423612/Scoutify-Android-App/releases/latest/download/app-release.apk"
 
     var currentId: Long = 0
     lateinit var context: Context
