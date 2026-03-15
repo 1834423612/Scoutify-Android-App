@@ -4,9 +4,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import com.team695.scoutifyapp.data.api.model.GameDetails
 import com.team695.scoutifyapp.data.api.model.Stroke
 import com.team695.scoutifyapp.ui.screens.data.EndgameDetails
+import com.team695.scoutifyapp.ui.theme.BlueAlliance
+import com.team695.scoutifyapp.ui.theme.Deselected
+import com.team695.scoutifyapp.ui.theme.RedAlliance
 import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.times
 
@@ -36,6 +40,16 @@ data class GameFormState(
     var paths: List<Stroke> = emptyList(),
     var undoTree: List<Stroke> = emptyList(),
     ) {
+
+    //calculated values
+    val allianceColor: Color get() {
+        return when(gameDetails.alliance) {
+            'R' -> RedAlliance
+            'B' -> BlueAlliance
+            else -> Deselected
+        }
+
+    }
 
     val autonProgress: Float get() {
         return if(paths.isNotEmpty()) 1f else 0f

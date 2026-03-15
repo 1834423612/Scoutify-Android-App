@@ -96,6 +96,7 @@ fun AutonDetails(
                             { dataViewModel.undo() },
                             {dataViewModel.redo()},
                             { dataViewModel.setUtensil("path")},
+                            { dataViewModel.setUtensil("climb") },
                             { dataViewModel.setUtensil("shoot") },
                             {dataViewModel.setUtensil("intake") },
                             { dataViewModel.setUtensil("broke") },
@@ -233,8 +234,15 @@ fun DrawCanvas(
                         "broke"->{
                             drawRect(
                                 color = Color.Red,
-                                topLeft = offset,
+                                topLeft = offset - Offset(25f,25f),
                                 size = androidx.compose.ui.geometry.Size(50f, 50f)
+                            )
+                        }
+                        "climb"->{
+                            drawRect(
+                                color = Color.Green,
+                                topLeft = offset - Offset(15f,15f),
+                                size = androidx.compose.ui.geometry.Size(30f, 30f)
                             )
                         }
                     }
@@ -275,6 +283,7 @@ fun RobotActionPanel(
     onUndo: () -> Unit = {},
     onRedo: () -> Unit = {},
     onPath: () -> Unit = {},
+    onClimb: () -> Unit = {},
     onBall: () -> Unit = {},
     onIntake: () -> Unit = {},
     onBroke: () -> Unit = {},
@@ -338,6 +347,13 @@ fun RobotActionPanel(
         }
 
         // ── Broke button ─────────────────────────────────────────────────────
+        ActionButton(
+            label = "Climb",
+            isSelected = selected == "Climb",
+            onClick = { selected = "Climb"; onClimb() }
+        ) {
+            ClimbIcon()
+        }
         ActionButton(
             label = "Broke",
             isSelected = selected == "Broke",
@@ -581,7 +597,17 @@ private fun IntakeIcon() {
 @Composable
 private fun BrokeIcon() {
     Image(
-        painter = painterResource(id = R.drawable.group_31), // Temporary placeholder for compilation
+        painter = painterResource(id = R.drawable.group_38__1_), // Temporary placeholder for compilation
+        contentDescription = null, // Decorative background image
+        modifier = Modifier.fillMaxSize(),
+        // Crop ensures the image fills the screen bounds without distorting aspect ratio
+        contentScale = ContentScale.Fit
+    )
+}
+@Composable
+private fun ClimbIcon() {
+    Image(
+        painter = painterResource(id = R.drawable.group_39__1_), // Temporary placeholder for compilation
         contentDescription = null, // Decorative background image
         modifier = Modifier.fillMaxSize(),
         // Crop ensures the image fills the screen bounds without distorting aspect ratio

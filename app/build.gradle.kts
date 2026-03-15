@@ -47,13 +47,27 @@ configure<ApplicationExtension> {
         proguardFiles()
     }
 
+    signingConfigs {
+        create("release") {
+            storeFile = file(System.getenv("KEYSTORE_FILE") ?: "app/release-keystore.jks")
+            storePassword = System.getenv("KEYSTORE_PASSWORD")
+                ?: project.findProperty("KEYSTORE_PASSWORD") as String? ?: ""
+            keyAlias = System.getenv("KEY_ALIAS")
+                ?: project.findProperty("KEY_ALIAS") as String? ?: "upload"
+            keyPassword = System.getenv("KEY_PASSWORD")
+                ?: project.findProperty("KEY_PASSWORD") as String? ?: ""
+        }
+    }
+
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
@@ -63,6 +77,13 @@ configure<ApplicationExtension> {
 
     buildFeatures {
         compose = true
+    }
+
+    // Add lint configuration to handle warnings gracefully
+    lint {
+        abortOnError = true
+        warningsAsErrors = false
+        baseline = file("lint-baseline.xml")
     }
 }
 
