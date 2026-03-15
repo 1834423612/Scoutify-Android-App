@@ -33,8 +33,8 @@ configure<ApplicationExtension> {
 
         fun requireSecret(key: String): String =
             localProperties[key]?.toString()
-                ?: if (secretsPropertiesFile.exists()) error("Missing key '$key' in secrets.properties")
-                   else ""   // allow local/CI builds without secrets
+                ?: System.getenv(key.uppercase())
+                ?: ""
 
         buildConfigField("String", "CASDOOR_ENDPOINT", "\"${requireSecret("casdoor_endpoint")}\"")
         buildConfigField("String", "CASDOOR_CLIENT_ID", "\"${requireSecret("casdoor_client_id")}\"")
