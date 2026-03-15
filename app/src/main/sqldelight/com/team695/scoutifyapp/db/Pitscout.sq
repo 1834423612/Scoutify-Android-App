@@ -18,6 +18,12 @@ selectAllPitscout:
 SELECT *
 FROM pitscout;
 
+selectPitscoutByFormId:
+SELECT *
+FROM pitscout
+WHERE form_id = ?
+LIMIT 1;
+
 insertPitscout:
 INSERT INTO pitscout (
     event_id,
@@ -30,3 +36,7 @@ INSERT INTO pitscout (
     language
 )
 VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+deletePitscoutByFormId:
+DELETE FROM pitscout
+WHERE form_id = ?;

@@ -55,15 +55,11 @@ object ScoutifyClient {
     val userService: UserService by lazy {
         retrofit.create(UserService::class.java)
     }
-//    val GameDetailsService: GameDetailsService by lazy {
-//        retrofit.create(GameDetailsService::class.java)
-//    }
-//    private val _gameDetailsService: GameDetailsService by lazy { retrofit.create(GameDetailsService::class.java) }
-//    fun getGameDetailsService(): GameDetailsService { return _gameDetailsService }
 
     val taskService: TaskService by lazy {
         retrofit.create(TaskService::class.java)
     }
+
     val gameDetailsService: GameDetailsService by lazy {
         retrofit.create(GameDetailsService::class.java)
     }
@@ -74,5 +70,9 @@ object ScoutifyClient {
 
     val teamNameService: TeamNameService by lazy {
         retrofit.create(TeamNameService::class.java)
+    }
+
+    val surveyService: SurveyService by lazy {
+        retrofit.create(SurveyService::class.java)
     }
 }

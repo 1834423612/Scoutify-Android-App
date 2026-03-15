@@ -1,62 +1,97 @@
 package com.team695.scoutifyapp.data.types
 
-import java.time.LocalDateTime
+import java.time.Instant
 import java.util.UUID
+import kotlinx.serialization.Serializable
 
-/**
- * Represents a single pit scouting tab/session for a team
- */
-data class PitScoutingTab(
-    val tabId: String = UUID.randomUUID().toString(),
-    val teamNumber: String = "",
-    val eventKey: String = "",
-    val formId: String = UUID.randomUUID().toString(),
-    val formVersion: String = "2025.4.15_PROD_ED6",
-    val fieldValues: Map<Int, Any?> = emptyMap(),
-    val uploadData: Map<String, List<UploadFile>> = emptyMap(), // fullRobotImages, driveTrainImages, etc.
-    val isDraft: Boolean = true,
-    val isSubmitted: Boolean = false,
-    val submissionTime: LocalDateTime? = null,
-    val createdAt: LocalDateTime = LocalDateTime.now(),
-    val updatedAt: LocalDateTime = LocalDateTime.now()
-)
-
-data class UploadFile(
-    val url: String,
+@Serializable
+data class PitImageAsset(
+    val id: String = "",
+    val url: String = "",
     val name: String,
-    val size: Long
+    val size: Long,
+    val localPath: String? = null,
+    val mimeType: String? = null,
+    val uploaded: Boolean = false
 )
 
-/**
- * Survey response structure matching the API format
- */
-data class SurveyResponse(
-    val id: String? = null, // Server generates this
-    val eventId: String,
-    val formId: String,
-    val data: Map<String, Any?>, // Form field values
-    val upload: Map<String, List<UploadFile>>? = null, // Images and other uploads
-    val userData: UserDataPayload,
-    val userAgent: String,
-    val ip: String? = null,
-    val language: String = "en-US",
-    val timestamp: String? = null // Server generates this
+@Serializable
+data class PitImageBundle(
+    val fullRobotImages: List<PitImageAsset> = emptyList(),
+    val driveTrainImages: List<PitImageAsset> = emptyList()
 )
 
-data class UserDataPayload(
-    val email: String,
-    val avatar: String = "",
-    val userId: String,
-    val username: String,
-    val displayName: String
-)
-
-/**
- * Status for a pit scouting submission
- */
 enum class PitScoutingStatus {
     DRAFT,
+    DIRTY,
     PENDING_SUBMISSION,
+    SUBMITTING,
     SUBMITTED,
     FAILED
 }
+
+data class PitScoutingTab(
+    val tabId: String = UUID.randomUUID().toString(),
+    val tabName: String = "New Tab",
+    val teamNumber: String = "",
+    val eventKey: String = "",
+    val formId: String = UUID.randomUUID().toString(),
+    val formVersion: String = "",
+    val fields: List<PitFormField> = emptyList(),
+    val images: PitImageBundle = PitImageBundle(),
+    val isDraft: Boolean = true,
+    val isSubmitted: Boolean = false,
+    val submissionTime: String? = null,
+    val createdAt: String = nowIsoString(),
+    val updatedAt: String = nowIsoString(),
+    val syncStatus: PitScoutingStatus = PitScoutingStatus.DRAFT,
+    val lastError: String? = null
+) {
+    val completionRatio: Float
+        get() {
+            val requiredFields = fields.filter { it.required }
+            if (requiredFields.isEmpty()) {
+                return 0f
+            }
+
+            val completed = requiredFields.count { field ->
+                when (val current = field.value) {
+                    PitFieldValue.Empty -> false
+                    is PitFieldValue.MultiValue -> current.values.isNotEmpty()
+                    is PitFieldValue.TextValue -> current.value.isNotBlank()
+                }
+            }
+            return completed.toFloat() / requiredFields.size.toFloat()
+        }
+}
+
+data class PitAssignment(
+    val id: String,
+    val taskType: String,
+    val assignedTeamNumbers: List<String>
+)
+
+data class PitTeamStatus(
+    val teamNumber: String,
+    val isPitCompleted: Boolean
+)
+
+data class SubmissionUserData(
+    val username: String,
+    val displayName: String,
+    val userId: String,
+    val avatar: String = "",
+    val email: String = "",
+    val firstName: String = "",
+    val lastName: String = "",
+    val groups: List<String> = emptyList(),
+    val roles: List<String> = emptyList(),
+    val permissions: List<String> = emptyList()
+)
+
+data class TeamSuggestion(
+    val teamNumber: String,
+    val teamName: String
+)
+
+private fun nowIsoString(): String = Instant.now().toString()

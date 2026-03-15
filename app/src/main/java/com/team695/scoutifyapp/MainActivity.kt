@@ -42,6 +42,7 @@ import com.team695.scoutifyapp.data.intAdapter
 import com.team695.scoutifyapp.data.repository.CommentRepository
 import com.team695.scoutifyapp.data.repository.GameDetailRepository
 import com.team695.scoutifyapp.data.repository.TeamNameRepository
+import com.team695.scoutifyapp.data.repository.PitScoutingRepository
 import com.team695.scoutifyapp.data.update.UpdateManager
 import com.team695.scoutifyapp.data.update.UpdateReceiver
 import com.team695.scoutifyapp.db.GameConstantsEntity
@@ -178,6 +179,16 @@ class MainActivity : ComponentActivity() {
             teamNameRepository = teamNameRepository
         )
 
+        val pitScoutingRepository = PitScoutingRepository(
+            db = db,
+            surveyService = ScoutifyClient.surveyService,
+            networkMonitor = networkMonitor,
+            userRepository = userRepository,
+            teamNameRepository = teamNameRepository,
+            context = applicationContext
+        )
+
+        networkMonitor.repoList = networkMonitor.repoList + pitScoutingRepository
         networkMonitor.startMonitoring()
 
         UpdateManager.context = applicationContext
@@ -224,6 +235,7 @@ class MainActivity : ComponentActivity() {
                     gameDetailRepository = gameDetailRepository,
                     commentRepository = commentRepository,
                     teamNameRepository = teamNameRepository,
+                    pitScoutingRepository = pitScoutingRepository,
                     networkMonitor = networkMonitor
                 )
             }
@@ -233,3 +245,7 @@ class MainActivity : ComponentActivity() {
 
     }
 }
+
+
+
+

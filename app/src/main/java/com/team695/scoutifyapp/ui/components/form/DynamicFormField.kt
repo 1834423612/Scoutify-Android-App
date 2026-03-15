@@ -1,325 +1,135 @@
 package com.team695.scoutifyapp.ui.components.form
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.InputChip
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.team695.scoutifyapp.data.types.FieldType
 import com.team695.scoutifyapp.data.types.PitFormField
-import com.team695.scoutifyapp.ui.theme.*
+import com.team695.scoutifyapp.data.types.TeamSuggestion
+import com.team695.scoutifyapp.data.types.valueAsList
+import com.team695.scoutifyapp.data.types.valueAsText
 
-/**
- * Renders a dynamic form field based on its type
- */
 @Composable
 fun DynamicFormField(
     field: PitFormField,
-    value: Any?,
-    onValueChange: (Any?) -> Unit,
-    validationError: String? = null,
+    suggestions: List<TeamSuggestion> = emptyList(),
+    onTextChanged: (String) -> Unit,
+    onOtherValueChanged: (String) -> Unit,
+    onRadioSelected: (String) -> Unit,
+    onCheckboxToggled: (String) -> Unit,
+    onSuggestionSelected: (TeamSuggestion) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    FormGroup(modifier = modifier) {
-        FormLabel(
-            text = field.question,
-            required = field.required,
-            hint = field.description
-        )
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        SectionLabel(title = field.question, hint = field.description, required = field.required)
 
         when (field.type) {
-            FieldType.TEXT -> {
-                TextInputField(
-                    value = value as? String ?: "",
-                    onValueChange = { onValueChange(it) },
-                    placeholder = "Enter ${field.question.lowercase()}",
-                    error = validationError
+            FieldType.TEXT, FieldType.NUMBER, FieldType.TEXTAREA, FieldType.AUTOCOMPLETE -> {
+                OutlinedTextField(
+                    value = field.valueAsText(),
+                    onValueChange = onTextChanged,
+                    modifier = Modifier.fillMaxWidth(),
+                    minLines = if (field.type == FieldType.TEXTAREA) 4 else 1,
+                    maxLines = if (field.type == FieldType.TEXTAREA) 5 else 1,
+                    isError = field.error != null,
+                    supportingText = {
+                        if (field.error != null) {
+                            Text(field.error)
+                        }
+                    }
                 )
-            }
 
-            FieldType.TEXTAREA -> {
-                TextAreaField(
-                    value = value as? String ?: "",
-                    onValueChange = { onValueChange(it) },
-                    placeholder = "Enter ${field.question.lowercase()}",
-                    error = validationError
-                )
-            }
-
-            FieldType.NUMBER -> {
-                NumberInputField(
-                    value = value?.toString() ?: "",
-                    onValueChange = { 
-                        val numValue = it.toDoubleOrNull()
-                        onValueChange(numValue)
-                    },
-                    placeholder = "Enter ${field.question.lowercase()}",
-                    error = validationError
-                )
-            }
-
-            FieldType.AUTOCOMPLETE -> {
-                AutocompleteField(
-                    value = value as? String ?: "",
-                    onValueChange = { onValueChange(it) },
-                    placeholder = "Enter ${field.question.lowercase()}",
-                    error = validationError
-                )
+                if (field.type == FieldType.AUTOCOMPLETE && suggestions.isNotEmpty()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        suggestions.forEach { suggestion ->
+                            InputChip(
+                                selected = false,
+                                onClick = { onSuggestionSelected(suggestion) },
+                                label = {
+                                    Text(
+                                        if (suggestion.teamName.isBlank()) suggestion.teamNumber
+                                        else "${suggestion.teamNumber} - ${suggestion.teamName}"
+                                    )
+                                }
+                            )
+                        }
+                    }
+                }
             }
 
             FieldType.RADIO -> {
-                RadioGroupField(
-                    options = field.options ?: emptyList(),
-                    selectedValue = value as? String,
-                    onValueChange = { selectedOption ->
-                        val index = field.options?.indexOf(selectedOption) ?: -1
-                        val actualValue = if (index >= 0) {
-                            field.optionValues?.getOrNull(index) ?: selectedOption
-                        } else {
-                            selectedOption
-                        }
-                        onValueChange(actualValue)
-                    },
-                    error = validationError
+                OptionChips(
+                    entries = field.optionEntries(),
+                    selectedValues = setOf(field.valueAsText()),
+                    onSelect = onRadioSelected
                 )
             }
 
             FieldType.CHECKBOX -> {
-                CheckboxGroupField(
-                    options = field.options ?: emptyList(),
-                    selectedValues = (value as? List<*>)?.filterIsInstance<String>()?.toSet() ?: emptySet(),
-                    onValueChange = { selectedOptions ->
-                        val actualValues = selectedOptions.mapNotNull { selectedOption ->
-                            val index = field.options?.indexOf(selectedOption) ?: -1
-                            if (index >= 0) {
-                                field.optionValues?.getOrNull(index) ?: selectedOption
-                            } else {
-                                selectedOption
-                            }
-                        }
-                        onValueChange(actualValues)
-                    },
-                    error = validationError
+                OptionChips(
+                    entries = field.optionEntries(),
+                    selectedValues = field.valueAsList().toSet(),
+                    onSelect = onCheckboxToggled
                 )
             }
         }
 
-        // Show validation error
-        if (validationError != null) {
-            Text(
-                text = validationError,
-                style = TextStyle(
-                    fontSize = 11.sp,
-                    color = AccentDanger
-                ),
-                modifier = Modifier.padding(top = 4.dp)
+        if (field.usesOtherValue()) {
+            OutlinedTextField(
+                value = field.otherValue,
+                onValueChange = onOtherValueChanged,
+                modifier = Modifier.fillMaxWidth(),
+                label = { Text("Specify other") },
+                isError = field.error != null && field.otherValue.isBlank()
             )
         }
     }
 }
 
 @Composable
-private fun TextInputField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    placeholder: String,
-    error: String?
-) {
-    TextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp)
-            .background(BgTertiary, RoundedCornerShape(6.dp)),
-        placeholder = { 
-            Text(placeholder, style = TextStyle(fontSize = 12.sp)) 
-        },
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = BgTertiary,
-            unfocusedContainerColor = BgTertiary,
-            focusedTextColor = TextPrimary,
-            unfocusedTextColor = TextPrimary,
-            errorContainerColor = BgTertiary
-        ),
-        isError = error != null,
-        singleLine = true
-    )
-}
-
-@Composable
-private fun TextAreaField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    placeholder: String,
-    error: String?
-) {
-    TextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(120.dp)
-            .padding(top = 8.dp)
-            .background(BgTertiary, RoundedCornerShape(6.dp)),
-        placeholder = { 
-            Text(placeholder, style = TextStyle(fontSize = 12.sp)) 
-        },
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = BgTertiary,
-            unfocusedContainerColor = BgTertiary,
-            focusedTextColor = TextPrimary,
-            unfocusedTextColor = TextPrimary,
-            errorContainerColor = BgTertiary
-        ),
-        isError = error != null
-    )
-}
-
-@Composable
-private fun NumberInputField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    placeholder: String,
-    error: String?
-) {
-    TextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp)
-            .background(BgTertiary, RoundedCornerShape(6.dp)),
-        placeholder = { 
-            Text(placeholder, style = TextStyle(fontSize = 12.sp)) 
-        },
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = BgTertiary,
-            unfocusedContainerColor = BgTertiary,
-            focusedTextColor = TextPrimary,
-            unfocusedTextColor = TextPrimary,
-            errorContainerColor = BgTertiary
-        ),
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        isError = error != null,
-        singleLine = true
-    )
-}
-
-@Composable
-private fun AutocompleteField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    placeholder: String,
-    error: String?
-) {
-    // For now, treat as a text field
-    // In production, this would have autocomplete suggestions
-    TextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp)
-            .background(BgTertiary, RoundedCornerShape(6.dp)),
-        placeholder = { 
-            Text(placeholder, style = TextStyle(fontSize = 12.sp)) 
-        },
-        colors = TextFieldDefaults.colors(
-            focusedContainerColor = BgTertiary,
-            unfocusedContainerColor = BgTertiary,
-            focusedTextColor = TextPrimary,
-            unfocusedTextColor = TextPrimary,
-            errorContainerColor = BgTertiary
-        ),
-        isError = error != null,
-        singleLine = true
-    )
-}
-
-@Composable
-private fun RadioGroupField(
-    options: List<String>,
-    selectedValue: String?,
-    onValueChange: (String) -> Unit,
-    error: String?
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        options.chunked(2).forEach { chunk ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                chunk.forEach { option ->
-                    OptionItem(
-                        label = option,
-                        selected = selectedValue == option,
-                        isRadio = true,
-                        onClick = { onValueChange(option) },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-                // Add spacer if odd number of items in row
-                if (chunk.size == 1) {
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun CheckboxGroupField(
-    options: List<String>,
+private fun OptionChips(
+    entries: List<Pair<String, String>>,
     selectedValues: Set<String>,
-    onValueChange: (Set<String>) -> Unit,
-    error: String?
+    onSelect: (String) -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+    Row(
+        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        options.chunked(2).forEach { chunk ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                chunk.forEach { option ->
-                    OptionItem(
-                        label = option,
-                        selected = selectedValues.contains(option),
-                        isRadio = false,
-                        onClick = {
-                            val newValues = if (selectedValues.contains(option)) {
-                                selectedValues - option
-                            } else {
-                                selectedValues + option
-                            }
-                            onValueChange(newValues)
-                        },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-                // Add spacer if odd number of items in row
-                if (chunk.size == 1) {
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-            }
+        entries.forEach { (label, value) ->
+            FilterChip(
+                selected = selectedValues.contains(value),
+                onClick = { onSelect(value) },
+                label = { Text(label) }
+            )
         }
     }
+}
+
+private fun PitFormField.optionEntries(): List<Pair<String, String>> {
+    val values = if (optionValues.isEmpty()) options else optionValues
+    return values.mapIndexed { index, value ->
+        val label = options.getOrNull(index) ?: value
+        label to value
+    }
+}
+
+private fun PitFormField.usesOtherValue(): Boolean {
+    return valueAsText() == "Other" || valueAsList().contains("Other")
 }

@@ -1,374 +1,281 @@
 package com.team695.scoutifyapp.ui.viewModels
 
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.team695.scoutifyapp.data.api.model.GameConstantsStore
 import com.team695.scoutifyapp.data.repository.PitFormDataProvider
 import com.team695.scoutifyapp.data.repository.PitScoutingRepository
-import com.team695.scoutifyapp.data.types.*
+import com.team695.scoutifyapp.data.types.FieldType
+import com.team695.scoutifyapp.data.types.PitFieldValue
+import com.team695.scoutifyapp.data.types.PitFormField
+import com.team695.scoutifyapp.data.types.PitFormState
+import com.team695.scoutifyapp.data.types.PitImageAsset
+import com.team695.scoutifyapp.data.types.PitScoutingTab
+import com.team695.scoutifyapp.data.types.valueAsList
+import com.team695.scoutifyapp.data.types.valueAsText
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.util.UUID
 
-/**
- * State for the pit scouting screen with multi-tab support
- */
-data class PitScoutingScreenState(
-    val eventKey: String = "",
-    val tabs: List<PitScoutingTab> = emptyList(),
-    val selectedTabId: String? = null,
-    val submissionMessages: Map<String, String> = emptyMap(), // tabId -> message
-    val isLoading: Boolean = false,
-    val error: String? = null
-)
-
-/**
- * ViewModel for managing pit scouting form state with multi-tab support
- */
 class PitScoutingViewModel(
-    private val repository: PitScoutingRepository,
-    private val eventKey: String = "2025_JOHNSON"
+    private val repository: PitScoutingRepository
 ) : ViewModel() {
-    
-    private val _screenState = MutableStateFlow(
-        PitScoutingScreenState(eventKey = eventKey)
-    )
-    val screenState: StateFlow<PitScoutingScreenState> = _screenState.asStateFlow()
-    
+    private val eventKey = buildEventKey()
     private val _formState = MutableStateFlow(
         PitFormState(
-            formId = UUID.randomUUID().toString(),
-            eventName = eventKey,
-            formVersion = "2025.4.15_PROD_ED6"
+            eventId = eventKey,
+            eventDisplayName = eventKey,
+            formVersion = PitFormDataProvider.FORM_VERSION,
+            isLoading = true
         )
     )
     val formState: StateFlow<PitFormState> = _formState.asStateFlow()
 
+    private var selectedTabId: String? = null
+    private var teamsJob: Job? = null
+    private var starterTabCreated = false
+
     init {
-        loadFormFields()
-        loadTabsForEvent()
+        observeTabs()
+        refreshSupportingData()
     }
 
-    // ==================== Tab Management ====================
-
-    /**
-     * Load all tabs for the current event from local database
-     */
-    private fun loadTabsForEvent() {
+    private fun observeTabs() {
         viewModelScope.launch {
-            try {
-                repository.getTabsForEvent(eventKey).collect { tabs ->
-                    _screenState.update { state ->
-                        val selectedTabId = state.selectedTabId ?: tabs.firstOrNull()?.tabId
-                        state.copy(
-                            tabs = tabs,
-                            selectedTabId = selectedTabId
-                        )
-                    }
+            repository.getTabsForEvent(eventKey).collect { tabs ->
+                val versionMismatch = tabs.any { it.formVersion != PitFormDataProvider.FORM_VERSION }
+                if (tabs.isEmpty() && !starterTabCreated && !versionMismatch) {
+                    starterTabCreated = true
+                    repository.createNewTab(eventKey)
+                    return@collect
                 }
-            } catch (e: Exception) {
-                _screenState.update { state ->
-                    state.copy(error = "Failed to load tabs: ${e.message}")
-                }
-            }
-        }
-    }
 
-    /**
-     * Create a new pit scouting tab for a team
-     */
-    fun createNewTab(teamNumber: String) {
-        viewModelScope.launch {
-            try {
-                _screenState.update { it.copy(isLoading = true) }
-                val formFields = PitFormDataProvider.getDefaultFormFields()
-                val newTab = repository.createNewTab(teamNumber, eventKey, formFields)
-                switchToTab(newTab.tabId)
-                _screenState.update { state ->
-                    state.copy(isLoading = false)
-                }
-            } catch (e: Exception) {
-                _screenState.update { state ->
+                val activeTab = tabs.firstOrNull { it.tabId == selectedTabId } ?: tabs.firstOrNull()
+                selectedTabId = activeTab?.tabId
+                _formState.update { state ->
                     state.copy(
+                        tabs = tabs,
+                        activeTab = activeTab,
+                        formVersion = PitFormDataProvider.FORM_VERSION,
+                        versionMismatch = versionMismatch,
                         isLoading = false,
-                        error = "Failed to create tab: ${e.message}"
+                        error = null
                     )
                 }
             }
         }
     }
 
-    /**
-     * Switch to a different tab
-     */
-    fun switchToTab(tabId: String) {
+    fun refreshSupportingData() {
         viewModelScope.launch {
-            try {
-                repository.getTabById(tabId).collect { tab ->
-                    if (tab != null) {
-                        _screenState.update { state ->
-                            state.copy(selectedTabId = tabId)
-                        }
-                        
-                        _formState.update { formState ->
-                            formState.copy(
-                                formId = tab.formId,
-                                teamNumber = tab.teamNumber,
-                                fieldValues = tab.fieldValues,
-                                fields = PitFormDataProvider.getDefaultFormFields()
-                            )
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                _screenState.update { state ->
-                    state.copy(error = "Failed to switch tab: ${e.message}")
-                }
+            val assignments = repository.fetchAssignments(eventKey)
+            val completedTeams = repository.fetchCompletedTeams(eventKey)
+            _formState.update { state ->
+                state.copy(assignments = assignments, completedTeams = completedTeams)
             }
         }
     }
 
-    /**
-     * Close/delete a tab
-     */
+    fun switchToTab(tabId: String) {
+        selectedTabId = tabId
+        _formState.update { state ->
+            state.copy(activeTab = state.tabs.firstOrNull { it.tabId == tabId })
+        }
+    }
+
+    fun createNewTab(teamNumber: String = "") {
+        viewModelScope.launch {
+            val newTab = repository.createNewTab(eventKey, teamNumber)
+            selectedTabId = newTab.tabId
+        }
+    }
+
     fun closeTab(tabId: String) {
         viewModelScope.launch {
-            try {
-                repository.deleteTab(tabId)
-                if (_screenState.value.selectedTabId == tabId) {
-                    val remainingTabs = _screenState.value.tabs.filter { it.tabId != tabId }
-                    if (remainingTabs.isNotEmpty()) {
-                        switchToTab(remainingTabs.first().tabId)
-                    } else {
-                        _screenState.update { state ->
-                            state.copy(selectedTabId = null)
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                _screenState.update { state ->
-                    state.copy(error = "Failed to close tab: ${e.message}")
-                }
+            repository.deleteTab(tabId)
+            if (selectedTabId == tabId) {
+                selectedTabId = null
             }
         }
     }
 
-    // ==================== Form Field Management ====================
-
-    /**
-     * Load form fields from data provider
-     */
-    private fun loadFormFields() {
+    fun resetForVersionChange() {
         viewModelScope.launch {
-            _formState.update { state ->
-                state.copy(isLoading = true, error = null)
-            }
-            try {
-                val fields = PitFormDataProvider.getDefaultFormFields()
-                _formState.update { state ->
-                    state.copy(fields = fields, isLoading = false)
-                }
-            } catch (e: Exception) {
-                _formState.update { state ->
-                    state.copy(isLoading = false, error = "Failed to load form: ${e.message}")
-                }
-            }
+            repository.deleteTabsForEvent(eventKey)
+            starterTabCreated = false
         }
     }
 
-    /**
-     * Update a field value and save it to the database
-     */
-    fun updateFieldValue(fieldIndex: Int, value: Any?) {
-        val screenState = _screenState.value
-        val tabId = screenState.selectedTabId ?: return
-
+    fun clearCurrentTab() {
+        val activeTab = _formState.value.activeTab ?: return
         viewModelScope.launch {
-            try {
-                repository.updateTabFieldValue(tabId, fieldIndex, value)
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
-        }
-
-        _formState.update { state ->
-            val newFieldValues = state.fieldValues.toMutableMap()
-            newFieldValues[fieldIndex] = value
-            val newValidationErrors = state.validationErrors.toMutableMap()
-            newValidationErrors.remove(fieldIndex)
-            state.copy(fieldValues = newFieldValues, validationErrors = newValidationErrors)
+            repository.clearTab(activeTab.tabId)
+            showBanner("Current tab cleared")
         }
     }
 
-    /**
-     * Set the team number
-     */
-    fun setTeamNumber(teamNumber: String) {
-        _formState.update { state ->
-            state.copy(teamNumber = teamNumber)
-        }
-    }
-
-    // ==================== Validation & Submission ====================
-
-    /**
-     * Validate the form
-     */
-    fun validateForm(): Boolean {
-        val state = _formState.value
-        val errors = mutableMapOf<Int, String>()
-        state.fields.forEach { field ->
-            if (field.required) {
-                val value = state.fieldValues[field.originalIndex]
-                when {
-                    value == null -> errors[field.originalIndex] = "This field is required"
-                    value is String && value.isBlank() -> errors[field.originalIndex] = "This field is required"
-                    value is List<*> && value.isEmpty() -> errors[field.originalIndex] = "Please select at least one option"
-                }
-            }
-        }
-        _formState.update { it.copy(validationErrors = errors) }
-        return errors.isEmpty()
-    }
-
-    /**
-     * Submit the current tab form
-     */
-    fun submitForm(): PitFormSubmission? {
-        if (!validateForm()) {
-            setSubmissionMessage("Please fill in all required fields")
-            return null
-        }
-
-        val state = _formState.value
-        val screenState = _screenState.value
-        val tabId = screenState.selectedTabId ?: return null
-
-        if (state.teamNumber.isBlank()) {
-            setSubmissionMessage("Team number is required")
-            return null
-        }
-
+    fun saveDraft() {
+        val activeTab = _formState.value.activeTab ?: return
         viewModelScope.launch {
-            try {
-                val result = repository.submitTab(tabId)
-                result.onSuccess {
-                    setSubmissionMessage("Form submitted successfully for team ${state.teamNumber}")
-                }.onFailure { error ->
-                    setSubmissionMessage("Submission failed: ${error.message}")
-                }
-            } catch (e: Exception) {
-                setSubmissionMessage("Error: ${e.message}")
-            }
+            repository.saveDraft(activeTab.tabId)
+            showBanner("Draft saved locally")
         }
-
-        return createSubmission(isDraft = false)
     }
 
-    /**
-     * Save form as draft
-     */
-    fun saveDraft(): PitFormSubmission? {
-        val state = _formState.value
-        val screenState = _screenState.value
-        val tabId = screenState.selectedTabId ?: return null
+    fun updateTextField(fieldIndex: Int, value: String) {
+        val activeTab = _formState.value.activeTab ?: return
+        viewModelScope.launch {
+            repository.updateField(activeTab.tabId, fieldIndex) { field ->
+                field.copy(value = if (value.isBlank()) PitFieldValue.Empty else PitFieldValue.TextValue(value), error = null)
+            }
+        }
+        if (fieldIndex == 0) {
+            loadTeamSuggestions(value)
+        }
+    }
 
-        if (state.teamNumber.isBlank()) {
-            setSubmissionMessage("Team number is required")
-            return null
+    fun updateOtherValue(fieldIndex: Int, value: String) {
+        val activeTab = _formState.value.activeTab ?: return
+        viewModelScope.launch {
+            repository.updateField(activeTab.tabId, fieldIndex) { field ->
+                field.copy(otherValue = value, error = null)
+            }
+        }
+    }
+
+    fun selectRadioOption(fieldIndex: Int, selectedValue: String) {
+        val activeTab = _formState.value.activeTab ?: return
+        viewModelScope.launch {
+            repository.updateField(activeTab.tabId, fieldIndex) { field ->
+                field.copy(value = PitFieldValue.TextValue(selectedValue), error = null)
+            }
+        }
+    }
+
+    fun toggleCheckboxValue(fieldIndex: Int, optionValue: String) {
+        val activeTab = _formState.value.activeTab ?: return
+        viewModelScope.launch {
+            repository.updateField(activeTab.tabId, fieldIndex) { field ->
+                val currentValues = field.valueAsList().toMutableList()
+                if (currentValues.contains(optionValue)) {
+                    currentValues.remove(optionValue)
+                } else {
+                    currentValues.add(optionValue)
+                }
+                field.copy(value = PitFieldValue.MultiValue(currentValues), error = null)
+            }
+        }
+    }
+
+    fun selectTeam(teamNumber: String) {
+        updateTextField(0, teamNumber)
+        _formState.update { it.copy(teamSuggestions = emptyList()) }
+    }
+
+    fun selectAssignedTeam(teamNumber: String) {
+        selectTeam(teamNumber)
+        showBanner("Loaded Team $teamNumber into the current tab")
+    }
+
+    fun loadTeamSuggestions(query: String) {
+        teamsJob?.cancel()
+        if (query.isBlank()) {
+            _formState.update { it.copy(teamSuggestions = emptyList()) }
+            return
+        }
+
+        teamsJob = viewModelScope.launch {
+            val suggestions = repository.getTeamSuggestions(query)
+            _formState.update { state -> state.copy(teamSuggestions = suggestions) }
+        }
+    }
+
+    fun addImages(bucket: String, uris: List<Uri>) {
+        val activeTab = _formState.value.activeTab ?: return
+        if (uris.isEmpty()) return
+        viewModelScope.launch {
+            repository.addImages(activeTab.tabId, bucket, uris)
+            showBanner("${uris.size} image(s) added")
+        }
+    }
+
+    fun removeImage(bucket: String, image: PitImageAsset) {
+        val activeTab = _formState.value.activeTab ?: return
+        viewModelScope.launch {
+            repository.removeImage(activeTab.tabId, bucket, image)
+            showBanner("Image removed")
+        }
+    }
+
+    fun submitCurrentTab() {
+        val activeTab = _formState.value.activeTab ?: return
+        val validationErrors = validate(activeTab)
+        if (validationErrors.isNotEmpty()) {
+            applyValidationErrors(activeTab.tabId, validationErrors)
+            showBanner("Please complete the required pit scouting fields")
+            return
         }
 
         viewModelScope.launch {
-            try {
-                repository.saveDraft(tabId)
-                setSubmissionMessage("Draft saved for team ${state.teamNumber}")
-            } catch (e: Exception) {
-                setSubmissionMessage("Error saving draft: ${e.message}")
+            _formState.update { it.copy(isSubmitting = true) }
+            val result = repository.submitTab(activeTab.tabId)
+            _formState.update { it.copy(isSubmitting = false) }
+            result.onSuccess { submittedNow ->
+                if (submittedNow) {
+                    showBanner("Pit scouting submitted successfully")
+                    refreshSupportingData()
+                } else {
+                    showBanner("No network. Submission queued and will retry automatically")
+                }
+            }.onFailure { error ->
+                showBanner(error.message ?: "Pit scouting submission failed")
             }
         }
-
-        return createSubmission(isDraft = true)
     }
 
-    /**
-     * Clear all form data in current tab
-     */
-    fun clearForm() {
-        val screenState = _screenState.value
-        val tabId = screenState.selectedTabId ?: return
+    fun dismissBanner() {
+        _formState.update { it.copy(syncBanner = null) }
+    }
 
+    private fun applyValidationErrors(tabId: String, validationErrors: Map<Int, String>) {
         viewModelScope.launch {
-            try {
-                val newTab = repository.createNewTab(
-                    teamNumber = "",
-                    eventKey = eventKey,
-                    formFields = PitFormDataProvider.getDefaultFormFields()
-                )
-                switchToTab(newTab.tabId)
-                setSubmissionMessage("Form cleared")
-            } catch (e: Exception) {
-                setSubmissionMessage("Error clearing form: ${e.message}")
+            validationErrors.forEach { (index, message) ->
+                repository.updateField(tabId, index) { field -> field.copy(error = message) }
             }
         }
     }
 
-    // ==================== Utility Methods ====================
-
-    /**
-     * Set a temporary submission message (toast-like message)
-     */
-    private fun setSubmissionMessage(message: String) {
-        val tabId = _screenState.value.selectedTabId
-        if (tabId != null) {
-            _screenState.update { state ->
-                state.copy(
-                    submissionMessages = state.submissionMessages.toMutableMap().apply {
-                        put(tabId, message)
-                    }
-                )
+    private fun validate(tab: PitScoutingTab): Map<Int, String> {
+        return tab.fields.mapNotNull { field ->
+            val error = when {
+                !field.required -> null
+                field.type == FieldType.CHECKBOX && field.valueAsList().isEmpty() -> "This field is required"
+                field.type != FieldType.CHECKBOX && field.valueAsText().isBlank() -> "This field is required"
+                needsOtherValue(field) && field.otherValue.isBlank() -> "Please specify the other option"
+                else -> null
             }
-            viewModelScope.launch {
-                kotlinx.coroutines.delay(3000)
-                _screenState.update { state ->
-                    state.copy(
-                        submissionMessages = state.submissionMessages.toMutableMap().apply {
-                            remove(tabId)
-                        }
-                    )
-                }
-            }
-        }
+            if (error == null) null else field.originalIndex to error
+        }.toMap()
     }
 
-    /**
-     * Manually clear submission message for a tab
-     */
-    fun clearSubmissionMessage(tabId: String) {
-        _screenState.update { state ->
-            state.copy(
-                submissionMessages = state.submissionMessages.toMutableMap().apply {
-                    remove(tabId)
-                }
-            )
-        }
+    private fun needsOtherValue(field: PitFormField): Boolean {
+        return field.valueAsText() == "Other" || field.valueAsList().contains("Other")
     }
 
-    /**
-     * Create a submission object
-     */
-    private fun createSubmission(isDraft: Boolean): PitFormSubmission {
-        val state = _formState.value
-        val responses = state.fields.associate { field ->
-            field.question to state.fieldValues[field.originalIndex]
+    private fun showBanner(message: String) {
+        _formState.update { it.copy(syncBanner = message) }
+    }
+
+    private fun buildEventKey(): String {
+        val year = GameConstantsStore.constants.frc_season_master_sm_year
+        val eventCode = GameConstantsStore.constants.competition_master_cm_event_code
+        if (year == 0 || eventCode.isBlank()) {
+            return "2026_MNWI"
         }
-        return PitFormSubmission(
-            formId = state.formId,
-            eventName = state.eventName,
-            teamNumber = state.teamNumber,
-            responses = responses,
-            isDraft = isDraft
-        )
+        return "${year}_${eventCode.uppercase()}"
     }
 }

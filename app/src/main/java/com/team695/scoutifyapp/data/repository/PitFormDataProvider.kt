@@ -1,251 +1,171 @@
 package com.team695.scoutifyapp.data.repository
 
 import com.team695.scoutifyapp.data.types.FieldType
+import com.team695.scoutifyapp.data.types.PitFieldValue
 import com.team695.scoutifyapp.data.types.PitFormField
+import com.team695.scoutifyapp.data.types.withTextValue
 
-/**
- * Provides default pit scouting form fields
- * In production, this would fetch from an API or database
- */
 object PitFormDataProvider {
-    
-    fun getDefaultFormFields(): List<PitFormField> {
-        return listOf(
-            PitFormField(
-                question = "Team number",
-                type = FieldType.AUTOCOMPLETE,
-                required = true,
-                value = null,
-                originalIndex = 0
-            ),
+    const val FORM_VERSION = "2026.03_PROD_ED8"
+
+    fun getDefaultFormFields(teamNumber: String = ""): List<PitFormField> {
+        val teamField = PitFormField(
+            question = "Team number",
+            type = FieldType.AUTOCOMPLETE,
+            required = true,
+            originalIndex = 0,
+            section = "Robot Identity"
+        )
+
+        val fields = listOf(
+            teamField,
             PitFormField(
                 question = "Type of drive train",
                 description = "Select the drivetrain used on the robot.",
                 type = FieldType.RADIO,
-                options = listOf(
-                    "Tank Drive",
-                    "West Coast Drive",
-                    "Swerve Drive",
-                    "Other"
-                ),
-                optionValues = listOf(
-                    "Tank Drive",
-                    "West Coast Drive",
-                    "Swerve Drive",
-                    "Other"
-                ),
-                value = null,
+                options = listOf("Tank Drive", "West Coast Drive", "Swerve Drive", "Other"),
+                optionValues = listOf("Tank Drive", "West Coast Drive", "Swerve Drive", "Other"),
                 required = true,
-                originalIndex = 1
+                originalIndex = 1,
+                section = "Mobility"
             ),
             PitFormField(
                 question = "Primary mobility capabilities",
                 description = "Which field elements can your robot traverse?",
                 type = FieldType.CHECKBOX,
-                options = listOf(
-                    "BUMP",
-                    "TRENCH",
-                    "Neither"
-                ),
-                optionValues = listOf(
-                    "BUMP",
-                    "TRENCH",
-                    "Neither"
-                ),
-                value = emptyList<String>(),
+                options = listOf("BUMP", "TRENCH", "Neither"),
+                optionValues = listOf("BUMP", "TRENCH", "Neither"),
                 required = true,
-                originalIndex = 2
+                originalIndex = 2,
+                section = "Mobility"
             ),
             PitFormField(
                 question = "FUEL acquisition methods",
                 description = "How does your robot acquire FUEL?",
                 type = FieldType.CHECKBOX,
-                options = listOf(
-                    "Floor pickup",
-                    "DEPOT",
-                    "OUTPOST (Human Player)",
-                    "Preloaded only",
-                    "Other"
-                ),
-                optionValues = listOf(
-                    "Floor",
-                    "DEPOT",
-                    "OUTPOST",
-                    "Preloaded",
-                    "Other"
-                ),
-                value = emptyList<String>(),
+                options = listOf("Floor pickup", "DEPOT", "OUTPOST (Human Player)", "Preloaded only", "Other"),
+                optionValues = listOf("Floor", "DEPOT", "OUTPOST", "Preloaded", "Other"),
                 required = true,
-                originalIndex = 3
+                originalIndex = 3,
+                section = "Fuel Strategy"
             ),
             PitFormField(
-                question = "FUEL scoring method",
-                description = "How does your robot score FUEL into the HUB?",
-                type = FieldType.RADIO,
-                options = listOf(
-                    "Low goal / direct dump",
-                    "High goal / shooting",
-                    "Both",
-                    "Does not score"
-                ),
-                optionValues = listOf(
-                    "Low",
-                    "High",
-                    "Both",
-                    "None"
-                ),
-                value = null,
+                question = "How does your robot manipulate FUEL?",
+                description = "Select the primary method used by your robot.",
+                type = FieldType.CHECKBOX,
+                options = listOf("Shoots FUEL", "Herd FUEL", "Does not score FUEL"),
+                optionValues = listOf("Shoot", "Herd", "None"),
                 required = true,
-                originalIndex = 4
+                originalIndex = 4,
+                section = "Fuel Strategy"
             ),
             PitFormField(
                 question = "Preferred scoring range",
                 description = "From where does your robot usually score into the HUB?",
-                type = FieldType.RADIO,
-                options = listOf(
-                    "Close range only",
-                    "Mid range",
-                    "Long range",
-                    "Multiple ranges"
-                ),
-                optionValues = listOf(
-                    "Close",
-                    "Mid",
-                    "Long",
-                    "Multiple"
-                ),
-                value = null,
+                type = FieldType.CHECKBOX,
+                options = listOf("Against HUB (close range)", "Mid range", "Long range", "Adjustable range"),
+                optionValues = listOf("Against HUB", "Mid", "Long", "Adjustable"),
                 required = true,
-                originalIndex = 5
+                originalIndex = 5,
+                section = "Fuel Strategy"
             ),
             PitFormField(
-                question = "Autonomous capabilities",
+                question = "Which of these can your robot do during AUTO?",
                 description = "Select all that apply during AUTO.",
                 type = FieldType.CHECKBOX,
-                options = listOf(
-                    "Leaves ALLIANCE ZONE",
-                    "Scores FUEL in HUB",
-                    "Uses vision (AprilTags)",
-                    "Climbs TOWER in AUTO",
-                    "No autonomous scoring"
-                ),
-                optionValues = listOf(
-                    "Leaves Zone",
-                    "Auto Fuel",
-                    "Vision",
-                    "Auto Climb",
-                    "None"
-                ),
-                value = emptyList<String>(),
+                options = listOf("Leaves ALLIANCE ZONE", "Scores FUEL in HUB", "Climbs TOWER in AUTO", "No autonomous scoring"),
+                optionValues = listOf("Leaves Zone", "Auto Fuel", "Auto Climb", "None"),
                 required = true,
-                originalIndex = 6
+                originalIndex = 6,
+                section = "Autonomous"
             ),
             PitFormField(
                 question = "TOWER climbing capability",
                 description = "Which RUNGS can your robot reliably climb?",
                 type = FieldType.CHECKBOX,
-                options = listOf(
-                    "LOW RUNG",
-                    "MID RUNG",
-                    "HIGH RUNG",
-                    "No climb"
-                ),
-                optionValues = listOf(
-                    "Low",
-                    "Mid",
-                    "High",
-                    "None"
-                ),
-                value = emptyList<String>(),
+                options = listOf("LOW RUNG", "MID RUNG", "HIGH RUNG", "No climb"),
+                optionValues = listOf("Low", "Mid", "High", "None"),
                 required = true,
-                originalIndex = 7
-            ),
-            PitFormField(
-                question = "Endgame role preference",
-                description = "Primary intended role during END GAME.",
-                type = FieldType.RADIO,
-                options = listOf(
-                    "Primary climber",
-                    "Secondary climber",
-                    "Fuel scoring",
-                    "Defense",
-                    "Support only"
-                ),
-                optionValues = listOf(
-                    "Primary Climb",
-                    "Secondary Climb",
-                    "Fuel",
-                    "Defense",
-                    "Support"
-                ),
-                value = null,
-                required = true,
-                originalIndex = 8
+                originalIndex = 7,
+                section = "Endgame"
             ),
             PitFormField(
                 question = "Robot Weight (without bumpers)",
                 description = "Weight in pounds.",
                 type = FieldType.NUMBER,
                 required = true,
-                value = null,
-                originalIndex = 9
+                originalIndex = 8,
+                section = "Physical Specs"
             ),
             PitFormField(
                 question = "Bumpers Weight",
                 description = "Weight in pounds.",
                 type = FieldType.NUMBER,
                 required = true,
-                value = null,
-                originalIndex = 10
+                originalIndex = 9,
+                section = "Physical Specs"
             ),
             PitFormField(
                 question = "Robot Dimensions (without bumpers)",
-                description = "Enter dimensions in inches.",
+                description = "Enter dimensions in inches. Format: Length x Width x Height (e.g. 30x28x40)",
                 type = FieldType.TEXT,
                 required = true,
-                value = null,
-                originalIndex = 11
+                originalIndex = 10,
+                section = "Physical Specs"
             ),
             PitFormField(
                 question = "Maximum robot height when fully extended",
                 description = "Height in inches.",
                 type = FieldType.NUMBER,
                 required = true,
-                value = null,
-                originalIndex = 12
+                originalIndex = 11,
+                section = "Physical Specs"
             ),
             PitFormField(
                 question = "Drive team configuration",
                 type = FieldType.RADIO,
-                options = listOf(
-                    "Single driver",
-                    "Driver + operator",
-                    "Other"
-                ),
-                optionValues = listOf(
-                    "Single",
-                    "Driver + Operator",
-                    "Other"
-                ),
-                value = null,
+                options = listOf("Single driver", "Driver + operator", "Other"),
+                optionValues = listOf("Single", "Driver + Operator", "Other"),
                 required = true,
-                originalIndex = 13
+                originalIndex = 12,
+                section = "Drive Team"
             ),
             PitFormField(
                 question = "Estimated hours of driver practice",
                 description = "Total hours or weeks practiced.",
                 type = FieldType.TEXT,
                 required = true,
-                value = null,
-                originalIndex = 14
+                originalIndex = 13,
+                section = "Drive Team"
             ),
             PitFormField(
                 question = "Additional comments",
                 type = FieldType.TEXTAREA,
                 required = false,
-                value = null,
-                originalIndex = 15
+                originalIndex = 14,
+                section = "Notes"
             )
         )
+
+        if (teamNumber.isBlank()) {
+            return fields
+        }
+
+        return fields.map { field ->
+            if (field.originalIndex == 0) {
+                field.copy(value = PitFieldValue.TextValue(teamNumber))
+            } else {
+                field
+            }
+        }
+    }
+
+    fun createEmptyFormFields(template: List<PitFormField> = getDefaultFormFields()): List<PitFormField> {
+        return template.map { field ->
+            when (field.type) {
+                FieldType.CHECKBOX -> field.copy(value = PitFieldValue.MultiValue(emptyList()), otherValue = "", error = null)
+                else -> field.copy(value = PitFieldValue.Empty, otherValue = "", error = null)
+            }
+        }
     }
 }
