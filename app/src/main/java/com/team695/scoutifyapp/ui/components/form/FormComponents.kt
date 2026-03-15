@@ -1,6 +1,7 @@
 package com.team695.scoutifyapp.ui.components.form
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,21 +23,36 @@ import androidx.compose.ui.unit.dp
 fun SectionCard(
     title: String,
     modifier: Modifier = Modifier,
+    accent: Color = Color(0xFF123C62),
     content: @Composable () -> Unit
 ) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(Color.White.copy(alpha = 0.88f), RoundedCornerShape(28.dp))
-            .padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .background(Color.White.copy(alpha = 0.96f), RoundedCornerShape(22.dp))
+            .border(1.dp, Color(0xFFD9E5EF), RoundedCornerShape(22.dp))
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.SemiBold,
-            color = Color(0xFF16324F)
-        )
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = accent
+            )
+            Box(
+                modifier = Modifier
+                    .background(accent.copy(alpha = 0.08f), RoundedCornerShape(99.dp))
+                    .padding(horizontal = 8.dp, vertical = 3.dp)
+            ) {
+                Text(
+                    text = "Rapid capture layout",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = accent.copy(alpha = 0.86f)
+                )
+            }
+        }
         content()
     }
 }
@@ -47,19 +63,22 @@ fun SectionLabel(
     hint: String?,
     required: Boolean
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Medium,
-                color = Color(0xFF16324F)
+                color = Color(0xFF17344F)
             )
             if (required) {
                 Text(
-                    text = "*",
-                    style = MaterialTheme.typography.titleSmall,
-                    color = Color(0xFFE24A5A)
+                    text = "Required",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color(0xFFB42318),
+                    modifier = Modifier
+                        .background(Color(0xFFFFE4E0), RoundedCornerShape(99.dp))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
                 )
             }
         }
@@ -67,7 +86,7 @@ fun SectionLabel(
             Text(
                 text = hint,
                 style = MaterialTheme.typography.bodySmall,
-                color = Color(0xFF5D7489)
+                color = Color(0xFF61788C)
             )
         }
     }
@@ -82,12 +101,21 @@ fun StatChip(
 ) {
     Box(
         modifier = modifier
-            .background(brush, RoundedCornerShape(22.dp))
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .background(brush, RoundedCornerShape(18.dp))
+            .padding(horizontal = 12.dp, vertical = 10.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(text = label, style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.8f))
-            Text(text = value, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = Color.White)
+            Text(
+                text = label.uppercase(),
+                style = MaterialTheme.typography.labelSmall,
+                color = Color.White.copy(alpha = 0.72f)
+            )
+            Text(
+                text = value,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.White
+            )
         }
     }
 }
