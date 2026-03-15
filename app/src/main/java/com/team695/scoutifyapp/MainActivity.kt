@@ -19,9 +19,13 @@ import androidx.lifecycle.lifecycleScope
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.team695.scoutifyapp.data.api.NetworkMonitor
 import com.team695.scoutifyapp.data.api.client.CasdoorClient
+import com.team695.scoutifyapp.data.api.client.GithubClient
 import com.team695.scoutifyapp.data.api.client.ScoutifyClient
+import com.team695.scoutifyapp.data.api.model.Asset
 import com.team695.scoutifyapp.data.api.model.GameConstantsStore
+import com.team695.scoutifyapp.data.api.model.GithubResponse
 import com.team695.scoutifyapp.data.api.model.User
+import com.team695.scoutifyapp.data.api.service.AppService
 import com.team695.scoutifyapp.data.api.service.CommentService
 import com.team695.scoutifyapp.data.api.service.LoginService
 import com.team695.scoutifyapp.data.api.service.MatchService
@@ -133,6 +137,7 @@ class MainActivity : ComponentActivity() {
         val commentService: CommentService = ScoutifyClient.commentService
         val gameDetailsService: GameDetailsService = ScoutifyClient.gameDetailsService
         val teamNameService: TeamNameService = ScoutifyClient.teamNameService
+        val appService: AppService = GithubClient.appService
 
         val userRepository = UserRepository(
             loginService = loginService,
@@ -142,7 +147,11 @@ class MainActivity : ComponentActivity() {
         )
         val taskRepository = TaskRepository(service = taskService, db = db)
         val matchRepository = MatchRepository(service = matchService, db = db)
-        val gameDetailRepository = GameDetailRepository(service = gameDetailsService, db = db)
+        val gameDetailRepository = GameDetailRepository(
+            gameDetailsService = gameDetailsService,
+            appService = appService,
+            db = db
+        )
         val commentRepository = CommentRepository(service = commentService, db=db)
         val teamNameRepository = TeamNameRepository(service = teamNameService, db = db)
 
@@ -177,12 +186,23 @@ class MainActivity : ComponentActivity() {
             }
 
             val receiver = UpdateReceiver(
-            {
-                UpdateManager.downloadUpdate()
-            },
-            { installIntent ->
-                applicationContext.startActivity(installIntent)
-            })
+                onFail = {
+                    this.launch {
+                        val githubResult: GithubResponse = appService.getAssets()
+                        val link: Asset? = githubResult.assets.find {
+                            it.browserDownloadUrl.takeLast(4) == "apk"
+                        }
+
+                        if (link != null) {
+                            UpdateManager.downloadUpdate(link.browserDownloadUrl)
+                        } else {
+                            Log.d("Game Constants", "Update url not found!")
+                        }
+                    }
+                },
+                onSuccess = { installIntent ->
+                    applicationContext.startActivity(installIntent)
+                })
 
             applicationContext.registerReceiver(
                 receiver,

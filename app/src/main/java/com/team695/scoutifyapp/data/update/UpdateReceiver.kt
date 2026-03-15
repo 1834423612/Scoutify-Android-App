@@ -10,7 +10,7 @@ import androidx.core.content.FileProvider
 import java.io.File
 
 class UpdateReceiver(
-    private val onFail: () -> Long?,
+    private val onFail: () -> Any?,
     private val onSuccess: (Intent) -> Unit
 ): BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {

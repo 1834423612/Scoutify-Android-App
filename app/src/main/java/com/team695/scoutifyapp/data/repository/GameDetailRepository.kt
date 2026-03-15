@@ -6,13 +6,16 @@ import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.team695.scoutifyapp.BuildConfig
 import com.team695.scoutifyapp.data.api.client.ScoutifyClient
+import com.team695.scoutifyapp.data.api.model.Asset
 import com.team695.scoutifyapp.data.api.model.GameConstants
 import com.team695.scoutifyapp.data.api.model.GameConstantsStore
 import com.team695.scoutifyapp.data.api.model.GameDetails
+import com.team695.scoutifyapp.data.api.model.GithubResponse
 import com.team695.scoutifyapp.data.api.model.Task
 import com.team695.scoutifyapp.data.api.model.createGameDetailsFromDb
 import com.team695.scoutifyapp.data.api.model.createTaskFromDb
 import com.team695.scoutifyapp.data.api.service.ApiResponse
+import com.team695.scoutifyapp.data.api.service.AppService
 import com.team695.scoutifyapp.data.api.service.GameDetailsService
 import com.team695.scoutifyapp.data.update.UpdateManager
 import com.team695.scoutifyapp.db.AppDatabase
@@ -30,7 +33,8 @@ import kotlin.text.toLong
 
 
 class GameDetailRepository(
-    private val service: GameDetailsService,
+    private val gameDetailsService: GameDetailsService,
+    private val appService: AppService,
     private val db: AppDatabase,
 ): Repository {
 
@@ -49,7 +53,7 @@ class GameDetailRepository(
                     }
 
                 if (gameDetails.isNotEmpty()) {
-                    service.updateGameDetails(
+                    gameDetailsService.updateGameDetails(
                         acToken = ScoutifyClient.tokenManager.getToken()!!,
                         gameDetails = gameDetails
                     )
@@ -188,7 +192,7 @@ class GameDetailRepository(
 
         return withContext(Dispatchers.IO) {
             try {
-                val result: ApiResponse<GameConstants> = service.getGameConstants(
+                val result: ApiResponse<GameConstants> = gameDetailsService.getGameConstants(
                     acToken = ScoutifyClient.tokenManager.getToken()!!
                 )
 
@@ -200,7 +204,16 @@ class GameDetailRepository(
                         }
 
                         if (BuildConfig.VERSION_NAME != result.data.app_version) {
-                            UpdateManager.downloadUpdate()
+                            val githubResult: GithubResponse = appService.getAssets()
+                            val link: Asset? = githubResult.assets.find {
+                                it.browserDownloadUrl.takeLast(4) == ".apk"
+                            }
+
+                            if (link != null) {
+                                UpdateManager.downloadUpdate(link.browserDownloadUrl)
+                            } else {
+                                Log.d("Game Constants", "Update url not found!")
+                            }
                         }
                     }
 
@@ -210,8 +223,6 @@ class GameDetailRepository(
                     val event_code = result.data.competition_master_cm_event_code
                     val game_type = result.data.game_matchup_gm_game_type
                     val app_version = result.data.app_version
-
-
 
                     db.gameConstantsQueries.insertOrUpdateConstants(
                         frc_season_master_sm_year = year,
