@@ -73,7 +73,6 @@ CREATE TABLE gameDetailsEntity (
     postgame_shoot_anywhere INTEGER AS Boolean,
     postgame_shoot_while_moving INTEGER AS Boolean,
     postgame_stockpile_neutral INTEGER AS Boolean,
-    postgame_stockpile_alliance INTEGER AS Boolean,
     postgame_stockpile_cross_court INTEGER AS Boolean,
     postgame_feed_outpost INTEGER AS Boolean,
     postgame_receive_outpost INTEGER AS Boolean,
@@ -146,7 +145,6 @@ INSERT OR REPLACE INTO gameDetailsEntity(
     postgame_shoot_anywhere,
     postgame_shoot_while_moving,
     postgame_stockpile_neutral,
-    postgame_stockpile_alliance,
     postgame_stockpile_cross_court,
     postgame_feed_outpost,
     postgame_receive_outpost,
@@ -154,7 +152,7 @@ INSERT OR REPLACE INTO gameDetailsEntity(
     postgame_over_bump,
     postgame_flag
 )
-VALUES (?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 selectDetailsForTask:
 SELECT * FROM gameDetailsEntity

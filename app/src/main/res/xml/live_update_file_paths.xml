@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <paths>
     <external-files-path name="downloaded_apks" path="Download/" />
+    <cache-path name="pit_capture_cache" path="pit-captures/" />
+    <files-path name="pit_image_files" path="pit-images/" />
 </paths>

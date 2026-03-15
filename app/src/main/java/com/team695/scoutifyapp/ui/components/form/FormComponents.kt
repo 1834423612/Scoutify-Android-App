@@ -2,244 +2,120 @@ package com.team695.scoutifyapp.ui.components.form
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.team695.scoutifyapp.ui.theme.*
 
 @Composable
-fun FormSection(
+fun SectionCard(
     title: String,
-    icon: (@Composable () -> Unit)? = null,
     modifier: Modifier = Modifier,
+    accent: Color = Color(0xFF123C62),
     content: @Composable () -> Unit
 ) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(BgCard, RoundedCornerShape(8.dp))
-            .padding(24.dp)
+            .background(Color.White.copy(alpha = 0.96f), RoundedCornerShape(22.dp))
+            .border(1.dp, Color(0xFFD9E5EF), RoundedCornerShape(22.dp))
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 20.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            if (icon != null) {
-                icon()
-            }
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
                 text = title,
-                style = TextStyle(
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = TextPrimary
-                )
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = accent
             )
-        }
-
-        content()
-    }
-}
-
-@Composable
-fun FormRow(
-    modifier: Modifier = Modifier,
-    content: @Composable RowScope.() -> Unit
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(bottom = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        content()
-    }
-}
-
-@Composable
-fun FormGroup(
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
-) {
-    Column(
-        modifier = modifier.fillMaxWidth()
-    ) {
-        content()
-    }
-}
-
-@Composable
-fun FormLabel(
-    text: String,
-    required: Boolean = false,
-    hint: String? = null,
-    modifier: Modifier = Modifier
-) {
-    Column(modifier = modifier.fillMaxWidth()) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            Text(
-                text = text,
-                style = TextStyle(
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = TextPrimary
+            Box(
+                modifier = Modifier
+                    .background(accent.copy(alpha = 0.08f), RoundedCornerShape(99.dp))
+                    .padding(horizontal = 8.dp, vertical = 3.dp)
+            ) {
+                Text(
+                    text = "Rapid capture layout",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = accent.copy(alpha = 0.86f)
                 )
+            }
+        }
+        content()
+    }
+}
+
+@Composable
+fun SectionLabel(
+    title: String,
+    hint: String?,
+    required: Boolean
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(5.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFF17344F)
             )
             if (required) {
                 Text(
-                    text = "*",
-                    style = TextStyle(
-                        fontSize = 13.sp,
-                        color = AccentDanger
-                    )
+                    text = "Required",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = Color(0xFFB42318),
+                    modifier = Modifier
+                        .background(Color(0xFFFFE4E0), RoundedCornerShape(99.dp))
+                        .padding(horizontal = 6.dp, vertical = 2.dp)
                 )
             }
         }
-        if (hint != null) {
+        if (!hint.isNullOrBlank()) {
             Text(
                 text = hint,
-                style = TextStyle(
-                    fontSize = 11.sp,
-                    color = TextSecondary
-                ),
-                modifier = Modifier.padding(top = 2.dp)
+                style = MaterialTheme.typography.bodySmall,
+                color = Color(0xFF61788C)
             )
         }
     }
 }
 
 @Composable
-fun OptionItem(
+fun StatChip(
     label: String,
-    selected: Boolean,
-    isRadio: Boolean = true,
-    onClick: () -> Unit,
+    value: String,
+    brush: Brush,
     modifier: Modifier = Modifier
 ) {
-    Row(
+    Box(
         modifier = modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .padding(12.dp)
-            .background(
-                if (selected) AccentPrimary.copy(alpha = 0.15f) else Color.Transparent,
-                RoundedCornerShape(8.dp)
-            )
-            .border(
-                1.dp,
-                if (selected) AccentPrimary else BorderColor,
-                RoundedCornerShape(8.dp)
-            )
-            .padding(8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+            .background(brush, RoundedCornerShape(18.dp))
+            .padding(horizontal = 12.dp, vertical = 10.dp)
     ) {
-        Box(
-            modifier = Modifier
-                .size(20.dp)
-                .background(
-                    if (selected) AccentPrimary else Color.Transparent,
-                    RoundedCornerShape(if (isRadio) 50.dp else 4.dp)
-                )
-                .border(
-                    2.dp,
-                    if (selected) AccentPrimary else BorderColor,
-                    RoundedCornerShape(if (isRadio) 50.dp else 4.dp)
-                )
-        ) {
-            if (selected && !isRadio) {
-                Text(
-                    text = "✓",
-                    color = Color.White,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            }
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                text = label.uppercase(),
+                style = MaterialTheme.typography.labelSmall,
+                color = Color.White.copy(alpha = 0.72f)
+            )
+            Text(
+                text = value,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.White
+            )
         }
-
-        Text(
-            text = label,
-            style = TextStyle(
-                fontSize = 13.sp,
-                color = TextPrimary
-            )
-        )
-    }
-}
-
-@Composable
-fun RatingItem(
-    label: String,
-    selected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-            .background(
-                if (selected) {
-                    AccentPrimary.copy(alpha = 0.2f)
-                } else {
-                    BgTertiary
-                },
-                RoundedCornerShape(8.dp)
-            )
-            .border(
-                1.dp,
-                if (selected) AccentPrimary else BorderColor,
-                RoundedCornerShape(8.dp)
-            )
-            .padding(12.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = label,
-            style = TextStyle(
-                fontSize = 12.sp,
-                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                color = if (selected) AccentPrimary else TextSecondary
-            )
-        )
-    }
-}
-
-@Composable
-fun StatusBadge(
-    count: Int,
-    backgroundColor: Color,
-    textColor: Color = Color.White
-) {
-    Box(
-        modifier = Modifier
-            .size(28.dp)
-            .background(backgroundColor, RoundedCornerShape(4.dp)),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = count.toString(),
-            style = TextStyle(
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                color = textColor
-            )
-        )
     }
 }
