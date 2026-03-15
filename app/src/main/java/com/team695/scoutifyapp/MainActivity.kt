@@ -72,20 +72,31 @@ class MainActivity : ComponentActivity() {
         val dbName = "scoutify_test.db" // Using a test name to avoid messing up real data
         val dbFile = applicationContext.getDatabasePath(dbName)
         if (dbFile.exists()) {
-            val hasGameConstantsTable = try {
+            val requiredTables = setOf(
+                "gameConstantsEntity",
+                "teamNamesEntity",
+                "pitscoutingTab",
+                "pitscout"
+            )
+
+            val existingTables = try {
                 SQLiteDatabase.openDatabase(dbFile.path, null, SQLiteDatabase.OPEN_READONLY).use { db ->
                     db.rawQuery(
-                        "SELECT name FROM sqlite_master WHERE type='table' AND name='gameConstantsEntity'",
+                        "SELECT name FROM sqlite_master WHERE type='table'",
                         null
                     ).use { cursor ->
-                        cursor.moveToFirst()
+                        buildSet {
+                            while (cursor.moveToNext()) {
+                                add(cursor.getString(0))
+                            }
+                        }
                     }
                 }
             } catch (e: Exception) {
-                false
+                emptySet()
             }
 
-            if (!hasGameConstantsTable) {
+            if (!existingTables.containsAll(requiredTables)) {
                 applicationContext.deleteDatabase(dbName)
             }
         }
@@ -189,7 +200,6 @@ class MainActivity : ComponentActivity() {
         )
 
         networkMonitor.repoList = networkMonitor.repoList + pitScoutingRepository
-        networkMonitor.startMonitoring()
 
         UpdateManager.context = applicationContext
 
@@ -240,12 +250,5 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
-
-
-
     }
 }
-
-
-
-
