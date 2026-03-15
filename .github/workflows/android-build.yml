@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: read
+      contents: write
     
     steps:
       - name: Checkout code
@@ -121,4 +121,16 @@ jobs:
           name: app-release-aab
           path: app/build/outputs/bundle/release/*.aab
           retention-days: 30
+
+      # upload to releases
+
+      - name: Publish to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+            tag_name: "build-${{ github.run_number }}"
+            name: "Scoutify Build #${{ github.run_number }}"
+            draft: false
+            files: |
+              app/build/outputs/apk/release/*.apk
+              app/build/outputs/bundle/release/*.aab
 
