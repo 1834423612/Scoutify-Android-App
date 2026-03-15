@@ -1,14 +1,11 @@
 package com.team695.scoutifyapp.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.material3.*
 
 private val PitScoutingDarkColors = darkColorScheme(
     primary = AccentPrimary,
@@ -21,14 +18,16 @@ private val PitScoutingDarkColors = darkColorScheme(
     onPrimary = Color.White
 )
 
-private val LightColors = lightColorScheme(
-    primary = PrimaryLight,
-    secondary = SecondaryLight,
-    background = BackgroundLight,
-    surface = SurfaceLight,
-    onPrimary = OnPrimaryLight,
-    onSurface = OnSurfaceLight,
-    outline = OutlineLight,
+private val PitScoutingLightColors = lightColorScheme(
+    primary = Color(0xFF1463B8),
+    secondary = Color(0xFF1AA3A8),
+    background = Color(0xFFF2F7FB),
+    surface = Color.White,
+    error = AccentDanger,
+    onPrimary = Color.White,
+    onSurface = Color(0xFF16324F),
+    onBackground = Color(0xFF16324F),
+    outline = Color(0xFFD2DEE8)
 )
 
 @Composable
@@ -36,15 +35,10 @@ fun ScoutifyTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) {
-        PitScoutingDarkColors
-    } else {
-        lightColorScheme()
-    }
-
     MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography(),
+        colorScheme = if (darkTheme) PitScoutingDarkColors else PitScoutingLightColors,
+        typography = ScoutifyTypography,
         content = content
     )
 }
+

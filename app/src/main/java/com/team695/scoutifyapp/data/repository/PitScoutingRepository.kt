@@ -333,7 +333,7 @@ class PitScoutingRepository(
         db.pitscoutQueries.insertPitscout(
             event_id = tab.eventKey,
             form_id = tab.formId,
-            data = gson.toJson(data),
+            data_ = gson.toJson(data),
             upload = gson.toJson(upload),
             user_data = gson.toJson(userData),
             user_agent = buildUserAgent(),
@@ -594,6 +594,7 @@ class PitScoutingRepository(
         const val DRIVE_TRAIN_BUCKET = "driveTrainImages"
     }
 }
+
 
 
 

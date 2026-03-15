@@ -93,9 +93,9 @@ fun PitScoutingScreen(
     ) {
         HeroHeader()
 
-        if (!state.syncBanner.isNullOrBlank()) {
+        state.syncBanner?.takeIf { it.isNotBlank() }?.let { bannerMessage ->
             SyncBanner(
-                message = state.syncBanner,
+                message = bannerMessage,
                 onDismiss = viewModel::dismissBanner
             )
         }
@@ -528,4 +528,6 @@ private fun syncColor(status: PitScoutingStatus): Color {
         PitScoutingStatus.FAILED -> Color(0xFFDC2626)
     }
 }
+
+
 

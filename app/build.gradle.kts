@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import com.android.build.api.dsl.ApplicationExtension
 import java.util.Properties
 
@@ -139,3 +140,13 @@ dependencies {
 }
 
 android.buildFeatures.buildConfig = true
+
+kotlin {
+    jvmToolchain(21)
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_21)
+    }
+}
+
+
+

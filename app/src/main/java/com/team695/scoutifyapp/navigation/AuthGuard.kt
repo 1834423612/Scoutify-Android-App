@@ -9,8 +9,6 @@ import com.team695.scoutifyapp.config.DebugConfig
 import com.team695.scoutifyapp.data.api.model.User
 import com.team695.scoutifyapp.data.repository.GameDetailRepository
 import com.team695.scoutifyapp.data.repository.UserRepository
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 @Composable
 fun AuthGuard(
@@ -19,24 +17,23 @@ fun AuthGuard(
     gameDetailRepository: GameDetailRepository,
     content: @Composable () -> Unit
 ) {
-    // Debug mode: bypass authentication
     if (DebugConfig.BYPASS_AUTH) {
         LaunchedEffect(Unit) {
-            gameDetailRepository.setGameConstants()
+            gameDetailRepository.fetch()
         }
-        return content()
+        content()
+        return
     }
 
     val user by userRepository.currentUser.collectAsState(
-        initial = User(
-            name = "LOADING"
-        )
+        initial = User(name = "LOADING")
     )
 
     if (user?.name == "WRONG_USER" || user == null) {
-        return navController.navigate("login") {
+        navController.navigate("login") {
             popUpTo(navController.graph.startDestinationId) { inclusive = true }
         }
+        return
     }
 
     if (user?.name != "LOADING") {
