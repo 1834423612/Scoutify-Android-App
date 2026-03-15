@@ -1,4 +1,4 @@
-package com.team695.scoutifyapp.data.repository
+﻿package com.team695.scoutifyapp.data.repository
 
 import android.content.Context
 import android.net.Uri
@@ -387,7 +387,7 @@ class PitScoutingRepository(
 
     private fun buildSubmissionPayload(tab: PitScoutingTab, userData: SubmissionUserData): Map<String, Any?> {
         return mapOf(
-            "eventId" to tab.eventKey,
+            "eventId" to formatEventId(tab.eventKey),
             "tabs" to listOf(
                 mapOf(
                     "name" to tab.tabName,
@@ -560,10 +560,25 @@ class PitScoutingRepository(
         val targetDir = File(context.filesDir, "pit-images").apply { mkdirs() }
         val safeName = displayName.substringBeforeLast('.').replace(Regex("[^A-Za-z0-9_-]"), "_")
         val targetFile = File(targetDir, "${UUID.randomUUID()}-${safeName}.$extension")
-        context.contentResolver.openInputStream(uri)?.use { input ->
-            targetFile.outputStream().use { output -> input.copyTo(output) }
+        val inputStream = context.contentResolver.openInputStream(uri)
+            ?: throw IllegalStateException("Unable to open the selected image.")
+
+        try {
+            inputStream.use { input ->
+                targetFile.outputStream().use { output -> input.copyTo(output) }
+            }
+        } catch (error: Exception) {
+            runCatching { targetFile.delete() }
+            throw IllegalStateException("Failed to import the selected image.", error)
         }
-        return PitImageAsset(name = displayName, size = targetFile.length(), localPath = targetFile.absolutePath, mimeType = mimeType, uploaded = false)
+
+        val fileSize = targetFile.length()
+        if (fileSize <= 0L) {
+            runCatching { targetFile.delete() }
+            throw IllegalStateException("The selected image was empty.")
+        }
+
+        return PitImageAsset(name = displayName, size = fileSize, localPath = targetFile.absolutePath, mimeType = mimeType, uploaded = false)
     }
 
     private fun queryDisplayName(uri: Uri): String? {
@@ -594,6 +609,8 @@ class PitScoutingRepository(
         const val DRIVE_TRAIN_BUCKET = "driveTrainImages"
     }
 }
+
+
 
 
 

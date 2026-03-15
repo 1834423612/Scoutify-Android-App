@@ -1,4 +1,4 @@
-package com.team695.scoutifyapp.ui.components.form
+﻿package com.team695.scoutifyapp.ui.components.form
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -32,7 +32,7 @@ fun SectionCard(
             .background(Color.White.copy(alpha = 0.96f), RoundedCornerShape(22.dp))
             .border(1.dp, Color(0xFFD9E5EF), RoundedCornerShape(22.dp))
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
@@ -67,8 +67,8 @@ fun SectionLabel(
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(
                 text = title,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.Medium,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
                 color = Color(0xFF17344F)
             )
             if (required) {
@@ -102,7 +102,7 @@ fun StatChip(
     Box(
         modifier = modifier
             .background(brush, RoundedCornerShape(18.dp))
-            .padding(horizontal = 12.dp, vertical = 10.dp)
+            .padding(horizontal = 10.dp, vertical = 8.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(
@@ -112,7 +112,7 @@ fun StatChip(
             )
             Text(
                 text = value,
-                style = MaterialTheme.typography.titleSmall,
+                style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.SemiBold,
                 color = Color.White
             )

@@ -1,4 +1,4 @@
-package com.team695.scoutifyapp.ui.viewModels
+﻿package com.team695.scoutifyapp.ui.viewModels
 
 import android.net.Uri
 import androidx.lifecycle.ViewModel
@@ -14,6 +14,7 @@ import com.team695.scoutifyapp.data.types.PitImageAsset
 import com.team695.scoutifyapp.data.types.PitScoutingTab
 import com.team695.scoutifyapp.data.types.valueAsList
 import com.team695.scoutifyapp.data.types.valueAsText
+import com.team695.scoutifyapp.utility.SubmissionQueuedException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -198,8 +199,13 @@ class PitScoutingViewModel(
         val activeTab = _formState.value.activeTab ?: return
         if (uris.isEmpty()) return
         viewModelScope.launch {
-            repository.addImages(activeTab.tabId, bucket, uris)
-            showBanner("${uris.size} image(s) added")
+            runCatching {
+                repository.addImages(activeTab.tabId, bucket, uris)
+            }.onSuccess {
+                showBanner("${uris.size} image(s) added")
+            }.onFailure { error ->
+                showBanner(error.message ?: "Unable to add the selected image")
+            }
         }
     }
 
@@ -232,7 +238,12 @@ class PitScoutingViewModel(
                     showBanner("No network. Submission queued and will retry automatically")
                 }
             }.onFailure { error ->
-                showBanner(error.message ?: "Pit scouting submission failed")
+                val message = if (error is SubmissionQueuedException) {
+                    error.message
+                } else {
+                    error.message ?: "Pit scouting submission failed"
+                }
+                showBanner(message ?: "Pit scouting submission failed")
             }
         }
     }
@@ -279,3 +290,6 @@ class PitScoutingViewModel(
         return "${year}_${eventCode.uppercase()}"
     }
 }
+
+
+

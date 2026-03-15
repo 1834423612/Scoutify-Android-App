@@ -1,9 +1,9 @@
-CREATE TABLE IF NOT EXISTS pitscoutingTab (
+﻿CREATE TABLE IF NOT EXISTS pitscoutingTab (
     tabId TEXT NOT NULL PRIMARY KEY,
     teamNumber TEXT NOT NULL,
     eventKey TEXT NOT NULL,
     formId TEXT NOT NULL,
-    formVersion TEXT NOT NULL DEFAULT '2025.4.15_PROD_ED6',
+    formVersion TEXT NOT NULL DEFAULT '2026.03_PROD_ED8',
     fieldValuesJson TEXT NOT NULL DEFAULT '{}',
     uploadDataJson TEXT,
     isDraft INTEGER NOT NULL DEFAULT 1,
@@ -87,3 +87,4 @@ WHERE tabId = ?;
 deleteTabsForEvent:
 DELETE FROM pitscoutingTab
 WHERE eventKey = ?;
+

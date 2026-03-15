@@ -1,4 +1,11 @@
-package com.team695.scoutifyapp.utility
+﻿package com.team695.scoutifyapp.utility
+
+class SubmissionQueuedException(
+    cause: Throwable
+) : IllegalStateException(
+    "Online submit failed. Saved offline and will retry automatically.",
+    cause
+)
 
 class OfflineSubmissionManager {
     suspend fun submitOrQueue(
@@ -14,8 +21,13 @@ class OfflineSubmissionManager {
                 Result.success(false)
             }
         } catch (error: Exception) {
-            queueOffline()
-            Result.success(false)
+            try {
+                queueOffline()
+                Result.failure(SubmissionQueuedException(error))
+            } catch (queueError: Exception) {
+                error.addSuppressed(queueError)
+                Result.failure(error)
+            }
         }
     }
 

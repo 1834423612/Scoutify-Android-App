@@ -1,4 +1,4 @@
-package com.team695.scoutifyapp.ui.components.form
+﻿package com.team695.scoutifyapp.ui.components.form
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -9,11 +9,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,7 +24,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.team695.scoutifyapp.data.types.FieldType
@@ -43,7 +45,7 @@ fun DynamicFormField(
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -61,11 +63,14 @@ fun DynamicFormField(
                 OutlinedTextField(
                     value = field.valueAsText(),
                     onValueChange = onTextChanged,
-                    modifier = Modifier.fillMaxWidth(),
-                    minLines = if (field.type == FieldType.TEXTAREA) 3 else 1,
-                    maxLines = if (field.type == FieldType.TEXTAREA) 5 else 1,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = if (field.type == FieldType.TEXTAREA) 88.dp else 48.dp),
+                    minLines = if (field.type == FieldType.TEXTAREA) 2 else 1,
+                    maxLines = if (field.type == FieldType.TEXTAREA) 4 else 1,
                     isError = field.error != null,
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(14.dp),
+                    textStyle = MaterialTheme.typography.bodyMedium,
                     keyboardOptions = if (field.type == FieldType.NUMBER) {
                         KeyboardOptions(keyboardType = KeyboardType.Number)
                     } else {
@@ -121,10 +126,13 @@ fun DynamicFormField(
             OutlinedTextField(
                 value = field.otherValue,
                 onValueChange = onOtherValueChanged,
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 48.dp),
                 label = { Text("Specify other") },
                 isError = field.error != null && field.otherValue.isBlank(),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(14.dp),
+                textStyle = MaterialTheme.typography.bodyMedium
             )
         }
     }
@@ -134,10 +142,11 @@ fun DynamicFormField(
 private fun SelectionModeHint(text: String) {
     Text(
         text = text,
+        style = MaterialTheme.typography.labelSmall,
         color = Color(0xFF42637C),
         modifier = Modifier
             .background(Color(0xFFEAF1F7), RoundedCornerShape(99.dp))
-            .padding(horizontal = 8.dp, vertical = 3.dp)
+            .padding(horizontal = 7.dp, vertical = 2.dp)
     )
 }
 
@@ -154,11 +163,11 @@ private fun QuestionTypeBadge(type: FieldType) {
 
     Text(
         text = label,
-        style = androidx.compose.material3.MaterialTheme.typography.labelSmall,
+        style = MaterialTheme.typography.labelSmall,
         color = contentColor,
         modifier = Modifier
             .background(background, RoundedCornerShape(99.dp))
-            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .padding(horizontal = 6.dp, vertical = 3.dp)
     )
 }
 
@@ -178,7 +187,7 @@ private fun SuggestionPill(
     ) {
         Text(label, color = Color(0xFF17344F), fontWeight = FontWeight.SemiBold)
         if (sublabel.isNotBlank()) {
-            Text(sublabel, color = Color(0xFF6C8498), style = androidx.compose.material3.MaterialTheme.typography.bodySmall)
+            Text(sublabel, color = Color(0xFF6C8498), style = MaterialTheme.typography.bodySmall)
         }
     }
 }
@@ -190,7 +199,7 @@ private fun SelectableOptionGroup(
     multiSelect: Boolean,
     onSelect: (String) -> Unit
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         entries.forEach { (label, value) ->
             val selected = selectedValues.contains(value)
             Row(
@@ -206,7 +215,7 @@ private fun SelectableOptionGroup(
                         shape = RoundedCornerShape(16.dp)
                     )
                     .clickable { onSelect(value) }
-                    .padding(horizontal = 12.dp, vertical = 11.dp),
+                    .padding(horizontal = 12.dp, vertical = 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -216,13 +225,13 @@ private fun SelectableOptionGroup(
                     Text(
                         if (multiSelect) "Tap to add or remove" else "Tap to select this option",
                         color = Color(0xFF6E879A),
-                        style = androidx.compose.material3.MaterialTheme.typography.bodySmall
+                        style = MaterialTheme.typography.bodySmall
                     )
                 }
                 Text(
                     text = if (selected) "Selected" else if (multiSelect) "Optional" else "Pick one",
                     color = if (selected) Color(0xFF1B7B62) else Color(0xFF7A90A2),
-                    style = androidx.compose.material3.MaterialTheme.typography.labelSmall
+                    style = MaterialTheme.typography.labelSmall
                 )
             }
         }
@@ -276,4 +285,3 @@ private fun PitFormField.optionEntries(): List<Pair<String, String>> {
 private fun PitFormField.usesOtherValue(): Boolean {
     return valueAsText() == "Other" || valueAsList().contains("Other")
 }
-
