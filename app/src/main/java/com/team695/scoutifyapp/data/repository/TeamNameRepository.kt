@@ -16,7 +16,7 @@ class TeamNameRepository (
         return withContext(Dispatchers.IO) {
             val teams = service.fetchTeamNames()
 
-            //queries.deleteAll()
+            queries.deleteAll()
 
             teams.forEach {
                 queries.insertTeam          (

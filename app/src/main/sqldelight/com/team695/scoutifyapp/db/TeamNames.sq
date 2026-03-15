@@ -19,5 +19,5 @@ insertTeam:
 INSERT OR REPLACE INTO teamNamesEntity(team_number, team_name)
 VALUES (?, ?);
 
---deleteAll:
---DELETE FROM teamNamesEntity;
+deleteAll:
+DELETE FROM teamNamesEntity;
