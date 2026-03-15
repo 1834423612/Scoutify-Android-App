@@ -1,0 +1,89 @@
+CREATE TABLE IF NOT EXISTS pitscoutingTab (
+    tabId TEXT NOT NULL PRIMARY KEY,
+    teamNumber TEXT NOT NULL,
+    eventKey TEXT NOT NULL,
+    formId TEXT NOT NULL,
+    formVersion TEXT NOT NULL DEFAULT '2025.4.15_PROD_ED6',
+    fieldValuesJson TEXT NOT NULL DEFAULT '{}',
+    uploadDataJson TEXT,
+    isDraft INTEGER NOT NULL DEFAULT 1,
+    isSubmitted INTEGER NOT NULL DEFAULT 0,
+    submissionTime TEXT,
+    createdAt TEXT NOT NULL,
+    updatedAt TEXT NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'DRAFT'
+);
+
+-- Query to get all tabs for an event
+getAllTabsForEvent:
+SELECT *
+FROM pitscoutingTab
+WHERE eventKey = ?
+ORDER BY updatedAt DESC;
+
+-- Query to get a specific tab
+getTabById:
+SELECT *
+FROM pitscoutingTab
+WHERE tabId = ?;
+
+-- Query to get all draft tabs
+getDraftTabs:
+SELECT *
+FROM pitscoutingTab
+WHERE isDraft = 1
+ORDER BY updatedAt DESC;
+
+-- Query to get all pending submission tabs
+getPendingSubmissionTabs:
+SELECT *
+FROM pitscoutingTab
+WHERE syncStatus = 'PENDING_SUBMISSION'
+ORDER BY updatedAt ASC;
+
+-- Insert a new tab
+insertTab:
+INSERT OR REPLACE INTO pitscoutingTab (
+    tabId,
+    teamNumber,
+    eventKey,
+    formId,
+    formVersion,
+    fieldValuesJson,
+    uploadDataJson,
+    isDraft,
+    isSubmitted,
+    submissionTime,
+    createdAt,
+    updatedAt,
+    syncStatus
+)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+-- Update tab data
+updateTabData:
+UPDATE pitscoutingTab
+SET fieldValuesJson = ?,
+    uploadDataJson = ?,
+    updatedAt = ?
+WHERE tabId = ?;
+
+-- Update tab status
+updateTabStatus:
+UPDATE pitscoutingTab
+SET isDraft = ?,
+    isSubmitted = ?,
+    submissionTime = ?,
+    syncStatus = ?,
+    updatedAt = ?
+WHERE tabId = ?;
+
+-- Delete a tab
+deleteTab:
+DELETE FROM pitscoutingTab
+WHERE tabId = ?;
+
+-- Delete all tabs for an event
+deleteTabsForEvent:
+DELETE FROM pitscoutingTab
+WHERE eventKey = ?;

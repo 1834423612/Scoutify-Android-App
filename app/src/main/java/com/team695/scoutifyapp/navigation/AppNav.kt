@@ -10,26 +10,28 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.team695.scoutifyapp.config.DebugConfig
 import com.team695.scoutifyapp.data.api.NetworkMonitor
 import com.team695.scoutifyapp.data.repository.CommentRepository
-import com.team695.scoutifyapp.ui.InputScreen
-import com.team695.scoutifyapp.ui.screens.CommentsScreen
-import com.team695.scoutifyapp.ui.screens.home.HomeScreen
-import com.team695.scoutifyapp.ui.screens.FormScreen
-import com.team695.scoutifyapp.ui.screens.PitScoutingScreen
-import com.team695.scoutifyapp.ui.viewModels.HomeViewModel
-import com.team695.scoutifyapp.ui.viewModels.ViewModelFactory
 import com.team695.scoutifyapp.data.repository.GameDetailRepository
 import com.team695.scoutifyapp.data.repository.MatchRepository
+import com.team695.scoutifyapp.data.repository.PitScoutingRepository
 import com.team695.scoutifyapp.data.repository.TaskRepository
 import com.team695.scoutifyapp.data.repository.TeamNameRepository
 import com.team695.scoutifyapp.data.repository.UserRepository
+import com.team695.scoutifyapp.ui.InputScreen
+import com.team695.scoutifyapp.ui.screens.CommentsScreen
 import com.team695.scoutifyapp.ui.screens.CommentsViewModel
+import com.team695.scoutifyapp.ui.screens.FormScreen
+import com.team695.scoutifyapp.ui.screens.PitScoutingScreen
 import com.team695.scoutifyapp.ui.screens.data.DataScreen
+import com.team695.scoutifyapp.ui.screens.home.HomeScreen
 import com.team695.scoutifyapp.ui.screens.login.LoginScreen
 import com.team695.scoutifyapp.ui.viewModels.DataViewModel
+import com.team695.scoutifyapp.ui.viewModels.HomeViewModel
 import com.team695.scoutifyapp.ui.viewModels.LoginViewModel
-
+import com.team695.scoutifyapp.ui.viewModels.PitScoutingViewModel
+import com.team695.scoutifyapp.ui.viewModels.ViewModelFactory
 
 @Composable
 fun AppNav(
@@ -40,48 +42,37 @@ fun AppNav(
     commentRepository: CommentRepository,
     gameDetailRepository: GameDetailRepository,
     teamNameRepository: TeamNameRepository,
+    pitScoutingRepository: PitScoutingRepository,
     networkMonitor: NetworkMonitor
 ) {
     val owner: ViewModelStoreOwner = LocalViewModelStoreOwner.current
         ?: throw IllegalStateException("Root must be attached to a ViewModelStoreOwner")
 
-    NavHost(navController = navController, startDestination = "login") {
+    val startDestination = if (DebugConfig.BYPASS_AUTH) "home" else "login"
+
+    NavHost(navController = navController, startDestination = startDestination) {
         composable("home") {
-            AuthGuard(
-                userRepository = userRepository,
-                gameDetailRepository = gameDetailRepository,
-                navController = navController,
-            ) {
+            AuthGuard(userRepository = userRepository, gameDetailRepository = gameDetailRepository, navController = navController) {
                 val homeViewModel: HomeViewModel = viewModel(
                     viewModelStoreOwner = owner,
-                    factory = ViewModelFactory { HomeViewModel(
-                        taskRepository = taskRepository,
-                        matchRepository = matchRepository,
-                        gameDetailRepository = gameDetailRepository,
-                        networkMonitor = networkMonitor,
-                    ) }
+                    factory = ViewModelFactory {
+                        HomeViewModel(
+                            taskRepository = taskRepository,
+                            matchRepository = matchRepository,
+                            gameDetailRepository = gameDetailRepository,
+                            networkMonitor = networkMonitor
+                        )
+                    }
                 )
-
                 HomeScreen(navController = navController, homeViewModel = homeViewModel)
             }
         }
-        composable(
-            route = "data/{taskId}",
-            arguments = listOf(
-                    navArgument("taskId") { type = NavType.IntType}
-            )
-        ) { navBackStackEntry ->
-            AuthGuard(
-                userRepository = userRepository,
-                navController = navController,
-                gameDetailRepository = gameDetailRepository
-            ) {
+
+        composable(route = "data/{taskId}", arguments = listOf(navArgument("taskId") { type = NavType.IntType })) { navBackStackEntry ->
+            AuthGuard(userRepository = userRepository, navController = navController, gameDetailRepository = gameDetailRepository) {
                 val dataScreenOwner: ViewModelStoreOwner = LocalViewModelStoreOwner.current
                     ?: throw IllegalStateException("Root must be attached to a ViewModelStoreOwner")
-
-                val taskId = navBackStackEntry.arguments?.getInt("taskId")
-                    ?: return@AuthGuard navController.navigate("home")
-
+                val taskId = navBackStackEntry.arguments?.getInt("taskId") ?: return@AuthGuard navController.navigate("home")
                 val dataViewModel: DataViewModel = viewModel(
                     viewModelStoreOwner = dataScreenOwner,
                     factory = ViewModelFactory {
@@ -93,21 +84,13 @@ fun AppNav(
                         )
                     }
                 )
-
                 DataScreen(navController = navController, dataViewModel = dataViewModel)
             }
         }
-        composable(route = "comments") {
-            val matchNumber = navController
-                .previousBackStackEntry
-                ?.savedStateHandle
-                ?.get<Int>("matchNumber")
 
-            AuthGuard(
-                userRepository = userRepository,
-                navController = navController,
-                gameDetailRepository = gameDetailRepository
-            ) {
+        composable(route = "comments") {
+            val matchNumber = navController.previousBackStackEntry?.savedStateHandle?.get<Int>("matchNumber")
+            AuthGuard(userRepository = userRepository, navController = navController, gameDetailRepository = gameDetailRepository) {
                 val commentsViewModel: CommentsViewModel = viewModel(
                     viewModelStoreOwner = owner,
                     factory = ViewModelFactory {
@@ -118,43 +101,33 @@ fun AppNav(
                         )
                     }
                 )
-
                 LaunchedEffect(matchNumber) {
                     if (matchNumber != -1) {
                         commentsViewModel.onMatchSelected(matchNumber.toString())
                     }
                 }
+                CommentsScreen(viewModel = commentsViewModel, matchNumber = matchNumber)
+            }
+        }
 
-                CommentsScreen(
-                    viewModel = commentsViewModel,
-                    matchNumber = matchNumber
-                )
-            }
-        }
         composable("pitScouting") {
-            AuthGuard(
-                userRepository = userRepository,
-                navController = navController,
-                gameDetailRepository = gameDetailRepository
-            ) {
-                PitScoutingScreen()
+            AuthGuard(userRepository = userRepository, navController = navController, gameDetailRepository = gameDetailRepository) {
+                val pitScoutingViewModel: PitScoutingViewModel = viewModel(
+                    viewModelStoreOwner = owner,
+                    factory = ViewModelFactory { PitScoutingViewModel(repository = pitScoutingRepository) }
+                )
+                PitScoutingScreen(viewModel = pitScoutingViewModel)
             }
         }
+
         composable("upload") {
-            AuthGuard(
-                userRepository = userRepository,
-                navController = navController,
-                gameDetailRepository = gameDetailRepository
-            ) {
+            AuthGuard(userRepository = userRepository, navController = navController, gameDetailRepository = gameDetailRepository) {
                 InputScreen(navController = navController)
             }
         }
+
         composable(route = "settings") {
-            AuthGuard(
-                userRepository = userRepository,
-                navController = navController,
-                gameDetailRepository = gameDetailRepository
-            ) {
+            AuthGuard(userRepository = userRepository, navController = navController, gameDetailRepository = gameDetailRepository) {
                 FormScreen()
             }
         }
@@ -164,7 +137,6 @@ fun AppNav(
                 viewModelStoreOwner = navBackStackEntry,
                 factory = ViewModelFactory { LoginViewModel(userRepository) }
             )
-
             LoginScreen(navController = navController, loginViewModel = loginViewModel)
         }
     }

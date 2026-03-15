@@ -15,13 +15,11 @@ import com.team695.scoutifyapp.data.repository.TaskRepository
 import com.team695.scoutifyapp.data.repository.TeamNameRepository
 import com.team695.scoutifyapp.data.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -54,6 +52,7 @@ class NetworkMonitor(
             as ConnectivityManager
     private val _isConnected = MutableStateFlow(false)
     override val isConnected: StateFlow<Boolean> = _isConnected
+    private var isMonitoringRegistered = false
 
     // listener for when network has changed
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
@@ -79,17 +78,23 @@ class NetworkMonitor(
     }
 
     override fun startMonitoring() {
+        if (isMonitoringRegistered) return
+
         val networkRequest = NetworkRequest.Builder()
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
             .build()
 
         // register the listener
         connectivityManager.registerNetworkCallback(networkRequest, networkCallback)
+        isMonitoringRegistered = true
     }
 
     override fun stopMonitoring() {
+        if (!isMonitoringRegistered) return
+
         // unregister the listener
         connectivityManager.unregisterNetworkCallback(networkCallback)
+        isMonitoringRegistered = false
     }
 
     override suspend fun networkSync() {
@@ -108,8 +113,6 @@ class NetworkMonitor(
                 delay(FETCH_INTERVAL)
             }
         }
-
-
     }
 
     private suspend fun retryFetchUntilSuccess() {

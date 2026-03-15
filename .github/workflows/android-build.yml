@@ -10,6 +10,14 @@ on:
 env:
   JAVA_VERSION: '21'
   JAVA_DISTRIBUTION: 'temurin'
+  CASDOOR_ENDPOINT: ${{ secrets.CASDOOR_ENDPOINT }}
+  CASDOOR_REDIRECT_URI: ${{ secrets.CASDOOR_REDIRECT_URI }}
+  CASDOOR_CLIENT_SECRET: ${{ secrets.CASDOOR_CLIENT_SECRET }}
+  CASDOOR_CLIENT_ID: ${{ secrets.CASDOOR_CLIENT_ID }}
+  API_AC_SECRET: ${{ secrets.API_AC_SECRET }}
+  CASDOOR_APP_NAME: ${{ secrets.CASDOOR_APP_NAME }}
+  API_AC_KEY: ${{ secrets.API_AC_KEY }}
+
 
 jobs:
   # ============================================

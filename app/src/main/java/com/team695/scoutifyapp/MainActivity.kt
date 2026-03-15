@@ -9,6 +9,7 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import android.database.sqlite.SQLiteDatabase
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -45,6 +46,7 @@ import com.team695.scoutifyapp.data.intAdapter
 import com.team695.scoutifyapp.data.repository.CommentRepository
 import com.team695.scoutifyapp.data.repository.GameDetailRepository
 import com.team695.scoutifyapp.data.repository.TeamNameRepository
+import com.team695.scoutifyapp.data.repository.PitScoutingRepository
 import com.team695.scoutifyapp.data.update.UpdateManager
 import com.team695.scoutifyapp.data.update.UpdateReceiver
 import com.team695.scoutifyapp.db.GameConstantsEntity
@@ -71,10 +73,42 @@ class MainActivity : ComponentActivity() {
 
         ScoutifyClient.initialize(applicationContext)
 
+        val dbName = "scoutify_test.db" // Using a test name to avoid messing up real data
+        val dbFile = applicationContext.getDatabasePath(dbName)
+        if (dbFile.exists()) {
+            val requiredTables = setOf(
+                "gameConstantsEntity",
+                "teamNamesEntity",
+                "pitscoutingTab",
+                "pitscout"
+            )
+
+            val existingTables = try {
+                SQLiteDatabase.openDatabase(dbFile.path, null, SQLiteDatabase.OPEN_READONLY).use { db ->
+                    db.rawQuery(
+                        "SELECT name FROM sqlite_master WHERE type='table'",
+                        null
+                    ).use { cursor ->
+                        buildSet {
+                            while (cursor.moveToNext()) {
+                                add(cursor.getString(0))
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                emptySet()
+            }
+
+            if (!existingTables.containsAll(requiredTables)) {
+                applicationContext.deleteDatabase(dbName)
+            }
+        }
+
         val driver = AndroidSqliteDriver(
             schema = AppDatabase.Schema,
             context = applicationContext,
-            name = "scoutify_test.db" // Using a test name to avoid messing up real data
+            name = dbName
         )
 
         val db = AppDatabase(
@@ -165,7 +199,16 @@ class MainActivity : ComponentActivity() {
             teamNameRepository = teamNameRepository
         )
 
-        networkMonitor.startMonitoring()
+        val pitScoutingRepository = PitScoutingRepository(
+            db = db,
+            surveyService = ScoutifyClient.surveyService,
+            networkMonitor = networkMonitor,
+            userRepository = userRepository,
+            teamNameRepository = teamNameRepository,
+            context = applicationContext
+        )
+
+        networkMonitor.repoList = networkMonitor.repoList + pitScoutingRepository
 
         UpdateManager.context = applicationContext
 
@@ -222,12 +265,10 @@ class MainActivity : ComponentActivity() {
                     gameDetailRepository = gameDetailRepository,
                     commentRepository = commentRepository,
                     teamNameRepository = teamNameRepository,
+                    pitScoutingRepository = pitScoutingRepository,
                     networkMonitor = networkMonitor
                 )
             }
         }
-
-
-
     }
 }

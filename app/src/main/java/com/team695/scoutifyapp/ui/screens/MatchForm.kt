@@ -9,12 +9,8 @@ import com.team695.scoutifyapp.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Form2(onBack: () -> Unit) {
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(title = { Text("Scoutify App") })
-        }
-    ) { padding ->
+fun MatchForm(back: () -> Unit, home: ()-> Unit) {
+    Scaffold{ padding ->
         Column(
             modifier = Modifier
                 .padding(padding)
@@ -33,7 +29,7 @@ fun Form2(onBack: () -> Unit) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(onClick = onBack) {
+            Button(onClick = back) {
                 Text("Back")
             }
         }
