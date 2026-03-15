@@ -12,6 +12,7 @@ import com.team695.scoutifyapp.data.repository.GameDetailRepository
 import com.team695.scoutifyapp.data.repository.MatchRepository
 import com.team695.scoutifyapp.data.repository.Repository
 import com.team695.scoutifyapp.data.repository.TaskRepository
+import com.team695.scoutifyapp.data.repository.TeamNameRepository
 import com.team695.scoutifyapp.data.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
@@ -41,11 +42,13 @@ class NetworkMonitor(
     private val gameDetailRepository: GameDetailRepository,
     private val commentRepository: CommentRepository,
     private val userRepository: UserRepository,
+    private val teamNameRepository: TeamNameRepository
 ) : NetworkService {
     var repoList: List<Repository> = listOf(
         matchRepository,
         taskRepository,
-        commentRepository
+        commentRepository,
+        teamNameRepository
     )
     private val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE)
             as ConnectivityManager
@@ -105,6 +108,8 @@ class NetworkMonitor(
                 delay(FETCH_INTERVAL)
             }
         }
+
+
     }
 
     private suspend fun retryFetchUntilSuccess() {

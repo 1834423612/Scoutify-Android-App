@@ -77,7 +77,6 @@ class TaskRepository(
         return db.taskQueries.selectAllTasks().executeAsList().map {
             convert(it)
         }
-
     }
 
     suspend private fun updateDbFromTaskList(tasks: List<Task>) {

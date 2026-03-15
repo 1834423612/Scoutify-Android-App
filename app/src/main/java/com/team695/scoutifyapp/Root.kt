@@ -21,6 +21,7 @@ import com.team695.scoutifyapp.ui.components.NavRail
 import com.team695.scoutifyapp.data.repository.GameDetailRepository
 import com.team695.scoutifyapp.data.repository.MatchRepository
 import com.team695.scoutifyapp.data.repository.TaskRepository
+import com.team695.scoutifyapp.data.repository.TeamNameRepository
 import com.team695.scoutifyapp.data.repository.UserRepository
 //import com.team695.scoutifyapp.ui.theme.*
 import com.team695.scoutifyapp.ui.theme.Background
@@ -33,6 +34,7 @@ fun Root(
     userRepository: UserRepository,
     gameDetailRepository: GameDetailRepository,
     commentRepository: CommentRepository,
+    teamNameRepository: TeamNameRepository,
     networkMonitor: NetworkMonitor
 ) {
     Surface(
@@ -71,7 +73,8 @@ fun Root(
                         userRepository = userRepository,
                         gameDetailRepository = gameDetailRepository,
                         commentRepository = commentRepository,
-                        networkMonitor = networkMonitor,
+                        teamNameRepository = teamNameRepository,
+                        networkMonitor = networkMonitor
                     )
                 }
             }

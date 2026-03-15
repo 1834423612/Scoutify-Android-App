@@ -47,6 +47,9 @@ fun CommentsScreen(
     val blue2Comment by viewModel.blue2Comment
     val blue3Comment by viewModel.blue3Comment
 
+    val redAllianceNames by viewModel.redAllianceNames
+    val blueAllianceNames by viewModel.blueAllianceNames
+
     val autoSaved by viewModel.autoSaved
     val isSubmitted by viewModel.isSubmitted
     val saveStatus by viewModel.saveStatus
@@ -73,6 +76,8 @@ fun CommentsScreen(
                 blue1Comment = blue1Comment,
                 blue2Comment = blue2Comment,
                 blue3Comment = blue3Comment,
+                redAllianceNames = redAllianceNames,
+                blueAllianceNames = blueAllianceNames,
                 onMatchSelected = { match -> viewModel.onMatchSelected(match) },
                 onCommentChanged = { alliance, position, comment -> viewModel.onCommentChanged(alliance, position, comment) },
                 isSubmitted = isSubmitted,
@@ -96,6 +101,8 @@ fun CommentsContent(
     blue1Comment: String,
     blue2Comment: String,
     blue3Comment: String,
+    redAllianceNames: List<String>,
+    blueAllianceNames: List<String>,
     onMatchSelected: (String) -> Unit,
     onCommentChanged: (String, Int, String) -> Unit,
     isSubmitted: Boolean,
@@ -110,6 +117,9 @@ fun CommentsContent(
 
     var expanded by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
+
+    val redComments: List<String> = listOf(red1Comment, red2Comment, red3Comment)
+    val blueComments: List<String> = listOf(blue1Comment, blue2Comment, blue3Comment)
 
     Box(
         modifier = Modifier
@@ -259,32 +269,31 @@ fun CommentsContent(
                         titleColor = RedAlliance,
                         modifier = Modifier.weight(1f)
                     ) {
-                        CommentField(
-                            ("Team " + currentMatch?.redAlliance?.get(0)?.toString()),
-                            red1Comment) { onCommentChanged("Red", 1, it) }
-                        CommentField(
-                            ("Team " + currentMatch?.redAlliance?.get(1)?.toString()),
-                            red2Comment) { onCommentChanged("Red", 2, it) }
-                        CommentField(
-                            ("Team " + currentMatch?.redAlliance?.get(2)?.toString()),
-                            red3Comment) { onCommentChanged("Red", 3, it) }
+
+                        redComments.forEachIndexed { alliancePosition, comment ->
+                            CommentField(
+                                ("Team ${
+                                    currentMatch?.redAlliance?.get(alliancePosition)?.toString()
+                                } (${redAllianceNames.getOrNull(alliancePosition)})"),
+                                comment
+                            ) { onCommentChanged("Red", alliancePosition+1, it) }
+                        }
                     }
 
-                    // Blue Alliance Column
                     AllianceColumn(
                         title = "Blue Alliance",
                         titleColor = BlueAlliance,
                         modifier = Modifier.weight(1f)
                     ) {
-                        CommentField(
-                            ("Team " + currentMatch?.blueAlliance?.get(0)?.toString()),
-                            blue1Comment) { onCommentChanged("Blue", 1, it) }
-                        CommentField(
-                            ("Team " + currentMatch?.blueAlliance?.get(1)?.toString()),
-                            blue2Comment) { onCommentChanged("Blue", 2, it) }
-                        CommentField(
-                            ("Team " + currentMatch?.blueAlliance?.get(2)?.toString()),
-                            blue3Comment) { onCommentChanged("Blue", 3, it) }
+
+                        blueComments.forEachIndexed { alliancePosition, comment ->
+                            CommentField(
+                                ("Team ${
+                                    currentMatch?.blueAlliance?.get(alliancePosition)?.toString()
+                                } (${blueAllianceNames.getOrNull(alliancePosition)})"),
+                                comment
+                            ) { onCommentChanged("Blue", alliancePosition+1, it) }
+                        }
                     }
                 }
             }

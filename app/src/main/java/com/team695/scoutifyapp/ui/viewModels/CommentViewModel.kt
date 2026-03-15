@@ -7,9 +7,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import com.team695.scoutifyapp.data.api.model.CommentBody
 import com.team695.scoutifyapp.data.api.model.Match
+import com.team695.scoutifyapp.data.api.model.TeamNameResponse
 import com.team695.scoutifyapp.data.repository.CommentRepository
 import com.team695.scoutifyapp.data.repository.MatchRepository
+import com.team695.scoutifyapp.data.repository.TeamNameRepository
 import com.team695.scoutifyapp.data.types.SaveStatus
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
@@ -19,8 +22,11 @@ import kotlinx.coroutines.launch
 
 class CommentsViewModel (
     private val commentRepository: CommentRepository,
-    private val matchRepository: MatchRepository
+    private val matchRepository: MatchRepository,
+    private val teamNameRepository: TeamNameRepository
 ) : ViewModel() {
+
+
     // get match stuff
     val matches: StateFlow<List<Match>> =
         matchRepository.matches
@@ -56,6 +62,15 @@ class CommentsViewModel (
     private val _blue3Comment = mutableStateOf("")
     val blue3Comment: State<String> = _blue3Comment
 
+    // Red alliance
+    private var _redAllianceNames = mutableStateOf<List<String>>(emptyList())
+    val redAllianceNames: State<List<String>> get() = _redAllianceNames
+
+    // Blue alliance
+    private var _blueAllianceNames = mutableStateOf<List<String>>(emptyList())
+    val blueAllianceNames: State<List<String>> get() = _blueAllianceNames
+
+
     // Auto-save state
     private val _autoSaved = mutableStateOf(false)
     val autoSaved: State<Boolean> = _autoSaved
@@ -66,6 +81,9 @@ class CommentsViewModel (
     // Auto-save timeout job
     private var autoSaveJob: Job? = null
 
+
+
+
     // Function to handle match selection
     fun onMatchSelected(match: String) {
         autoSaveJob?.cancel()
@@ -73,12 +91,14 @@ class CommentsViewModel (
         match.toIntOrNull()?.let { // safe check cuz it was crashing when going to home
             fetchComments(it)
         }
+        updateTeamNames()
     }
 
     // Function to handle comment change
     fun onCommentChanged(alliance: String, position: Int, comment: String) {
         // check if the thang is being changed ts
         if (_isSubmitted.value) {
+            Log.d("COMMENTS", "Submit")
             _isSubmitted.value = false
 
             val matchNum = _selectedMatch.value.toIntOrNull()
@@ -182,7 +202,6 @@ class CommentsViewModel (
         }
     }
 
-
     // Reset auto-save timer when there's a new activity (comment changed, etc.)
     private fun resetAutoSave() {
         _autoSaved.value = false
@@ -216,6 +235,40 @@ class CommentsViewModel (
             _blue3Comment.value = comments.firstOrNull { it.alliance == "B" && it.alliance_position == 3 }?.comment ?: ""
 
             _isSubmitted.value = comments.any { it.submitted == 1 }
+        }
+    }
+
+    private fun updateTeamNames() {
+        val matchNum = _selectedMatch.value.toIntOrNull() ?: return
+
+        viewModelScope.launch(Dispatchers.IO) {
+            val match = matches.value.getOrNull(matchNum - 1)
+            match?.let {
+                // top 10 greatest 10x engineers of all time:
+                val redList = List(3) { index -> it.redAlliance.getOrNull(index)?.toString() ?: "Unknown" }
+                val blueList = List(3) { index -> it.blueAlliance.getOrNull(index)?.toString() ?: "Unknown" }
+
+                // Fetch the team objects from the repository
+                val matchTeams = teamNameRepository.getMatchTeams(
+                    redList,
+                    blueList
+                )
+
+                // Update State<List<String>>
+                _redAllianceNames.value = listOf<String>(matchTeams[0] ?: "Uknown", matchTeams[1] ?: "Uknown", matchTeams[2] ?: "Uknown")
+                _blueAllianceNames.value = listOf<String>(matchTeams[3] ?: "Uknown", matchTeams[4] ?: "Uknown", matchTeams[5] ?: "Uknown")
+            }
+        }
+    }
+
+    // load matches on first time visiting
+    init {
+        viewModelScope.launch {
+            matches.collect { list ->
+                if (list.isNotEmpty()) {
+                    updateTeamNames()
+                }
+            }
         }
     }
 
