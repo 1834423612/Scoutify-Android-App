@@ -1,4 +1,4 @@
-package com.team695.scoutifyapp.ui.components
+﻿package com.team695.scoutifyapp.ui.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -27,21 +27,21 @@ fun TopBarMenu(navController: NavHostController) {
             DropdownMenuItem(
                 text = { Text("Home") },
                 onClick = {
-                    navController.navigate("Home")
+                    navController.navigate("home")
                     expanded = false
                 }
             )
             DropdownMenuItem(
                 text = { Text("Pit Scouting") },
                 onClick = {
-                    navController.navigate("PitSchedule")
+                    navController.navigate("pitScouting")
                     expanded = false
                 }
             )
             DropdownMenuItem(
-                text = { Text("Match Scouting") },
+                text = { Text("Upload") },
                 onClick = {
-                    navController.navigate("MatchSchedule")
+                    navController.navigate("upload")
                     expanded = false
                 }
             )

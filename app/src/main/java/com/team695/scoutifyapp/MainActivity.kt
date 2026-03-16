@@ -1,4 +1,4 @@
-package com.team695.scoutifyapp
+﻿package com.team695.scoutifyapp
 
 import android.Manifest
 import android.app.DownloadManager
@@ -83,13 +83,13 @@ class MainActivity : ComponentActivity() {
                 "pitscout"
             )
 
-            val existingTables = try {
+            val existingTables: Set<String>? = try {
                 SQLiteDatabase.openDatabase(dbFile.path, null, SQLiteDatabase.OPEN_READONLY).use { db ->
                     db.rawQuery(
                         "SELECT name FROM sqlite_master WHERE type='table'",
                         null
                     ).use { cursor ->
-                        buildSet {
+                        buildSet<String> {
                             while (cursor.moveToNext()) {
                                 add(cursor.getString(0))
                             }
@@ -97,13 +97,21 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             } catch (e: Exception) {
-                emptySet()
+                Log.w(
+                    "MAIN",
+                    "Unable to inspect existing database schema at ${dbFile.path}. Proceeding without deleting user data.",
+                    e
+                )
+                null
             }
 
-            if (!existingTables.containsAll(requiredTables)) {
-                applicationContext.deleteDatabase(dbName)
-            }
-        }
+            if (existingTables != null && !existingTables.containsAll(requiredTables)) {
+                val missingTables = requiredTables - existingTables
+                Log.w(
+                    "MAIN",
+                    "Database is missing tables: ${missingTables.joinToString()}. Keeping the existing DB and relying on SQLDelight migrations."
+                )
+            }}
 
         val driver = AndroidSqliteDriver(
             schema = AppDatabase.Schema,
@@ -272,3 +280,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
+
+

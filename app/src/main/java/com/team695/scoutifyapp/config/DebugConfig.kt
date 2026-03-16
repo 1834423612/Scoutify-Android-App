@@ -1,20 +1,21 @@
-package com.team695.scoutifyapp.config
+﻿package com.team695.scoutifyapp.config
+
+import com.team695.scoutifyapp.BuildConfig
 
 /**
  * Debug configuration for development
- * 
- * Set BYPASS_AUTH = true to disable authentication and access all screens
- * without logging in. This is useful for UI development and testing.
- * 
- * IMPORTANT: Must be set to false before releasing to production!
+ *
+ * Authentication bypass can only be enabled in debug builds.
  */
 object DebugConfig {
     /**
-     * When true, bypasses all authentication checks
-     * WARNING: Set to false before production release!
+     * Local-only override for debug builds.
      */
-    const val BYPASS_AUTH = false  // Change to false for production
-    
+    private const val LOCAL_BYPASS_AUTH = false
+
+    val BYPASS_AUTH: Boolean
+        get() = BuildConfig.DEBUG && LOCAL_BYPASS_AUTH
+
     /**
      * Mock user used when BYPASS_AUTH is enabled
      */

@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS teamNamesEntity (
+﻿CREATE TABLE IF NOT EXISTS teamNamesEntity (
     team_number TEXT NOT NULL PRIMARY KEY,
     team_name TEXT NOT NULL
 );
@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS pitscoutingTab (
     teamNumber TEXT NOT NULL,
     eventKey TEXT NOT NULL,
     formId TEXT NOT NULL,
-    formVersion TEXT NOT NULL DEFAULT '2025.4.15_PROD_ED6',
+    formVersion TEXT NOT NULL DEFAULT '2026.03_PROD_ED8',
     fieldValuesJson TEXT NOT NULL DEFAULT '{}',
     uploadDataJson TEXT,
     isDraft INTEGER NOT NULL DEFAULT 1,
@@ -31,3 +31,23 @@ CREATE TABLE IF NOT EXISTS pitscoutingTab (
     updatedAt TEXT NOT NULL,
     syncStatus TEXT NOT NULL DEFAULT 'DRAFT'
 );
+
+UPDATE pitscoutingTab
+SET formVersion = '2026.03_PROD_ED8'
+WHERE formVersion IS NULL
+   OR formVersion = ''
+   OR formVersion = '2025.4.15_PROD_ED6';
+
+CREATE TRIGGER IF NOT EXISTS pitscoutingTab_normalize_form_version_after_insert
+AFTER INSERT ON pitscoutingTab
+FOR EACH ROW
+WHEN NEW.formVersion IS NULL
+   OR NEW.formVersion = ''
+   OR NEW.formVersion = '2025.4.15_PROD_ED6'
+BEGIN
+    UPDATE pitscoutingTab
+    SET formVersion = '2026.03_PROD_ED8'
+    WHERE rowid = NEW.rowid;
+END;
+
+

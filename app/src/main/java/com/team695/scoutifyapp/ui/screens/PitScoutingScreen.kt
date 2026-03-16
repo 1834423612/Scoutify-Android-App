@@ -1,4 +1,4 @@
-package com.team695.scoutifyapp.ui.screens
+﻿package com.team695.scoutifyapp.ui.screens
 
 import android.Manifest
 import android.content.Context
@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -199,7 +200,7 @@ fun PitScoutingScreen(
                 contentPadding = PaddingValues(
                     start = 12.dp,
                     end = 12.dp,
-                    top = innerPadding.calculateTopPadding() + 10.dp,
+                    top = innerPadding.calculateTopPadding() + 8.dp,
                     bottom = innerPadding.calculateBottomPadding() + 12.dp
                 ),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -220,7 +221,7 @@ fun PitScoutingScreen(
 
                 items(sectionEntries, key = { it.key }) { entry ->
                     SectionCard(title = entry.key) {
-                        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
                             entry.value.forEach { field ->
                                 DynamicFormField(
                                     field = field,
@@ -280,28 +281,28 @@ private fun PitTopChrome(
     onDismissBanner: () -> Unit,
     onResetVersion: () -> Unit
 ) {
-    Surface(color = Color(0xFFF7FAFC), shadowElevation = 8.dp) {
+    Surface(color = Color(0xFFF7FAFC), shadowElevation = 6.dp) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Brush.verticalGradient(listOf(Color(0xFF10273F), Color(0xFF173C53), Color(0xFFF7FAFC))))
-                .padding(horizontal = 12.dp, vertical = 10.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+                .padding(horizontal = 10.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Card(
-                shape = RoundedCornerShape(22.dp),
+                shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f))
             ) {
-                Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Box(
-                            modifier = Modifier.size(34.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.14f)),
+                            modifier = Modifier.size(30.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.14f)),
                             contentAlignment = Alignment.Center
                         ) {
-                            Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = Color.White)
+                            Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
                         }
                         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                            Text("Pit Scouting", color = Color.White, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.titleMedium)
+                            Text("Pit Scouting", color = Color.White, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.titleSmall)
                             Text("$eventDisplayName | $formVersion", color = Color.White.copy(alpha = 0.72f), style = MaterialTheme.typography.bodySmall)
                         }
                         Text(
@@ -313,13 +314,13 @@ private fun PitTopChrome(
                     }
 
                     if (activeTab != null) {
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             StatChip("Team", activeTab.teamNumber.ifBlank { "Open" }, Brush.linearGradient(listOf(Color(0xFF1C5E96), Color(0xFF2791AD))), Modifier.weight(1f))
                             StatChip("Progress", "${(activeTab.completionRatio * 100).roundToInt()}%", Brush.linearGradient(listOf(Color(0xFF126F64), Color(0xFF2DB39B))), Modifier.weight(1f))
                             StatChip("Sync", syncLabel(activeTab.syncStatus), Brush.linearGradient(listOf(Color(0xFF80611F), Color(0xFFC09B4B))), Modifier.weight(1f))
                         }
                         LinearProgressIndicator(
-                            progress = activeTab.completionRatio,
+                            progress = { activeTab.completionRatio },
                             modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(99.dp)),
                             color = Color(0xFF8BE1C3),
                             trackColor = Color.White.copy(alpha = 0.14f)
@@ -361,13 +362,13 @@ private fun PitTopChrome(
                 }
             }
 
-            Card(shape = RoundedCornerShape(20.dp), colors = CardDefaults.cardColors(containerColor = Color(0xFFF7FAFC))) {
-                Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Card(shape = RoundedCornerShape(18.dp), colors = CardDefaults.cardColors(containerColor = Color(0xFFF7FAFC))) {
+                Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        Text("Open tabs", color = Color(0xFF17344F), fontWeight = FontWeight.SemiBold)
+                        Text("Open tabs", color = Color(0xFF17344F), fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyMedium)
                         Text("${tabs.size} active", color = Color(0xFF6E879A), style = MaterialTheme.typography.bodySmall)
                     }
-                    Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                         tabs.forEach { tab ->
                             TabChip(
                                 tab = tab,
@@ -381,12 +382,15 @@ private fun PitTopChrome(
                         OutlinedTextField(
                             value = newTabTeamNumber,
                             onValueChange = onNewTabTeamNumberChange,
-                            modifier = Modifier.weight(1f),
+                            modifier = Modifier
+                                .weight(1f)
+                                .heightIn(min = 48.dp),
                             singleLine = true,
-                            shape = RoundedCornerShape(16.dp),
-                            label = { Text("New team") }
+                            shape = RoundedCornerShape(14.dp),
+                            placeholder = { Text("Team #", style = MaterialTheme.typography.bodySmall) },
+                            textStyle = MaterialTheme.typography.bodyMedium
                         )
-                        FilledTonalButton(onClick = onCreateTab, shape = RoundedCornerShape(14.dp), contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp)) {
+                        FilledTonalButton(onClick = onCreateTab, shape = RoundedCornerShape(14.dp), contentPadding = PaddingValues(horizontal = 12.dp, vertical = 9.dp)) {
                             Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(4.dp))
                             Text("Tab")
@@ -405,19 +409,19 @@ private fun TabChip(
     onSelect: () -> Unit,
     onClose: () -> Unit
 ) {
-    Surface(onClick = onSelect, color = if (selected) Color(0xFF163650) else Color.White, shape = RoundedCornerShape(16.dp)) {
+    Surface(onClick = onSelect, color = if (selected) Color(0xFF163650) else Color.White, shape = RoundedCornerShape(14.dp)) {
         Row(
-            modifier = Modifier.padding(start = 10.dp, top = 8.dp, bottom = 8.dp, end = 4.dp),
+            modifier = Modifier.padding(start = 8.dp, top = 6.dp, bottom = 6.dp, end = 2.dp),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(syncColor(tab.syncStatus)))
+            Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(syncColor(tab.syncStatus)))
             Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(tab.tabName, color = if (selected) Color.White else Color(0xFF17344F), fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyMedium)
+                Text(tab.tabName, color = if (selected) Color.White else Color(0xFF17344F), fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodySmall)
                 Text("${(tab.completionRatio * 100).roundToInt()}%", color = if (selected) Color.White.copy(alpha = 0.64f) else Color(0xFF6E879A), style = MaterialTheme.typography.labelSmall)
             }
-            IconButton(onClick = onClose, modifier = Modifier.size(24.dp)) {
-                Icon(Icons.Default.Close, contentDescription = null, tint = if (selected) Color.White else Color(0xFF7A90A2), modifier = Modifier.size(15.dp))
+            IconButton(onClick = onClose, modifier = Modifier.size(22.dp)) {
+                Icon(Icons.Default.Close, contentDescription = null, tint = if (selected) Color.White else Color(0xFF7A90A2), modifier = Modifier.size(14.dp))
             }
         }
     }
@@ -624,6 +628,12 @@ private fun formatBytes(size: Long): String {
         else -> "$size B"
     }
 }
+
+
+
+
+
+
 
 
 
