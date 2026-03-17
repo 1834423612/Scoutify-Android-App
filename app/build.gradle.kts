@@ -43,7 +43,7 @@ configure<ApplicationExtension> {
         buildConfigField("String", "CASDOOR_APP_NAME", "\"${requireSecret("casdoor_app_name")}\"")
         buildConfigField("String", "API_AC_KEY", "\"${requireSecret("api_ac_key")}\"")
         buildConfigField("String", "API_AC_SECRET", "\"${requireSecret("api_ac_secret")}\"")
-        buildConfigField("String", "VERSION_NAME", "\"${requireSecret("version_name")}\"")
+        buildConfigField("String", "VERSION_NAME", "$versionName")
 
         proguardFiles()
     }
