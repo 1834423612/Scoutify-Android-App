@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -133,7 +134,7 @@ fun MatchSchedule(
                     .height(if (!teamState.isNullOrEmpty()) 150.dp else 100.dp) // Changed back to a fixed height
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.bluffcountry),
+                    painter = painterResource(id = R.drawable.wolstein),
                     contentDescription = "Regional background",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -159,7 +160,7 @@ fun MatchSchedule(
 
                         // 1. Header Title
                         Text(
-                            text = "Bluff Country Regional",
+                            text = "Buckeye Regional",
                             color = TextPrimary,
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
@@ -168,11 +169,12 @@ fun MatchSchedule(
 
                         Spacer(modifier = Modifier.width(8.dp))
 
-                        // Info Icon
+                        /* Info Icon
                         Badge(
                             containerColor = BadgeBackground.copy(0.5f),
                             modifier = Modifier
                                 .padding(1.dp)
+                                .aspectRatio(1f)
                                 .weight(1f)
                         ) {
                             Text(
@@ -181,6 +183,8 @@ fun MatchSchedule(
                                 fontSize = 14.sp,
                             )
                         }
+                        */
+
 
                         Spacer(modifier = Modifier.width(384.dp))
 
