@@ -1,5 +1,6 @@
 package com.team695.scoutifyapp.ui.screens.data
 
+import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
@@ -51,6 +52,8 @@ fun PostgameDetails(
     formState: GameFormState,
     returnToHome: () -> Unit
 ) {
+
+    Log.d("DETAILS", formState.gameDetails.toString())
 
 
     Box(
