@@ -197,9 +197,12 @@ class GameDetailRepository(
 
                 if (result.data != null) {
                     if (result.data != GameConstantsStore.constants) {
+
+                        // clear all data
                         db.transaction {
                             db.taskQueries.clearAllTasks()
                             db.matchQueries.clearAllMatches()
+                            db.commentsQueries.clearAllComments()
                         }
 
                         if (BuildConfig.VERSION_NAME != result.data.app_version) {
