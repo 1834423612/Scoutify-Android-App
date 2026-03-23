@@ -25,7 +25,7 @@ class TeamNameRepository (
                 )
             }
 
-            Result.success(Unit)
+            return@withContext Result.success(Unit)
         }
     }
 
