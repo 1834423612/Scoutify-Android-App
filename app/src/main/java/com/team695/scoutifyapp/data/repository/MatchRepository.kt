@@ -75,12 +75,6 @@ class MatchRepository(
 
     override suspend fun fetch(): Result<List<Match>> {
         return withContext(Dispatchers.IO) {
-            val oldMatches = db.matchQueries.selectAllMatches()
-                .executeAsList()
-                .map { entity ->
-                    entity.createMatchFromDb()
-                }
-
             try {
                 val apiMatches: ApiResponse<List<Match?>> = service.listMatches(
                     acToken = ScoutifyClient.tokenManager.getToken() ?: ""
@@ -98,7 +92,6 @@ class MatchRepository(
                 return@withContext Result.failure(Exception())
             } catch(e: Exception) {
                 Log.d("Match", "Error when trying to fetch matches: $e")
-                updateDbFromMatchList(oldMatches)
                 return@withContext Result.failure(e)
             }
         }

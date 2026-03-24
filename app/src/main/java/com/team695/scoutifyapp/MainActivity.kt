@@ -17,6 +17,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import androidx.sqlite.db.SupportSQLiteDatabase
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.team695.scoutifyapp.data.api.NetworkMonitor
 import com.team695.scoutifyapp.data.api.client.CasdoorClient
@@ -74,49 +75,29 @@ class MainActivity : ComponentActivity() {
         ScoutifyClient.initialize(applicationContext)
 
         val dbName = "scoutify_test.db" // Using a test name to avoid messing up real data
-        val dbFile = applicationContext.getDatabasePath(dbName)
-        if (dbFile.exists()) {
-            val requiredTables = setOf(
-                "gameConstantsEntity",
-                "teamNamesEntity",
-                "pitscoutingTab",
-                "pitscout"
-            )
-
-            val existingTables: Set<String>? = try {
-                SQLiteDatabase.openDatabase(dbFile.path, null, SQLiteDatabase.OPEN_READONLY).use { db ->
-                    db.rawQuery(
-                        "SELECT name FROM sqlite_master WHERE type='table'",
-                        null
-                    ).use { cursor ->
-                        buildSet<String> {
-                            while (cursor.moveToNext()) {
-                                add(cursor.getString(0))
-                            }
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                Log.w(
-                    "MAIN",
-                    "Unable to inspect existing database schema at ${dbFile.path}. Proceeding without deleting user data.",
-                    e
-                )
-                null
-            }
-
-            if (existingTables != null && !existingTables.containsAll(requiredTables)) {
-                val missingTables = requiredTables - existingTables
-                Log.w(
-                    "MAIN",
-                    "Database is missing tables: ${missingTables.joinToString()}. Keeping the existing DB and relying on SQLDelight migrations."
-                )
-            }}
 
         val driver = AndroidSqliteDriver(
             schema = AppDatabase.Schema,
             context = applicationContext,
-            name = dbName
+            name = dbName,
+            callback = object : AndroidSqliteDriver.Callback(AppDatabase.Schema) {
+                /**
+                 * Allows concurrent read and write; prevents SQLite DB lock
+                 */
+                override fun onConfigure(db: SupportSQLiteDatabase) {
+                    super.onConfigure(db)
+
+                    val busyTimeout = 5000;
+
+                    db.query("PRAGMA journal_mode=WAL;").use {
+                        it.moveToFirst()
+                    }
+
+                    db.query("PRAGMA busy_timeout=$busyTimeout;").use {
+                        it.moveToFirst()
+                    }
+                }
+            }
         )
 
         val db = AppDatabase(
