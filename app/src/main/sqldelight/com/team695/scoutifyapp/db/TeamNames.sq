@@ -11,6 +11,7 @@ SELECT * FROM teamNamesEntity
 WHERE team_number = ?;
 
 selectMatchTeams:
+
 SELECT * FROM teamNamesEntity
 WHERE team_number IN (?, ?, ?, ?, ?, ?);
 
