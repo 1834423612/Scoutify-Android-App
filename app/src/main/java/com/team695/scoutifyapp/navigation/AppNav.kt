@@ -180,7 +180,11 @@ fun AppNav(
                 factory = ViewModelFactory { LoginViewModel(userRepository) }
             )
 
-            LoginScreen(navController = navController, loginViewModel = loginViewModel)
+            LoginScreen(
+                navController = navController,
+                loginViewModel = loginViewModel,
+                networkMonitor = networkMonitor,
+            )
         }
     }
 }

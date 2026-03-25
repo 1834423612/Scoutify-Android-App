@@ -203,6 +203,15 @@ class MainActivity : ComponentActivity() {
         UpdateManager.context = applicationContext
 
         ProcessLifecycleOwner.get().lifecycleScope.launch {
+
+            if (NetworkMonitorStatus.currentNetworkJob != null) {
+                try {
+                    NetworkMonitorStatus.currentNetworkJob!!.cancel()
+                } catch (e: Exception) {
+                    Log.d("NetworkMonitor", "Job already cancelled: $e")
+                }
+            }
+
             NetworkMonitorStatus.currentNetworkJob = launch {
                 networkMonitor.networkSync()
             }
