@@ -37,7 +37,7 @@ fun MatchDetailScreen(
                 .padding(innerPadding)
                 .fillMaxSize()
         ) {
-            TabRow(selectedTabIndex = selectedTab) {
+            SecondaryTabRow(selectedTabIndex = selectedTab) {
                 tabs.forEachIndexed { index, title ->
                     Tab(
                         selected = selectedTab == index,

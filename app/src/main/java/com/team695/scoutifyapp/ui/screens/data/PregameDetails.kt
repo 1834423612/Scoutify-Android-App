@@ -28,69 +28,6 @@ import com.team695.scoutifyapp.R
 import com.team695.scoutifyapp.data.types.GameFormState
 import com.team695.scoutifyapp.ui.viewModels.DataViewModel
 
-//@Composable
-//fun PregameDetails(
-//    dataViewModel: DataViewModel,
-//    formState: GameFormState,
-//    viewModel: PregameViewModel
-//) {
-//    Box(
-//        modifier = Modifier
-//            .fillMaxSize()
-//            .padding(16.dp)
-//    ) {
-//        Column(
-//            modifier = Modifier.fillMaxSize()
-//        ) {
-//
-//            Text(
-//                text = "Pregame",
-//                color = Color.White,
-//                fontSize = 24.sp
-//            )
-//
-//            Spacer(modifier = Modifier.height(16.dp))
-//
-//            Row(
-//                modifier = Modifier.fillMaxSize(),
-//                horizontalArrangement = Arrangement.spacedBy(24.dp)
-//            ) {
-//
-//                // Left Pane (placeholder)
-//                Column(
-//                    modifier = Modifier
-//                        .weight(1f)
-//                        .fillMaxHeight()
-//                ) {
-//                    Text("Scouting Controls", color = Color.White)
-//                }
-//
-//                // Right Pane - Field
-//                Box(
-//                    modifier = Modifier
-//                        .weight(2f)
-//                        .fillMaxHeight()
-//                        .clip(RectangleShape)
-//                        .background(Color(0xFF2A2A2A)),
-//                    contentAlignment = Alignment.Center
-//                ) {
-//                    val fieldImage =
-//                        ImageBitmap.imageResource(id = R.drawable.map)
-//
-//                    val robotImage =
-//                        ImageBitmap.imageResource(id = R.drawable.robot)
-//
-//                    FieldCanvas(
-//                        viewModel = viewModel,
-//                        fieldImage = fieldImage,
-//                        robotImage = robotImage
-//                    )
-//                }
-//            }
-//        }
-//    }
-//}
-
 @Composable
 fun FieldCanvas(
     dataViewModel: DataViewModel,
@@ -98,6 +35,9 @@ fun FieldCanvas(
     fieldImage: ImageBitmap,
     robotImage: ImageBitmap
 ) {
+
+    //necessary to update formState within canvas methods
+    val currentFormState by rememberUpdatedState(newValue = formState)
 
     Canvas(
         modifier = Modifier
@@ -111,7 +51,7 @@ fun FieldCanvas(
                         val newY = change.position.y
                         val percentTraveled = newY / size.height
                         dataViewModel.formEvent(
-                            gameDetails = formState.gameDetails.copy(
+                            gameDetails = currentFormState.gameDetails.copy(
                                 startingLocation = percentTraveled
                                     .toDouble()
                                     .coerceIn(0.0, 1.0)
@@ -146,65 +86,6 @@ fun FieldCanvas(
 }
 
 
-
-//package com.team695.scoutifyapp.ui.screens.data
-//
-//import androidx.compose.animation.animateColorAsState
-//import androidx.compose.animation.core.tween
-//import androidx.compose.foundation.*
-//import androidx.compose.foundation.gestures.detectDragGestures
-//import androidx.compose.foundation.gestures.detectTapGestures
-//import androidx.compose.foundation.gestures.snapping.SnapPosition.Center.position
-//import androidx.compose.foundation.layout.*
-//import androidx.compose.foundation.layout.Arrangement
-//import androidx.compose.foundation.selection.toggleable
-//import androidx.compose.foundation.shape.RoundedCornerShape
-//import androidx.compose.material3.*
-//import androidx.compose.runtime.*
-//import androidx.compose.ui.Alignment
-//import androidx.compose.ui.Modifier
-//import androidx.compose.ui.draw.clip
-//import androidx.compose.ui.geometry.CornerRadius
-//import androidx.compose.ui.geometry.Offset
-//import androidx.compose.ui.graphics.Color
-//import androidx.compose.ui.graphics.ImageBitmap
-//import androidx.compose.ui.graphics.Path
-//import androidx.compose.ui.graphics.RectangleShape
-//import androidx.compose.ui.graphics.lerp
-//import androidx.compose.ui.input.pointer.pointerInput
-//import androidx.compose.ui.res.imageResource
-//import androidx.compose.ui.semantics.Role
-//import androidx.compose.ui.text.font.FontWeight
-//import androidx.compose.ui.unit.IntSize
-//import androidx.compose.ui.unit.dp
-//import androidx.compose.ui.unit.sp
-//import com.team695.scoutifyapp.R
-//import com.team695.scoutifyapp.data.types.ENDGAME_END_TIME
-//import com.team695.scoutifyapp.data.types.GameFormState
-//import com.team695.scoutifyapp.data.types.SHIFT1_END_TIME
-//import com.team695.scoutifyapp.data.types.SHIFT4_END_TIME
-//import com.team695.scoutifyapp.data.types.TELEOP_TIME_THRESHOLD
-//import com.team695.scoutifyapp.data.types.TRANSITION_END_TIME
-//import com.team695.scoutifyapp.data.types.TeleopSection
-//import com.team695.scoutifyapp.ui.components.NullableCheckbox
-//import com.team695.scoutifyapp.ui.components.buttonHighlight
-//import com.team695.scoutifyapp.ui.theme.AccentGreen
-//import com.team695.scoutifyapp.ui.theme.BlueAlliance
-//import com.team695.scoutifyapp.ui.theme.Border
-//import com.team695.scoutifyapp.ui.theme.DarkGunmetal
-//import com.team695.scoutifyapp.ui.theme.DarkishGunmetal
-//import com.team695.scoutifyapp.ui.theme.Gunmetal
-//import com.team695.scoutifyapp.ui.theme.LightGunmetal
-//import com.team695.scoutifyapp.ui.theme.RedAlliance
-//import com.team695.scoutifyapp.ui.theme.TextPrimary
-//import com.team695.scoutifyapp.ui.theme.mediumCornerRadius
-//import com.team695.scoutifyapp.ui.theme.smallCornerRadius
-//import com.team695.scoutifyapp.ui.viewModels.DataViewModel
-//import com.team695.scoutifyapp.ui.viewModels.PregameViewModel
-//import com.team695.scoutifyapp.ui.viewModels.Stroke
-//import kotlinx.coroutines.delay
-//import kotlin.math.abs
-//
 @Composable
 fun PregameDetails(
     formState: GameFormState,

@@ -228,10 +228,14 @@ private fun EndgamePanel(
                 val endgameClimbSuccess: Boolean? = if(!endgameAttemptsClimb) false
                     else formState.gameDetails.endgameClimbSuccess
 
+                val endgameClimbCode: String? = if(!endgameAttemptsClimb) null
+                    else formState.gameDetails.endgameClimbCode
+
                 dataViewModel.formEvent(
                     gameDetails = formState.gameDetails.copy(
                         endgameAttemptsClimb = endgameAttemptsClimb,
-                        endgameClimbSuccess = endgameClimbSuccess
+                        endgameClimbSuccess = endgameClimbSuccess,
+                        endgameClimbCode = endgameClimbCode
                     )
                 )
             }

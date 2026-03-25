@@ -25,6 +25,9 @@ selectCommentsById:
 SELECT * FROM commentsEntity
 WHERE id = ?;
 
+clearAllComments:
+DELETE FROM commentsEntity;
+
 insertComment:
 INSERT OR REPLACE INTO commentsEntity(
         match_number,

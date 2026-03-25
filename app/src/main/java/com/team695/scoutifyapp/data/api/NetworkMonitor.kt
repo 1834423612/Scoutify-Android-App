@@ -15,6 +15,7 @@ import com.team695.scoutifyapp.data.repository.TaskRepository
 import com.team695.scoutifyapp.data.repository.TeamNameRepository
 import com.team695.scoutifyapp.data.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -48,6 +49,7 @@ class NetworkMonitor(
         commentRepository,
         teamNameRepository
     )
+
     private val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE)
             as ConnectivityManager
     private val _isConnected = MutableStateFlow(false)
@@ -180,4 +182,13 @@ class NetworkMonitor(
             Log.d("Network_Monitor", "Pushed all data successfully!")
         }
     }
+}
+
+/*
+ * Current status of NetworkMonitor Singleton
+ * Holds current network job that can be restarted when user logs out
+ */
+
+object NetworkMonitorStatus {
+    var currentNetworkJob: Job? = null
 }

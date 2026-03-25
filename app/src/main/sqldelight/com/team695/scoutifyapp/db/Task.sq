@@ -52,6 +52,13 @@ selectScoutedTeams:
 SELECT DISTINCT teamNum
 FROM taskEntity;
 
+selectAllTasksWithTime:
+SELECT
+    taskEntity.*,
+    matchEntity.time
+FROM taskEntity
+INNER JOIN matchEntity ON taskEntity.matchNum = matchEntity.matchNumber;
+
 --9. Update the progress of a task
 updateTaskProgress:
 UPDATE taskEntity

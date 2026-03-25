@@ -22,10 +22,11 @@
         android:enableOnBackInvokedCallback="true"
         android:theme="@style/Theme.ScoutifyApp">
 
+        <!-- windowSoftInputMode locks screen in place while keyboard is active -->
         <activity
             android:name=".MainActivity"
+            android:windowSoftInputMode="adjustNothing"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.ScoutifyApp">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

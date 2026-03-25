@@ -96,8 +96,12 @@ class UserRepository(
         withContext(Dispatchers.IO) {
             db.userQueries.deleteUser()
 
-            db.matchQueries.clearAllMatches()
-            db.taskQueries.clearAllTasks()
+            // clear all data
+            db.transaction {
+                db.matchQueries.clearAllMatches()
+                db.taskQueries.clearAllTasks()
+                db.commentsQueries.clearAllComments()
+            }
 
             ScoutifyClient.tokenManager.saveToken("")
 

@@ -1,5 +1,6 @@
 package com.team695.scoutifyapp.data.repository
 
+import android.util.Log
 import com.team695.scoutifyapp.data.api.service.TeamNameService
 import com.team695.scoutifyapp.db.AppDatabase
 import com.team695.scoutifyapp.db.TeamNamesEntity
@@ -14,18 +15,24 @@ class TeamNameRepository (
 
     override suspend fun fetch(): Result<Any> {
         return withContext(Dispatchers.IO) {
-            val teams = service.fetchTeamNames()
+            try {
+                val teams = service.fetchTeamNames()
 
-            queries.deleteAll()
+                queries.deleteAll()
 
-            teams.forEach {
-                queries.insertTeam(
-                    team_number = it.team_number,
-                    team_name = it.team_name
-                )
+                teams.forEach {
+                    queries.insertTeam(
+                        team_number = it.team_number,
+                        team_name = it.team_name
+                    )
+                }
+
+                Result.success(Unit)
             }
-
-            Result.success(Unit)
+            catch (e: Exception) {
+                Log.d("TeamNames", "Error when trying to fetch team names: $e")
+                Result.failure(e)
+            }
         }
     }
 
