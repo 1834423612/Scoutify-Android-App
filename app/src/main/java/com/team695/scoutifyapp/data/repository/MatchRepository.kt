@@ -1,6 +1,8 @@
 package com.team695.scoutifyapp.data.repository
 
+import android.annotation.SuppressLint
 import android.util.Log
+import androidx.compose.ui.util.fastFilterNotNull
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.team695.scoutifyapp.data.api.NetworkMonitor
@@ -81,8 +83,7 @@ class MatchRepository(
                 )
 
                 if (apiMatches.data != null) {
-                    val filteredMatches = apiMatches.data
-                        .filter { it != null } as List<Match>
+                    val filteredMatches = apiMatches.data.filterNotNull()
 
                     updateDbFromMatchList(filteredMatches)
 

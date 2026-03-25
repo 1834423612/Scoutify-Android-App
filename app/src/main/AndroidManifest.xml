@@ -27,7 +27,6 @@
             android:name=".MainActivity"
             android:windowSoftInputMode="adjustNothing"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.ScoutifyApp">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

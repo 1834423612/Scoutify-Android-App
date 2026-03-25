@@ -20,6 +20,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.sqlite.db.SupportSQLiteDatabase
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.team695.scoutifyapp.data.api.NetworkMonitor
+import com.team695.scoutifyapp.data.api.NetworkMonitorStatus
 import com.team695.scoutifyapp.data.api.client.CasdoorClient
 import com.team695.scoutifyapp.data.api.client.GithubClient
 import com.team695.scoutifyapp.data.api.client.ScoutifyClient
@@ -202,7 +203,7 @@ class MainActivity : ComponentActivity() {
         UpdateManager.context = applicationContext
 
         ProcessLifecycleOwner.get().lifecycleScope.launch {
-            this.launch {
+            NetworkMonitorStatus.currentNetworkJob = launch {
                 networkMonitor.networkSync()
             }
 
