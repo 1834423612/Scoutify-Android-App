@@ -21,5 +21,4 @@
 #-renamesourcefileattribute SourceFile
 
 # Keep all API models safe from R8 obfuscation so JSON parsing works
--keep class com.team695.scoutifyapp.data.api.model.** { *; }
--keep class com.team695.scoutifyapp.data.api.service.ApiResponse { *; }
+-keep class com.team695.scoutifyapp.data.api.** { *; }
