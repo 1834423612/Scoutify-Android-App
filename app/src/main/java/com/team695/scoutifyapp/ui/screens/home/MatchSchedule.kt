@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -134,13 +135,14 @@ fun MatchSchedule(
                     .height(if (!teamState.isNullOrEmpty()) 150.dp else 100.dp) // Changed back to a fixed height
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.wolstein),
+                    painter = painterResource(id = R.drawable.cincinatti),
                     contentDescription = "Regional background",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxSize() // Safe to use fillMaxSize again with fixed height
                         .alpha(0.3f)
                         .clip(RoundedCornerShape(smallCornerRadius))
+                        .offset(y = 32.dp)
                 )
 
                 Column(
@@ -160,7 +162,7 @@ fun MatchSchedule(
 
                         // 1. Header Title
                         Text(
-                            text = "Buckeye Regional",
+                            text = "Miami Valley Regional",
                             color = TextPrimary,
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,

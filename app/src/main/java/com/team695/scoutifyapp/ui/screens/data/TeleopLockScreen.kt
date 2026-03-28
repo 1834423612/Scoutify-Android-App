@@ -24,10 +24,10 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 
 @Composable
-fun TeleopLockScreen(message: String) {
+fun TeleopLockScreen(visible: Boolean, message: String) {
 
     //disables back press
-    BackHandler(enabled = true) {
+    BackHandler(enabled = visible) {
     }
 
 
@@ -50,43 +50,44 @@ fun TeleopLockScreen(message: String) {
         }
     }
 
-    Popup (
-        popupPositionProvider = screenEdgePositionProvider,
-        properties = PopupProperties(
-            focusable = false,
-            dismissOnBackPress = false,
-            dismissOnClickOutside = false
-        )
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxHeight()
-                .width(320.dp)
-                .background(Color.DarkGray.copy(alpha = 0.8f))
-                .pointerInput(Unit) {
-                    detectTapGestures { }
-                },
-            contentAlignment = Alignment.Center
+    if(visible) {
+        Popup(
+            popupPositionProvider = screenEdgePositionProvider,
+            properties = PopupProperties(
+                focusable = false,
+                dismissOnBackPress = false,
+                dismissOnClickOutside = false
+            )
         ) {
-            Column(
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(320.dp)
+                    .background(Color.DarkGray.copy(alpha = 0.8f))
+                    .pointerInput(Unit) {
+                        detectTapGestures { }
+                    },
+                contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = Icons.Default.Lock,
-                    contentDescription = "Navigation Locked",
-                    tint = Color.White
-                )
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Lock,
+                        contentDescription = "Navigation Locked",
+                        tint = Color.White
+                    )
 
-                Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
 
-                Text(
-                    text = message,
-                    color = Color.White,
-                    style = MaterialTheme.typography.titleLarge
-                )
+                    Text(
+                        text = message,
+                        color = Color.White,
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                }
             }
         }
     }
-
 }
