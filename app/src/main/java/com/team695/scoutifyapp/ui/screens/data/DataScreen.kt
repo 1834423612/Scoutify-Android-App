@@ -228,12 +228,10 @@ fun DataScreen(
                 }
             )
         }
-        if(formState.teleopRunning) {
-            TeleopLockScreen(message = "Teleop is running")
-        }
-        else if(formState.teleopCachedMilliseconds > 0) {
-            TeleopLockScreen(message = "Assign your cached time")
-        }
+        TeleopLockScreen(
+            visible = formState.teleopRunning || formState.teleopCachedMilliseconds > 0,
+            message = if(formState.teleopRunning) "Teleop is running" else "Assign your cached time"
+        )
     }
 }
 

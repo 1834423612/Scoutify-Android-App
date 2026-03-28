@@ -160,7 +160,7 @@ fun MatchSchedule(
 
                         // 1. Header Title
                         Text(
-                            text = "Buckeye Regional",
+                            text = "Miami Valley Regional",
                             color = TextPrimary,
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
