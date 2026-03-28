@@ -24,10 +24,10 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 
 @Composable
-fun TeleopLockScreen(isOverlayActive: Boolean) {
+fun TeleopLockScreen(message: String) {
 
     //disables back press
-    BackHandler(enabled = isOverlayActive) {
+    BackHandler(enabled = true) {
     }
 
 
@@ -50,44 +50,43 @@ fun TeleopLockScreen(isOverlayActive: Boolean) {
         }
     }
 
-    if (isOverlayActive) {
-        Popup (
-            popupPositionProvider = screenEdgePositionProvider,
-            properties = PopupProperties(
-                focusable = false,
-                dismissOnBackPress = false,
-                dismissOnClickOutside = false
-            )
+    Popup (
+        popupPositionProvider = screenEdgePositionProvider,
+        properties = PopupProperties(
+            focusable = false,
+            dismissOnBackPress = false,
+            dismissOnClickOutside = false
+        )
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(320.dp)
+                .background(Color.DarkGray.copy(alpha = 0.8f))
+                .pointerInput(Unit) {
+                    detectTapGestures { }
+                },
+            contentAlignment = Alignment.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .width(320.dp)
-                    .background(Color.DarkGray.copy(alpha = 0.8f))
-                    .pointerInput(Unit) {
-                        detectTapGestures { }
-                    },
-                contentAlignment = Alignment.Center
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Lock,
-                        contentDescription = "Navigation Locked",
-                        tint = Color.White
-                    )
+                Icon(
+                    imageVector = Icons.Default.Lock,
+                    contentDescription = "Navigation Locked",
+                    tint = Color.White
+                )
 
-                    Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(8.dp))
 
-                    Text(
-                        text = "Teleop is running",
-                        color = Color.White,
-                        style = MaterialTheme.typography.titleLarge
-                    )
-                }
+                Text(
+                    text = message,
+                    color = Color.White,
+                    style = MaterialTheme.typography.titleLarge
+                )
             }
         }
     }
+
 }

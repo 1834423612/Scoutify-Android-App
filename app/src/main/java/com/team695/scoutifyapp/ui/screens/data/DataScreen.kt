@@ -228,7 +228,12 @@ fun DataScreen(
                 }
             )
         }
-        TeleopLockScreen(isOverlayActive = formState.teleopRunning)
+        if(formState.teleopRunning) {
+            TeleopLockScreen(message = "Teleop is running")
+        }
+        else if(formState.teleopCachedMilliseconds > 0) {
+            TeleopLockScreen(message = "Assign your cached time")
+        }
     }
 }
 
