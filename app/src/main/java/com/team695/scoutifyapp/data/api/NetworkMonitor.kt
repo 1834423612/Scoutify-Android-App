@@ -107,11 +107,12 @@ class NetworkMonitor(
                 }
 
                 gameDetailRepository.fetch()
-                gameDetailRepository.isReady.first { it }
-
+                println("fetched, trying to push")
                 retryFetchUntilSuccess()
+
                 gameDetailRepository.push()
                 retryPushUntilSuccess()
+
                 delay(FETCH_INTERVAL)
             }
         }

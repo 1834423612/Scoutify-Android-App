@@ -36,6 +36,7 @@ class TaskRepository(
         .mapToList(Dispatchers.IO)
         .map { entities ->
             entities.map { entity ->
+                println("TASK: $entity")
                 entity.createTaskFromDb()
             }
         }

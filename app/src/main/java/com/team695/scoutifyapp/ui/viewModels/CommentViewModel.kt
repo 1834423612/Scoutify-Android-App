@@ -88,7 +88,7 @@ class CommentsViewModel (
     fun onMatchSelected(match: String) {
         autoSaveJob?.cancel()
         _selectedMatch.value = match
-        match.toIntOrNull()?.let { // safe check cuz it was crashing when going to home
+        match.toIntOrNull()?.let {
             fetchComments(it)
         }
         updateTeamNames()

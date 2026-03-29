@@ -72,9 +72,39 @@ fun TasksCard(
     val tabs = arrayOf("Incomplete", "Complete")
 
     val tasksState by homeViewModel.tasksState.collectAsStateWithLifecycle()
+    val sortedTasks = tasksState?.sorted()
 
-    val incompleteTasks = tasksState?.filter { it.progress != 100 }?.sorted()
-    val completeTasks = tasksState?.filter { it.progress >= 100 }?.sorted()
+    val completeTasks = sortedTasks?.filter { it.progress >= 100 }
+    val incompleteTasks = sortedTasks?.filter { it.progress < 100 }
+    val sortedIncompleteTasks = arrayOfNulls<Task>(incompleteTasks?.size ?: 0)
+
+    if (incompleteTasks != null && completeTasks?.size!! > 0) {
+        val latestCompleteTask = completeTasks[completeTasks.size - 1]
+        val len = sortedIncompleteTasks.size
+
+        var missed = 0
+        var idx = 0
+        println("got here: ${latestCompleteTask.matchNum} ${latestCompleteTask.time}")
+
+        for (task in incompleteTasks) {
+            //println(latestCompleteTask.time - task.time)
+            if (task.time < latestCompleteTask.time) {
+                ++missed
+                sortedIncompleteTasks[len - missed] = task
+            } else {
+                sortedIncompleteTasks[idx] = task
+                ++idx
+            }
+        }
+    } else if (incompleteTasks != null) {
+        var idx = 0
+
+        for (task in incompleteTasks) {
+            sortedIncompleteTasks[idx] = task
+            ++idx
+        }
+    }
+
     Log.d("TASKS_CARD", "RE-RENDER")
 
     Box(
@@ -82,7 +112,11 @@ fun TasksCard(
             .fillMaxHeight()
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
-            .border(1.dp, LightGunmetal, RoundedCornerShape(smallCornerRadius))
+            .border(
+                1.dp,
+                LightGunmetal,
+                RoundedCornerShape(smallCornerRadius)
+            )
     ) {
         Box(
             modifier = Modifier.wrapContentWidth(unbounded = true)
@@ -108,7 +142,11 @@ fun TasksCard(
             Box (
                 modifier = Modifier
                     .clip(RoundedCornerShape(8.dp))
-                    .border(1.dp, LightGunmetal, RoundedCornerShape(smallCornerRadius))
+                    .border(
+                        1.dp,
+                        LightGunmetal,
+                        RoundedCornerShape(smallCornerRadius)
+                    )
                     .background(Background)
             ) {
                 PrimaryTabRow(
@@ -162,11 +200,14 @@ fun TasksCard(
             }
             Spacer(modifier = Modifier.height(16.dp))
             LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                val tasks = (if (tabState.selectedTab == 0) incompleteTasks else completeTasks)
+                val tasks = if (tabState.selectedTab == 0)
+                    sortedIncompleteTasks.toList()
+                else
+                    completeTasks
 
                 if(tasks != null) {
                     items(tasks) { task ->
-                        TaskItem(task = task, onPress = {onPress.invoke(task.id)})
+                        TaskItem(task = task!!, onPress = {onPress.invoke(task.id)})
                     }
                 }
             }

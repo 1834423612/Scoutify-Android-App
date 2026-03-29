@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.text.toLong
 
 
@@ -37,10 +38,12 @@ class GameDetailRepository(
     private val appService: AppService,
     private val db: AppDatabase,
 ): Repository {
-
+    /*
     val isReady: MutableStateFlow<Boolean> = MutableStateFlow(false)
+
     var pulledConstants = false
         private set
+     */
 
     override suspend fun push(): Result<List<GameDetails>> {
         return withContext(Dispatchers.IO) {
@@ -184,11 +187,6 @@ class GameDetailRepository(
     }
 
     override suspend fun fetch(): Result<GameConstants> {
-        if (pulledConstants)
-            return Result.failure(Exception("already pulled game constants"))
-
-        pulledConstants = true
-
         return withContext(Dispatchers.IO) {
             try {
                 val result: ApiResponse<GameConstants> = gameDetailsService.getGameConstants(
@@ -197,7 +195,6 @@ class GameDetailRepository(
 
                 if (result.data != null) {
                     if (result.data != GameConstantsStore.constants) {
-
                         // clear all data
                         db.transaction {
                             db.taskQueries.clearAllTasks()
@@ -233,20 +230,16 @@ class GameDetailRepository(
                         app_version = app_version
                     )
 
-                    isReady.value = true
-
                     return@withContext Result.success(result.data)
                 } else {
-                    pulledConstants = false
-
                     return@withContext Result.failure(
                         Exception("Game constants are empty")
                     )
                 }
+            } catch (e: CancellationException) {
+                // rethrow so the coroutine cancels
+                throw e
             } catch (e: Exception) {
-                pulledConstants = false
-                isReady.value = true
-
                 Log.e("Game Constants", "Error when trying to fetch gameConstants: $e")
                 return@withContext Result.failure(e)
             }

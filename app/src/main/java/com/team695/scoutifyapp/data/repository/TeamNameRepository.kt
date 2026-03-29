@@ -27,11 +27,11 @@ class TeamNameRepository (
                     )
                 }
 
-                Result.success(Unit)
+                return@withContext Result.success(Unit)
             }
             catch (e: Exception) {
                 Log.d("TeamNames", "Error when trying to fetch team names: $e")
-                Result.failure(e)
+                return@withContext Result.failure(e)
             }
         }
     }
