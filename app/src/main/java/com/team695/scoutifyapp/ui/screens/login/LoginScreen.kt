@@ -245,7 +245,7 @@ fun LoginScreen(
                             }
 
                             NetworkMonitorStatus.currentNetworkJob = launch {
-                                networkMonitor.networkSync()
+                                networkMonitor.networkSync(maxErrors = 10)
                             }
                         }
                     }

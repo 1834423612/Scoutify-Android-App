@@ -6,5 +6,5 @@ interface NetworkService {
     val isConnected: StateFlow<Boolean> // use stateflow for live updates
     fun startMonitoring()
     fun stopMonitoring()
-    suspend fun networkSync()
+    suspend fun networkSync(maxErrors: Int)
 }
