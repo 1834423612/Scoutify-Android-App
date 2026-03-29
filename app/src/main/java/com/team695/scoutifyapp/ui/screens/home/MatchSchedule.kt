@@ -91,7 +91,6 @@ fun MatchSchedule(
 ) {
     var searchQuery: String by remember { mutableStateOf("") }
     val matchState by homeViewModel.matchState.collectAsStateWithLifecycle()
-    val readyState by homeViewModel.isReady.collectAsStateWithLifecycle()
     val teamState by homeViewModel.teamsState.collectAsStateWithLifecycle()
 
     val sortedMatches = remember(matchState) {
@@ -274,7 +273,7 @@ fun MatchSchedule(
                     }
                 }
             }
-            if (matchState.isNullOrEmpty() || !readyState) {
+            if (matchState.isNullOrEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center

@@ -47,7 +47,7 @@ fun SelectAllTasksWithTime.createTaskFromDb() = createTaskFromDb(
     type,
     matchNum,
     teamNum,
-    time,
+    time_,
     progress
 )
 
