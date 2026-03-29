@@ -174,7 +174,7 @@ class CommentsViewModel (
                     }
                 }
 
-                val match = matches.value.getOrNull(matchNum.toInt() - 1)
+                val match = matches.value.getOrNull(matchNum - 1)
                 match?.let {
                     addIfNotEmpty(it.redAlliance[0], "R", 1, _red1Comment.value)
                     addIfNotEmpty(it.redAlliance[1], "R", 2, _red2Comment.value)

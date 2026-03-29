@@ -1,6 +1,7 @@
 package com.team695.scoutifyapp.data.api.model
 
 import com.team695.scoutifyapp.data.extensions.convertIsoToUnix
+import com.team695.scoutifyapp.db.SelectAllTasksWithTime
 import com.team695.scoutifyapp.db.TaskEntity
 import com.team695.scoutifyapp.ui.extensions.convertUnixToIso
 import java.util.Date
@@ -23,16 +24,41 @@ class Task(
     }
 }
 
-fun TaskEntity.createTaskFromDb(): Task {
+private fun createTaskFromDb(
+    id: Long,
+    type: String,
+    matchNum: Long,
+    teamNum: Long,
+    time: Long,
+    progress: Long
+): Task {
     return Task(
-        id = this.id.toInt(),
-        type = TaskType.valueOf(this.type),
-        matchNum = this.matchNum.toInt(),
-        teamNum = this.teamNum.toInt(),
-        time = this.time,
-        progress = this.progress.toInt()
+        id = id.toInt(),
+        type = TaskType.valueOf(type),
+        matchNum = matchNum.toInt(),
+        teamNum = teamNum.toInt(),
+        time = time,
+        progress = progress.toInt()
     )
 }
+
+fun SelectAllTasksWithTime.createTaskFromDb() = createTaskFromDb(
+    id,
+    type,
+    matchNum,
+    teamNum,
+    time_,
+    progress
+)
+
+fun TaskEntity.createTaskFromDb() = createTaskFromDb(
+    id,
+    type,
+    matchNum,
+    teamNum,
+    time,
+    progress
+)
 
 data class ServerFormatTask(
     val sm_year: Int,

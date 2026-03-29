@@ -1,6 +1,8 @@
 package com.team695.scoutifyapp.data.repository
 
+import android.annotation.SuppressLint
 import android.util.Log
+import androidx.compose.ui.util.fastFilterNotNull
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.team695.scoutifyapp.data.api.NetworkMonitor
@@ -75,20 +77,13 @@ class MatchRepository(
 
     override suspend fun fetch(): Result<List<Match>> {
         return withContext(Dispatchers.IO) {
-            val oldMatches = db.matchQueries.selectAllMatches()
-                .executeAsList()
-                .map { entity ->
-                    entity.createMatchFromDb()
-                }
-
             try {
                 val apiMatches: ApiResponse<List<Match?>> = service.listMatches(
                     acToken = ScoutifyClient.tokenManager.getToken() ?: ""
                 )
 
                 if (apiMatches.data != null) {
-                    val filteredMatches = apiMatches.data
-                        .filter { it != null } as List<Match>
+                    val filteredMatches = apiMatches.data.filterNotNull()
 
                     updateDbFromMatchList(filteredMatches)
 
@@ -98,7 +93,6 @@ class MatchRepository(
                 return@withContext Result.failure(Exception())
             } catch(e: Exception) {
                 Log.d("Match", "Error when trying to fetch matches: $e")
-                updateDbFromMatchList(oldMatches)
                 return@withContext Result.failure(e)
             }
         }

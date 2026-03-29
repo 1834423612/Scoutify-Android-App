@@ -24,10 +24,10 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 
 @Composable
-fun TeleopLockScreen(isOverlayActive: Boolean) {
+fun TeleopLockScreen(visible: Boolean, message: String) {
 
     //disables back press
-    BackHandler(enabled = isOverlayActive) {
+    BackHandler(enabled = visible) {
     }
 
 
@@ -50,8 +50,8 @@ fun TeleopLockScreen(isOverlayActive: Boolean) {
         }
     }
 
-    if (isOverlayActive) {
-        Popup (
+    if(visible) {
+        Popup(
             popupPositionProvider = screenEdgePositionProvider,
             properties = PopupProperties(
                 focusable = false,
@@ -82,7 +82,7 @@ fun TeleopLockScreen(isOverlayActive: Boolean) {
                     Spacer(modifier = Modifier.width(8.dp))
 
                     Text(
-                        text = "Teleop is running",
+                        text = message,
                         color = Color.White,
                         style = MaterialTheme.typography.titleLarge
                     )

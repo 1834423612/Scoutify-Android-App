@@ -31,21 +31,13 @@ class TaskRepository(
     private val db: AppDatabase,
 ): Repository {
 
-    val tasks: Flow<List<Task>> = db.taskQueries.selectAllTasks()
+    val tasks: Flow<List<Task>> = db.taskQueries.selectAllTasksWithTime()
         .asFlow()
         .mapToList(Dispatchers.IO)
         .map { entities ->
             entities.map { entity ->
-                val time: Long? = db.matchQueries
-                    .selectMatchTimeByNumber(
-                        matchNumber = entity.matchNum
-                    ).executeAsOneOrNull()
-
-                val newEntity = entity.copy(
-                    time = time ?: 0L
-                )
-
-                newEntity.createTaskFromDb()
+                println("TASK: $entity")
+                entity.createTaskFromDb()
             }
         }
         .flowOn(Dispatchers.IO)
@@ -104,13 +96,6 @@ class TaskRepository(
 
     override suspend fun fetch(): Result<List<Task>> {
         return withContext(Dispatchers.IO) {
-
-            val oldTasks = db.taskQueries.selectAllTasks()
-                .executeAsList()
-                .map { entity ->
-                    entity.createTaskFromDb()
-                }
-
             try {
                 val apiTasks: ApiResponseWithRows<List<ServerFormatTask>> = service.getTasks(
                     acToken = ScoutifyClient.tokenManager.getToken() ?: ""
@@ -126,7 +111,6 @@ class TaskRepository(
                 return@withContext Result.success(emptyList())
             } catch(e: Exception) {
                 Log.e("TASK", "Error when trying to fetch tasks: $e")
-                updateDbFromTaskList(oldTasks)
                 return@withContext Result.failure(e)
             }
         }

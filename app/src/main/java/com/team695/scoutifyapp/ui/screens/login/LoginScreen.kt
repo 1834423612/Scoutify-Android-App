@@ -20,9 +20,13 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,15 +35,20 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ProcessLifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
+import com.team695.scoutifyapp.data.api.NetworkMonitor
+import com.team695.scoutifyapp.data.api.NetworkMonitorStatus
 import com.team695.scoutifyapp.ui.extensions.androidID
 import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.theme.Border
 import com.team695.scoutifyapp.ui.theme.DarkGunmetal
 import com.team695.scoutifyapp.ui.theme.mediumCornerRadius
 import com.team695.scoutifyapp.ui.viewModels.LoginError
+import com.team695.scoutifyapp.ui.viewModels.LoginStatus
 import com.team695.scoutifyapp.ui.viewModels.LoginViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -53,11 +62,13 @@ private const val TAG = "CasdoorLogin"
 fun LoginScreen(
     navController: NavController,
     loginViewModel: LoginViewModel,
+    networkMonitor: NetworkMonitor
 ) {
 
     val loginState by loginViewModel.loginState.collectAsState()
     val userInfo by loginViewModel.userState.collectAsState()
     val coroutineScope = rememberCoroutineScope { Dispatchers.IO }
+    var prevUserInfo by remember { mutableStateOf(true) }
 
     if (loginState.error == LoginError.ANDROID_ID || userInfo?.androidID == "WRONG_USER") {
         Column(
@@ -90,7 +101,8 @@ fun LoginScreen(
                     )
 
                     Text(
-                        text = "This tablet is not assigned to your account. Please use your designated device to log in.",
+                        text =
+                            "This tablet is not assigned to your account. Please use your designated device to log in.",
                         color = TextPrimary,
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center
                     )
@@ -98,7 +110,11 @@ fun LoginScreen(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(mediumCornerRadius))
-                            .border(1.dp, Border, RoundedCornerShape(mediumCornerRadius))
+                            .border(
+                                1.dp,
+                                Border,
+                                RoundedCornerShape(mediumCornerRadius)
+                            )
                     ) {
                         Button(
                             onClick = {
@@ -117,6 +133,7 @@ fun LoginScreen(
             CasdoorWebView(
                 url = loginState.loginUrl!!,
                 onCodeReceived = { code ->
+                    prevUserInfo = false
 
                     coroutineScope.launch {
                         try {
@@ -166,7 +183,11 @@ fun LoginScreen(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(mediumCornerRadius))
-                    .border(1.dp, Border, RoundedCornerShape(mediumCornerRadius))
+                    .border(
+                        1.dp,
+                        Border,
+                        RoundedCornerShape(mediumCornerRadius)
+                    )
                     .background(DarkGunmetal)
                     .padding(32.dp)
             ) {
@@ -209,6 +230,29 @@ fun LoginScreen(
                     text = "Logged in successfully",
                     color = TextPrimary
                 )
+
+                if (!prevUserInfo) {
+                    LaunchedEffect(Unit) {
+                        ProcessLifecycleOwner.get().lifecycleScope.launch {
+                            if (NetworkMonitorStatus.currentNetworkJob != null) {
+                                try {
+                                    NetworkMonitorStatus.currentNetworkJob!!.cancel()
+                                } catch (e: Exception) {
+                                    Log.d(
+                                        "NetworkMonitor", "Job already cancelled: $e"
+                                    )
+                                }
+                            }
+
+                            NetworkMonitorStatus.currentNetworkJob = launch {
+                                networkMonitor.networkSync()
+                            }
+                        }
+                    }
+                }
+
+                prevUserInfo = true
+
 
                 Box(
                     modifier = Modifier

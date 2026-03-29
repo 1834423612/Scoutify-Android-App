@@ -64,7 +64,9 @@ fun EndgameDetails(
     )
     val previousTimer = formState.teleopCachedMilliseconds - currentTimer
     val coroutineScope = rememberCoroutineScope()
-    val endgameCompleted = formState.gameDetails.endgameProgress == 1f && formState.gameDetails.teleopCompleted == true
+    val endgameCompleted = formState.gameDetails.endgameProgress == 1f &&
+            formState.gameDetails.teleopCompleted == true &&
+            formState.teleopCachedMilliseconds == 0
 
     val timers = listOf(
         Timer(
@@ -228,10 +230,14 @@ private fun EndgamePanel(
                 val endgameClimbSuccess: Boolean? = if(!endgameAttemptsClimb) false
                     else formState.gameDetails.endgameClimbSuccess
 
+                val endgameClimbCode: String? = if(!endgameAttemptsClimb) null
+                    else formState.gameDetails.endgameClimbCode
+
                 dataViewModel.formEvent(
                     gameDetails = formState.gameDetails.copy(
                         endgameAttemptsClimb = endgameAttemptsClimb,
-                        endgameClimbSuccess = endgameClimbSuccess
+                        endgameClimbSuccess = endgameClimbSuccess,
+                        endgameClimbCode = endgameClimbCode
                     )
                 )
             }

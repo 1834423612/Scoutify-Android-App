@@ -44,8 +44,6 @@ class HomeViewModel(
     private val _tabState = MutableStateFlow(TabState())
     val tabState: StateFlow<TabState> = _tabState
 
-    val isReady: StateFlow<Boolean> = gameDetailRepository.isReady
-
     val teamsState = taskRepository.teams
         .stateIn(
             scope = viewModelScope,

@@ -8,11 +8,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -89,7 +91,6 @@ fun MatchSchedule(
 ) {
     var searchQuery: String by remember { mutableStateOf("") }
     val matchState by homeViewModel.matchState.collectAsStateWithLifecycle()
-    val readyState by homeViewModel.isReady.collectAsStateWithLifecycle()
     val teamState by homeViewModel.teamsState.collectAsStateWithLifecycle()
 
     val sortedMatches = remember(matchState) {
@@ -133,13 +134,14 @@ fun MatchSchedule(
                     .height(if (!teamState.isNullOrEmpty()) 150.dp else 100.dp) // Changed back to a fixed height
             ) {
                 Image(
-                    painter = painterResource(id = R.drawable.bluffcountry),
+                    painter = painterResource(id = R.drawable.cincinatti),
                     contentDescription = "Regional background",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxSize() // Safe to use fillMaxSize again with fixed height
                         .alpha(0.3f)
                         .clip(RoundedCornerShape(smallCornerRadius))
+                        .offset(y = 32.dp)
                 )
 
                 Column(
@@ -159,7 +161,7 @@ fun MatchSchedule(
 
                         // 1. Header Title
                         Text(
-                            text = "Bluff Country Regional",
+                            text = "Miami Valley Regional",
                             color = TextPrimary,
                             fontSize = 22.sp,
                             fontWeight = FontWeight.Bold,
@@ -168,11 +170,12 @@ fun MatchSchedule(
 
                         Spacer(modifier = Modifier.width(8.dp))
 
-                        // Info Icon
+                        /* Info Icon
                         Badge(
                             containerColor = BadgeBackground.copy(0.5f),
                             modifier = Modifier
                                 .padding(1.dp)
+                                .aspectRatio(1f)
                                 .weight(1f)
                         ) {
                             Text(
@@ -181,6 +184,8 @@ fun MatchSchedule(
                                 fontSize = 14.sp,
                             )
                         }
+                        */
+
 
                         Spacer(modifier = Modifier.width(384.dp))
 
@@ -251,7 +256,7 @@ fun MatchSchedule(
                             horizontalArrangement = Arrangement.Center
                         ) {
                             items(teamState ?: emptyList()) { team ->
-                                TeamNumber(team = team.toString(), highlightedTeams = teamState)
+                                TeamNumber(team = team, highlightedTeams = teamState)
                                 Spacer(modifier = Modifier.width(8.dp))
                             }
                         }
@@ -268,7 +273,7 @@ fun MatchSchedule(
                     }
                 }
             }
-            if (matchState.isNullOrEmpty() || !readyState) {
+            if (matchState.isNullOrEmpty()) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -310,7 +315,10 @@ fun MatchSchedule(
                         time = matchTime
                     )
 
-                    items(filteredMatches) {
+                    items(
+                        items = filteredMatches,
+                        key = { match -> match.matchNumber }
+                    ) {
                         MatchItem(
                             matchNum = it.matchNumber,
                             teamState = teamState,
@@ -328,9 +336,8 @@ fun MatchSchedule(
 }
 
 @Composable
-fun TeamNumber(team: String, highlightedTeams: List<Long>?) {
-    val teamAsNumber: Long? = team.toLongOrNull()
-    val isHighlighted: Boolean = if(highlightedTeams != null && teamAsNumber != null) highlightedTeams.contains(teamAsNumber) else false
+fun TeamNumber(team: Long, highlightedTeams: List<Long>?) {
+    val isHighlighted: Boolean = highlightedTeams?.contains(team) ?: false
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
@@ -343,7 +350,7 @@ fun TeamNumber(team: String, highlightedTeams: List<Long>?) {
             )
     ) {
         Text(
-            text = team,
+            text = team.toString(),
             color = if (isHighlighted) Accent else Deselected,
 
         )
@@ -409,7 +416,7 @@ fun MatchItem(
         ) {
             for (t in redAlliance) {
                 TeamNumber(
-                    team = t.toString(),
+                    team = t.toLong(),
                     highlightedTeams = teamState
                 )
             }
@@ -441,7 +448,7 @@ fun MatchItem(
         ) {
             for (t in blueAlliance) {
                 TeamNumber(
-                    team = t.toString(),
+                    team = t.toLong(),
                     highlightedTeams = teamState)
             }
         }
