@@ -2,6 +2,7 @@ package com.team695.scoutifyapp.data.repository
 
 import android.content.Context
 import android.util.Log
+import androidx.webkit.internal.ApiFeature
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
 import com.team695.scoutifyapp.BuildConfig
@@ -11,6 +12,7 @@ import com.team695.scoutifyapp.data.api.model.GameConstants
 import com.team695.scoutifyapp.data.api.model.GameConstantsStore
 import com.team695.scoutifyapp.data.api.model.GameDetails
 import com.team695.scoutifyapp.data.api.model.GithubResponse
+import com.team695.scoutifyapp.data.api.model.Match
 import com.team695.scoutifyapp.data.api.model.Task
 import com.team695.scoutifyapp.data.api.model.createGameDetailsFromDb
 import com.team695.scoutifyapp.data.api.model.createTaskFromDb
@@ -186,63 +188,91 @@ class GameDetailRepository(
         }
     }
 
-    override suspend fun fetch(): Result<GameConstants> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val result: ApiResponse<GameConstants> = gameDetailsService.getGameConstants(
-                    acToken = ScoutifyClient.tokenManager.getToken()!!
-                )
+    suspend fun updateGameConstants(): Result<GameConstants> {
+        try {
+            val result: ApiResponse<GameConstants> = gameDetailsService.getGameConstants(
+                acToken = ScoutifyClient.tokenManager.getToken()!!
+            )
 
-                if (result.data != null) {
-                    if (result.data != GameConstantsStore.constants) {
-                        // clear all data
-                        db.transaction {
-                            db.taskQueries.clearAllTasks()
-                            db.matchQueries.clearAllMatches()
-                            db.commentsQueries.clearAllComments()
-                        }
-
-                        if (BuildConfig.VERSION_NAME != result.data.app_version) {
-                            val githubResult: GithubResponse = appService.getAssets()
-                            val link: Asset? = githubResult.assets.find {
-                                it.browserDownloadUrl.takeLast(4) == ".apk"
-                            }
-
-                            if (link != null) {
-                                UpdateManager.downloadUpdate(link.browserDownloadUrl)
-                            } else {
-                                Log.d("Game Constants", "Update url not found!")
-                            }
-                        }
+            if (result.data != null) {
+                if (result.data != GameConstantsStore.constants) {
+                    // clear all data
+                    db.transaction {
+                        db.taskQueries.clearAllTasks()
+                        db.matchQueries.clearAllMatches()
+                        db.commentsQueries.clearAllComments()
                     }
 
-                    GameConstantsStore.set(result.data)
+                    if (BuildConfig.VERSION_NAME != result.data.app_version) {
+                        val githubResult: GithubResponse = appService.getAssets()
+                        val link: Asset? = githubResult.assets.find {
+                            it.browserDownloadUrl.takeLast(4) == ".apk"
+                        }
 
-                    val year = result.data.frc_season_master_sm_year
-                    val event_code = result.data.competition_master_cm_event_code
-                    val game_type = result.data.game_matchup_gm_game_type
-                    val app_version = result.data.app_version
-
-                    db.gameConstantsQueries.insertOrUpdateConstants(
-                        frc_season_master_sm_year = year,
-                        competition_master_cm_event_code = event_code,
-                        game_matchup_gm_game_type = game_type,
-                        app_version = app_version
-                    )
-
-                    return@withContext Result.success(result.data)
-                } else {
-                    return@withContext Result.failure(
-                        Exception("Game constants are empty")
-                    )
+                        if (link != null) {
+                            UpdateManager.downloadUpdate(link.browserDownloadUrl)
+                        } else {
+                            Log.d("Game Constants", "Update url not found!")
+                        }
+                    }
                 }
-            } catch (e: CancellationException) {
-                // rethrow so the coroutine cancels
-                throw e
-            } catch (e: Exception) {
-                Log.e("Game Constants", "Error when trying to fetch gameConstants: $e")
+
+                GameConstantsStore.set(result.data)
+
+                val year = result.data.frc_season_master_sm_year
+                val event_code = result.data.competition_master_cm_event_code
+                val game_type = result.data.game_matchup_gm_game_type
+                val app_version = result.data.app_version
+
+                db.gameConstantsQueries.insertOrUpdateConstants(
+                    frc_season_master_sm_year = year,
+                    competition_master_cm_event_code = event_code,
+                    game_matchup_gm_game_type = game_type,
+                    app_version = app_version
+                )
+
+                return Result.success(result.data)
+            } else {
+                return Result.failure(
+                    Exception("Game constants are empty")
+                )
+            }
+        } catch (e: CancellationException) {
+            // rethrow so the coroutine cancels
+            throw e
+        } catch (e: Exception) {
+            Log.e("Game Constants", "Error when trying to fetch gameConstants: $e")
+            return Result.failure(e)
+        }
+    }
+
+    override suspend fun fetch(): Result<List<GameDetails>> {
+        return withContext(Dispatchers.IO) {
+            updateGameConstants()
+
+            //fetch latest game details
+            try {
+                val apiDetails: ApiResponse<List<GameDetails?>> = gameDetailsService.listDetails(
+                    acToken = ScoutifyClient.tokenManager.getToken() ?: ""
+                )
+
+                if (apiDetails.data != null) {
+                    val filteredDetails = apiDetails.data.filterNotNull()
+
+                    for(gameDetail in filteredDetails) {
+                        updateDbFromGameDetails(gameDetail)
+                    }
+
+
+                    return@withContext Result.success(filteredDetails)
+                }
+
+                return@withContext Result.failure(Exception("Game details is null"))
+            } catch(e: Exception) {
+                Log.d("Match", "Error when trying to fetch matches: $e")
                 return@withContext Result.failure(e)
             }
+
         }
     }
 
