@@ -213,7 +213,7 @@ class MainActivity : ComponentActivity() {
             }
 
             NetworkMonitorStatus.currentNetworkJob = launch {
-                networkMonitor.networkSync()
+                networkMonitor.networkSync(maxErrors = 10)
             }
 
             if (
