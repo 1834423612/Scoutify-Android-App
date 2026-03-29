@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import kotlin.coroutines.cancellation.CancellationException
 import kotlin.text.toLong
 
 
@@ -235,6 +236,9 @@ class GameDetailRepository(
                         Exception("Game constants are empty")
                     )
                 }
+            } catch (e: CancellationException) {
+                // rethrow so the coroutine cancels
+                throw e
             } catch (e: Exception) {
                 Log.e("Game Constants", "Error when trying to fetch gameConstants: $e")
                 return@withContext Result.failure(e)
