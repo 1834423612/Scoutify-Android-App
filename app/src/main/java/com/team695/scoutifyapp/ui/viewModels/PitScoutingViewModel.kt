@@ -1,4 +1,4 @@
-﻿package com.team695.scoutifyapp.ui.viewModels
+package com.team695.scoutifyapp.ui.viewModels
 
 import android.net.Uri
 import androidx.lifecycle.ViewModel
@@ -25,28 +25,47 @@ import kotlinx.coroutines.launch
 class PitScoutingViewModel(
     private val repository: PitScoutingRepository
 ) : ViewModel() {
-    private val eventKey = buildEventKey()
     private val _formState = MutableStateFlow(
         PitFormState(
-            eventId = eventKey,
-            eventDisplayName = eventKey,
+            eventId = "",
+            eventDisplayName = "Loading event...",
             formVersion = PitFormDataProvider.FORM_VERSION,
             isLoading = true
         )
     )
     val formState: StateFlow<PitFormState> = _formState.asStateFlow()
 
+    private var eventKey = buildFallbackEventKey()
     private var selectedTabId: String? = null
     private var teamsJob: Job? = null
+    private var tabsJob: Job? = null
     private var starterTabCreated = false
 
     init {
-        observeTabs()
-        refreshSupportingData()
+        initializeEvent()
+    }
+
+    private fun initializeEvent() {
+        viewModelScope.launch {
+            val currentEvent = repository.resolveCurrentEvent(eventKey)
+            eventKey = currentEvent.eventId
+            starterTabCreated = false
+            _formState.update { state ->
+                state.copy(
+                    eventId = currentEvent.eventId,
+                    eventDisplayName = currentEvent.eventDisplayName,
+                    isLoading = true,
+                    error = null
+                )
+            }
+            observeTabs()
+            refreshSupportingData()
+        }
     }
 
     private fun observeTabs() {
-        viewModelScope.launch {
+        tabsJob?.cancel()
+        tabsJob = viewModelScope.launch {
             repository.getTabsForEvent(eventKey).collect { tabs ->
                 val versionMismatch = tabs.any { it.formVersion != PitFormDataProvider.FORM_VERSION }
                 if (tabs.isEmpty() && !starterTabCreated && !versionMismatch) {
@@ -232,7 +251,8 @@ class PitScoutingViewModel(
             _formState.update { it.copy(isSubmitting = false) }
             result.onSuccess { submittedNow ->
                 if (submittedNow) {
-                    showBanner("Pit scouting submitted successfully")
+                    _formState.update { it.copy(teamSuggestions = emptyList()) }
+                    showBanner("Pit scouting submitted successfully and the tab was cleared")
                     refreshSupportingData()
                 } else {
                     showBanner("No network. Submission queued and will retry automatically")
@@ -281,7 +301,7 @@ class PitScoutingViewModel(
         _formState.update { it.copy(syncBanner = message) }
     }
 
-    private fun buildEventKey(): String {
+    private fun buildFallbackEventKey(): String {
         val year = GameConstantsStore.constants.frc_season_master_sm_year
         val eventCode = GameConstantsStore.constants.competition_master_cm_event_code
         if (year == 0 || eventCode.isBlank()) {
@@ -290,6 +310,3 @@ class PitScoutingViewModel(
         return "${year}_${eventCode.uppercase()}"
     }
 }
-
-
-
