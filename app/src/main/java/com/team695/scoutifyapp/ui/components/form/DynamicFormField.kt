@@ -3,7 +3,6 @@
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,12 +11,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -25,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.team695.scoutifyapp.data.types.FieldType
 import com.team695.scoutifyapp.data.types.PitFormField
@@ -45,18 +47,9 @@ fun DynamicFormField(
 ) {
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.Top
-        ) {
-            Box(modifier = Modifier.weight(1f)) {
-                SectionLabel(title = field.question, hint = field.description, required = field.required)
-            }
-            QuestionTypeBadge(type = field.type)
-        }
+        SectionLabel(title = field.question, hint = field.description, required = field.required)
 
         when (field.type) {
             FieldType.TEXT, FieldType.NUMBER, FieldType.TEXTAREA, FieldType.AUTOCOMPLETE -> {
@@ -71,6 +64,7 @@ fun DynamicFormField(
                     isError = field.error != null,
                     shape = RoundedCornerShape(14.dp),
                     textStyle = MaterialTheme.typography.bodyMedium,
+                    colors = pitFieldColors(),
                     keyboardOptions = if (field.type == FieldType.NUMBER) {
                         KeyboardOptions(keyboardType = KeyboardType.Number)
                     } else {
@@ -84,13 +78,11 @@ fun DynamicFormField(
                 )
 
                 if (field.type == FieldType.AUTOCOMPLETE && suggestions.isNotEmpty()) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState()),
+                    LazyRow(
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        suggestions.forEach { suggestion ->
+                        items(items = suggestions, key = { it.teamNumber }) { suggestion ->
                             SuggestionPill(
                                 label = suggestion.teamNumber,
                                 sublabel = suggestion.teamName,
@@ -102,7 +94,6 @@ fun DynamicFormField(
             }
 
             FieldType.RADIO -> {
-                SelectionModeHint(text = "Single choice")
                 SelectableOptionGroup(
                     entries = field.optionEntries(),
                     selectedValues = setOf(field.valueAsText()),
@@ -112,7 +103,6 @@ fun DynamicFormField(
             }
 
             FieldType.CHECKBOX -> {
-                SelectionModeHint(text = "Multiple choice")
                 SelectableOptionGroup(
                     entries = field.optionEntries(),
                     selectedValues = field.valueAsList().toSet(),
@@ -132,43 +122,11 @@ fun DynamicFormField(
                 label = { Text("Specify other") },
                 isError = field.error != null && field.otherValue.isBlank(),
                 shape = RoundedCornerShape(14.dp),
-                textStyle = MaterialTheme.typography.bodyMedium
+                textStyle = MaterialTheme.typography.bodyMedium,
+                colors = pitFieldColors()
             )
         }
     }
-}
-
-@Composable
-private fun SelectionModeHint(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelSmall,
-        color = Color(0xFF42637C),
-        modifier = Modifier
-            .background(Color(0xFFEAF1F7), RoundedCornerShape(99.dp))
-            .padding(horizontal = 7.dp, vertical = 2.dp)
-    )
-}
-
-@Composable
-private fun QuestionTypeBadge(type: FieldType) {
-    val (label, background, contentColor) = when (type) {
-        FieldType.TEXT -> Triple("Short", Color(0xFFEFF4FA), Color(0xFF35536B))
-        FieldType.NUMBER -> Triple("Number", Color(0xFFFFF1E3), Color(0xFF8F5A16))
-        FieldType.TEXTAREA -> Triple("Notes", Color(0xFFE9F7F4), Color(0xFF156B5B))
-        FieldType.AUTOCOMPLETE -> Triple("Lookup", Color(0xFFEAF0FF), Color(0xFF304D8F))
-        FieldType.RADIO -> Triple("Single", Color(0xFFF0ECFF), Color(0xFF5B44A7))
-        FieldType.CHECKBOX -> Triple("Multi", Color(0xFFE8F7EE), Color(0xFF1F7A47))
-    }
-
-    Text(
-        text = label,
-        style = MaterialTheme.typography.labelSmall,
-        color = contentColor,
-        modifier = Modifier
-            .background(background, RoundedCornerShape(99.dp))
-            .padding(horizontal = 6.dp, vertical = 3.dp)
-    )
 }
 
 @Composable
@@ -199,7 +157,7 @@ private fun SelectableOptionGroup(
     multiSelect: Boolean,
     onSelect: (String) -> Unit
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         entries.forEach { (label, value) ->
             val selected = selectedValues.contains(value)
             Row(
@@ -215,24 +173,26 @@ private fun SelectableOptionGroup(
                         shape = RoundedCornerShape(16.dp)
                     )
                     .clickable { onSelect(value) }
-                    .padding(horizontal = 12.dp, vertical = 12.dp),
+                    .padding(horizontal = 12.dp, vertical = 10.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 SelectionIndicator(selected = selected, multiSelect = multiSelect)
-                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(label, color = Color(0xFF17344F), fontWeight = FontWeight.Medium)
+                Text(
+                    text = label,
+                    modifier = Modifier.weight(1f),
+                    color = Color(0xFF17344F),
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+                if (selected) {
                     Text(
-                        if (multiSelect) "Tap to add or remove" else "Tap to select this option",
-                        color = Color(0xFF6E879A),
-                        style = MaterialTheme.typography.bodySmall
+                        text = "Selected",
+                        color = Color(0xFF1B7B62),
+                        style = MaterialTheme.typography.labelSmall
                     )
                 }
-                Text(
-                    text = if (selected) "Selected" else if (multiSelect) "Optional" else "Pick one",
-                    color = if (selected) Color(0xFF1B7B62) else Color(0xFF7A90A2),
-                    style = MaterialTheme.typography.labelSmall
-                )
             }
         }
     }
@@ -273,6 +233,25 @@ private fun SelectionIndicator(selected: Boolean, multiSelect: Boolean) {
         }
     }
 }
+
+@Composable
+private fun pitFieldColors() = OutlinedTextFieldDefaults.colors(
+    focusedTextColor = Color(0xFF17344F),
+    unfocusedTextColor = Color(0xFF17344F),
+    disabledTextColor = Color(0xFF61788C),
+    focusedContainerColor = Color.White,
+    unfocusedContainerColor = Color.White,
+    disabledContainerColor = Color(0xFFF5F8FA),
+    errorContainerColor = Color.White,
+    cursorColor = Color(0xFF1C5E96),
+    focusedBorderColor = Color(0xFF2A6DB0),
+    unfocusedBorderColor = Color(0xFFC9D8E5),
+    errorBorderColor = Color(0xFFB42318),
+    focusedLabelColor = Color(0xFF35536B),
+    unfocusedLabelColor = Color(0xFF61788C),
+    focusedPlaceholderColor = Color(0xFF7D92A3),
+    unfocusedPlaceholderColor = Color(0xFF7D92A3)
+)
 
 private fun PitFormField.optionEntries(): List<Pair<String, String>> {
     val values = if (optionValues.isEmpty()) options else optionValues
