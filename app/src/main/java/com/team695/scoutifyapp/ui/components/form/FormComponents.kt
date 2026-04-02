@@ -31,28 +31,15 @@ fun SectionCard(
             .fillMaxWidth()
             .background(Color.White.copy(alpha = 0.96f), RoundedCornerShape(22.dp))
             .border(1.dp, Color(0xFFD9E5EF), RoundedCornerShape(22.dp))
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleSmall,
-                fontWeight = FontWeight.SemiBold,
-                color = accent
-            )
-            Box(
-                modifier = Modifier
-                    .background(accent.copy(alpha = 0.08f), RoundedCornerShape(99.dp))
-                    .padding(horizontal = 8.dp, vertical = 3.dp)
-            ) {
-                Text(
-                    text = "Rapid capture layout",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = accent.copy(alpha = 0.86f)
-                )
-            }
-        }
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleSmall,
+            fontWeight = FontWeight.SemiBold,
+            color = accent
+        )
         content()
     }
 }

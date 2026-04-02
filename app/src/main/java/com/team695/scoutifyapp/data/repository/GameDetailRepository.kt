@@ -205,7 +205,7 @@ class GameDetailRepository(
                         if (BuildConfig.VERSION_NAME != result.data.app_version) {
                             val githubResult: GithubResponse = appService.getAssets()
                             val link: Asset? = githubResult.assets.find {
-                                it.browserDownloadUrl.takeLast(4) == ".apk"
+                                it.browserDownloadUrl.endsWith(".apk", ignoreCase = true)
                             }
 
                             if (link != null) {

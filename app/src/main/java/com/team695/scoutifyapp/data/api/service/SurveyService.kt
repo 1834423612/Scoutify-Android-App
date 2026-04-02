@@ -44,6 +44,12 @@ data class TeamSuggestionDto(
     val nickname: String? = null
 )
 
+data class CurrentEventResponse(
+    val eventId: String = "",
+    val eventName: String = "",
+    val eventDate: String = ""
+)
+
 interface SurveyService {
     @POST("survey/submit")
     suspend fun submitSurveyResponse(
@@ -65,7 +71,7 @@ interface SurveyService {
         @Path("eventId") eventId: String
     ): ApiResponse<List<TeamPitStatusDto>>
 
-    @PUT("team-matches/pit-status/{eventId}/frc{teamNumber}")
+    @PUT("team-matches/pit-status-by-number/{eventId}/{teamNumber}")
     suspend fun updatePitStatus(
         @Path("eventId") eventId: String,
         @Path("teamNumber") teamNumber: String,
@@ -79,7 +85,7 @@ interface SurveyService {
         @Part("type") type: RequestBody
     ): UploadImageResponse
 
-    @DELETE("api/images/{imageId}")
+    @DELETE("api/upload/images/{imageId}")
     suspend fun deletePitImage(
         @Path("imageId") imageId: String
     ): ApiResponse<Map<String, Any?>>
@@ -89,5 +95,7 @@ interface SurveyService {
         @Query("query") query: String,
         @Query("limit") limit: Int = 20
     ): List<TeamSuggestionDto>
-}
 
+    @GET("api/event/event-id")
+    suspend fun getCurrentEvent(): CurrentEventResponse
+}

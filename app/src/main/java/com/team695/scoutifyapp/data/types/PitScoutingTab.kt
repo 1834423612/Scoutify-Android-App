@@ -18,7 +18,8 @@ data class PitImageAsset(
 @Serializable
 data class PitImageBundle(
     val fullRobotImages: List<PitImageAsset> = emptyList(),
-    val driveTrainImages: List<PitImageAsset> = emptyList()
+    val driveTrainImages: List<PitImageAsset> = emptyList(),
+    val intakeImages: List<PitImageAsset> = emptyList()
 )
 
 enum class PitScoutingStatus {

@@ -3,10 +3,16 @@ package com.team695.scoutifyapp.data.repository
 import com.team695.scoutifyapp.data.types.FieldType
 import com.team695.scoutifyapp.data.types.PitFieldValue
 import com.team695.scoutifyapp.data.types.PitFormField
-import com.team695.scoutifyapp.data.types.withTextValue
 
 object PitFormDataProvider {
-    const val FORM_VERSION = "2026.03_PROD_ED8"
+    private const val FORM_SCHEMA_DIGEST_VERSION = 1
+
+    val FORM_VERSION: String
+        get() = FORM_SCHEMA_LABEL
+
+    private val FORM_SCHEMA_LABEL: String by lazy {
+        "SC-${createSchemaHash(stableStringify(createFormSchemaDescriptor()))}"
+    }
 
     fun getDefaultFormFields(teamNumber: String = ""): List<PitFormField> {
         val teamField = PitFormField(
@@ -50,13 +56,23 @@ object PitFormDataProvider {
                 section = "Fuel Strategy"
             ),
             PitFormField(
+                question = "When is the intake typically deployed during a match?",
+                description = "Ask when the intake is usually deployed in Autonomous or Teleop.",
+                type = FieldType.RADIO,
+                options = listOf("Only while intaking", "Always down", "No intake"),
+                optionValues = listOf("Only while intaking", "Always down", "No intake"),
+                required = true,
+                originalIndex = 4,
+                section = "Fuel Strategy"
+            ),
+            PitFormField(
                 question = "How does your robot manipulate FUEL?",
                 description = "Select the primary method used by your robot.",
                 type = FieldType.CHECKBOX,
                 options = listOf("Shoots FUEL", "Herd FUEL", "Does not score FUEL"),
                 optionValues = listOf("Shoot", "Herd", "None"),
                 required = true,
-                originalIndex = 4,
+                originalIndex = 5,
                 section = "Fuel Strategy"
             ),
             PitFormField(
@@ -66,7 +82,7 @@ object PitFormDataProvider {
                 options = listOf("Against HUB (close range)", "Mid range", "Long range", "Adjustable range"),
                 optionValues = listOf("Against HUB", "Mid", "Long", "Adjustable"),
                 required = true,
-                originalIndex = 5,
+                originalIndex = 6,
                 section = "Fuel Strategy"
             ),
             PitFormField(
@@ -76,7 +92,7 @@ object PitFormDataProvider {
                 options = listOf("Leaves ALLIANCE ZONE", "Scores FUEL in HUB", "Climbs TOWER in AUTO", "No autonomous scoring"),
                 optionValues = listOf("Leaves Zone", "Auto Fuel", "Auto Climb", "None"),
                 required = true,
-                originalIndex = 6,
+                originalIndex = 7,
                 section = "Autonomous"
             ),
             PitFormField(
@@ -86,7 +102,7 @@ object PitFormDataProvider {
                 options = listOf("LOW RUNG", "MID RUNG", "HIGH RUNG", "No climb"),
                 optionValues = listOf("Low", "Mid", "High", "None"),
                 required = true,
-                originalIndex = 7,
+                originalIndex = 8,
                 section = "Endgame"
             ),
             PitFormField(
@@ -94,7 +110,7 @@ object PitFormDataProvider {
                 description = "Weight in pounds.",
                 type = FieldType.NUMBER,
                 required = true,
-                originalIndex = 8,
+                originalIndex = 9,
                 section = "Physical Specs"
             ),
             PitFormField(
@@ -102,7 +118,7 @@ object PitFormDataProvider {
                 description = "Weight in pounds.",
                 type = FieldType.NUMBER,
                 required = true,
-                originalIndex = 9,
+                originalIndex = 10,
                 section = "Physical Specs"
             ),
             PitFormField(
@@ -110,7 +126,7 @@ object PitFormDataProvider {
                 description = "Enter dimensions in inches. Format: Length x Width x Height (e.g. 30x28x40)",
                 type = FieldType.TEXT,
                 required = true,
-                originalIndex = 10,
+                originalIndex = 11,
                 section = "Physical Specs"
             ),
             PitFormField(
@@ -118,7 +134,7 @@ object PitFormDataProvider {
                 description = "Height in inches.",
                 type = FieldType.NUMBER,
                 required = true,
-                originalIndex = 11,
+                originalIndex = 12,
                 section = "Physical Specs"
             ),
             PitFormField(
@@ -127,7 +143,7 @@ object PitFormDataProvider {
                 options = listOf("Single driver", "Driver + operator", "Other"),
                 optionValues = listOf("Single", "Driver + Operator", "Other"),
                 required = true,
-                originalIndex = 12,
+                originalIndex = 13,
                 section = "Drive Team"
             ),
             PitFormField(
@@ -135,14 +151,14 @@ object PitFormDataProvider {
                 description = "Total hours or weeks practiced.",
                 type = FieldType.TEXT,
                 required = true,
-                originalIndex = 13,
+                originalIndex = 14,
                 section = "Drive Team"
             ),
             PitFormField(
                 question = "Additional comments",
                 type = FieldType.TEXTAREA,
                 required = false,
-                originalIndex = 14,
+                originalIndex = 15,
                 section = "Notes"
             )
         )
@@ -167,5 +183,51 @@ object PitFormDataProvider {
                 else -> field.copy(value = PitFieldValue.Empty, otherValue = "", error = null)
             }
         }
+    }
+
+    private fun createFormSchemaDescriptor(): Map<String, Any> {
+        return mapOf(
+            "digestVersion" to FORM_SCHEMA_DIGEST_VERSION,
+            "fields" to getDefaultFormFields().map { field ->
+                mapOf(
+                    "originalIndex" to field.originalIndex,
+                    "question" to field.question,
+                    "type" to field.type.wireValue,
+                    "required" to field.required,
+                    "options" to field.options,
+                    "optionValues" to field.optionValues
+                )
+            },
+            "images" to listOf(
+                mapOf("type" to "fullRobot", "required" to false),
+                mapOf("type" to "driveTrain", "required" to false),
+                mapOf("type" to "intake", "required" to false)
+            )
+        )
+    }
+
+    private fun stableStringify(value: Any?): String {
+        return when (value) {
+            null -> "null"
+            is List<*> -> value.joinToString(prefix = "[", postfix = "]") { stableStringify(it) }
+            is Map<*, *> -> value.entries
+                .filter { it.value != null }
+                .sortedBy { it.key.toString() }
+                .joinToString(prefix = "{", postfix = "}") { entry ->
+                    "\"${entry.key}\":${stableStringify(entry.value)}"
+                }
+            is String -> "\"${value.replace("\\", "\\\\").replace("\"", "\\\"")}\""
+            is Boolean, is Number -> value.toString()
+            else -> "\"${value.toString().replace("\\", "\\\\").replace("\"", "\\\"")}\""
+        }
+    }
+
+    private fun createSchemaHash(value: String): String {
+        var hash = 2166136261L
+        value.forEach { char ->
+            hash = hash xor char.code.toLong()
+            hash = (hash * 16777619L) and 0xFFFFFFFFL
+        }
+        return hash.toString(36).uppercase().padStart(7, '0')
     }
 }

@@ -1,19 +1,22 @@
-﻿package com.team695.scoutifyapp.data.repository
+package com.team695.scoutifyapp.data.repository
 
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
+import android.util.Base64
 import android.webkit.MimeTypeMap
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
-import com.team695.scoutifyapp.data.api.NetworkMonitor
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import com.team695.scoutifyapp.data.api.NetworkMonitor
+import com.team695.scoutifyapp.data.api.client.ScoutifyClient
+import com.team695.scoutifyapp.data.api.service.CurrentEventResponse
 import com.team695.scoutifyapp.data.api.service.PitAssignmentDto
 import com.team695.scoutifyapp.data.api.service.SurveyService
 import com.team695.scoutifyapp.data.api.service.TeamSuggestionDto
 import com.team695.scoutifyapp.data.types.FieldType
 import com.team695.scoutifyapp.data.types.PitAssignment
-import com.team695.scoutifyapp.data.types.PitFieldValue
 import com.team695.scoutifyapp.data.types.PitFormField
 import com.team695.scoutifyapp.data.types.PitImageAsset
 import com.team695.scoutifyapp.data.types.PitImageBundle
@@ -45,6 +48,11 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 
+data class PitCurrentEvent(
+    val eventId: String,
+    val eventDisplayName: String
+)
+
 class PitScoutingRepository(
     private val db: AppDatabase,
     private val surveyService: SurveyService,
@@ -66,6 +74,23 @@ class PitScoutingRepository(
             .mapToList(Dispatchers.IO)
             .map { rows -> rows.map { row -> rowToTab(row) } }
             .flowOn(Dispatchers.IO)
+    }
+
+    suspend fun resolveCurrentEvent(defaultEventKey: String): PitCurrentEvent {
+        return withContext(Dispatchers.IO) {
+            val fallback = PitCurrentEvent(
+                eventId = defaultEventKey,
+                eventDisplayName = defaultEventKey
+            )
+
+            if (!networkMonitor.isConnected.value) {
+                return@withContext fallback
+            }
+
+            runCatching { surveyService.getCurrentEvent() }
+                .map { response -> response.toPitCurrentEvent() ?: fallback }
+                .getOrDefault(fallback)
+        }
     }
 
     suspend fun getTabById(tabId: String): PitScoutingTab? {
@@ -112,17 +137,19 @@ class PitScoutingRepository(
         }
     }
 
-    suspend fun clearTab(tabId: String): PitScoutingTab? {
+    suspend fun clearTab(tabId: String, regenerateFormId: Boolean = false): PitScoutingTab? {
         return withContext(Dispatchers.IO) {
             val existing = getTabById(tabId) ?: return@withContext null
             val cleared = existing.copy(
                 teamNumber = "",
                 tabName = buildFallbackTabName(existing.tabId),
+                formId = if (regenerateFormId) UUID.randomUUID().toString() else existing.formId,
                 fields = PitFormDataProvider.createEmptyFormFields(),
                 images = PitImageBundle(),
                 isDraft = true,
                 isSubmitted = false,
                 submissionTime = null,
+                createdAt = if (regenerateFormId) nowIso() else existing.createdAt,
                 updatedAt = nowIso(),
                 syncStatus = PitScoutingStatus.DRAFT,
                 lastError = null
@@ -176,6 +203,7 @@ class PitScoutingRepository(
             val updatedImages = when (bucket) {
                 FULL_ROBOT_BUCKET -> existing.images.copy(fullRobotImages = existing.images.fullRobotImages + newAssets)
                 DRIVE_TRAIN_BUCKET -> existing.images.copy(driveTrainImages = existing.images.driveTrainImages + newAssets)
+                INTAKE_BUCKET -> existing.images.copy(intakeImages = existing.images.intakeImages + newAssets)
                 else -> existing.images
             }
             val updatedTab = existing.asEdited(images = updatedImages)
@@ -194,6 +222,7 @@ class PitScoutingRepository(
             val updatedImages = when (bucket) {
                 FULL_ROBOT_BUCKET -> existing.images.copy(fullRobotImages = existing.images.fullRobotImages.filterNot { it.localPath == image.localPath && it.name == image.name })
                 DRIVE_TRAIN_BUCKET -> existing.images.copy(driveTrainImages = existing.images.driveTrainImages.filterNot { it.localPath == image.localPath && it.name == image.name })
+                INTAKE_BUCKET -> existing.images.copy(intakeImages = existing.images.intakeImages.filterNot { it.localPath == image.localPath && it.name == image.name })
                 else -> existing.images
             }
             val updatedTab = existing.asEdited(images = updatedImages)
@@ -277,16 +306,20 @@ class PitScoutingRepository(
                     }
 
                     db.pitscoutQueries.deletePitscoutByFormId(preparedTab.formId)
-                    persistTab(
-                        preparedTab.copy(
-                            isDraft = false,
-                            isSubmitted = true,
-                            submissionTime = nowIso(),
-                            updatedAt = nowIso(),
-                            syncStatus = PitScoutingStatus.SUBMITTED,
-                            lastError = null
+                    runCatching {
+                        clearTab(preparedTab.tabId, regenerateFormId = true)
+                    }.onFailure { resetError ->
+                        persistTab(
+                            preparedTab.copy(
+                                isDraft = false,
+                                isSubmitted = true,
+                                submissionTime = nowIso(),
+                                updatedAt = nowIso(),
+                                syncStatus = PitScoutingStatus.SUBMITTED,
+                                lastError = "Submitted remotely, but local tab reset failed: ${resetError.message.orEmpty()}"
+                            )
                         )
-                    )
+                    }
                     Result.success(Unit)
                 }
             },
@@ -307,8 +340,8 @@ class PitScoutingRepository(
             }
 
             var successCount = 0
-            pendingTabs.forEach { tab ->
-                if (submitTab(tab.tabId).getOrNull() == true) {
+            pendingTabs.forEach { queuedTab ->
+                if (submitTab(queuedTab.tabId).getOrNull() == true) {
                     successCount += 1
                 }
             }
@@ -358,8 +391,13 @@ class PitScoutingRepository(
 
         val fullRobotImages = tab.images.fullRobotImages.map { image -> uploadImageIfNeeded(image, "fullRobot") }
         val driveTrainImages = tab.images.driveTrainImages.map { image -> uploadImageIfNeeded(image, "driveTrain") }
+        val intakeImages = tab.images.intakeImages.map { image -> uploadImageIfNeeded(image, "intake") }
         val updatedTab = tab.copy(
-            images = PitImageBundle(fullRobotImages = fullRobotImages, driveTrainImages = driveTrainImages),
+            images = PitImageBundle(
+                fullRobotImages = fullRobotImages,
+                driveTrainImages = driveTrainImages,
+                intakeImages = intakeImages
+            ),
             updatedAt = nowIso()
         )
         persistTab(updatedTab)
@@ -428,20 +466,57 @@ class PitScoutingRepository(
 
     private fun buildUploadPayload(images: PitImageBundle): Map<String, List<Map<String, Any?>>> {
         return mapOf(
-            FULL_ROBOT_BUCKET to images.fullRobotImages.map { image -> mapOf("url" to image.url, "name" to image.name, "size" to image.size) },
-            DRIVE_TRAIN_BUCKET to images.driveTrainImages.map { image -> mapOf("url" to image.url, "name" to image.name, "size" to image.size) }
+            FULL_ROBOT_BUCKET to images.fullRobotImages.map { image -> buildUploadImagePayload(image) },
+            DRIVE_TRAIN_BUCKET to images.driveTrainImages.map { image -> buildUploadImagePayload(image) },
+            INTAKE_BUCKET to images.intakeImages.map { image -> buildUploadImagePayload(image) }
         )
     }
 
     private suspend fun buildSubmissionUserData(): SubmissionUserData {
         val user = userRepository.currentUser.first()
-        val username = user?.name.orEmpty()
-        val displayName = user?.displayName ?: username.ifBlank { "Unknown User" }
+        val claims = decodeTokenClaims()
+        val username = firstNonBlank(
+            claims["preferred_username"]?.toString(),
+            claims["username"]?.toString(),
+            claims["name"]?.toString(),
+            user?.name
+        ).orEmpty()
+        val displayName = firstNonBlank(
+            claims["displayName"]?.toString(),
+            claims["fullName"]?.toString(),
+            claims["name"]?.toString(),
+            user?.displayName,
+            username
+        ).orEmpty().ifBlank { "Unknown User" }
+        val userId = firstNonBlank(
+            claims["id"]?.toString(),
+            claims["sub"]?.toString(),
+            user?.androidID
+        ).orEmpty()
+
         return SubmissionUserData(
             username = username,
             displayName = displayName,
-            userId = user?.androidID.orEmpty(),
-            email = user?.email.orEmpty()
+            userId = userId,
+            avatar = firstNonBlank(
+                claims["avatar"]?.toString(),
+                claims["picture"]?.toString()
+            ).orEmpty(),
+            email = firstNonBlank(
+                claims["email"]?.toString(),
+                user?.email
+            ).orEmpty(),
+            firstName = firstNonBlank(
+                claims["firstName"]?.toString(),
+                claims["given_name"]?.toString()
+            ).orEmpty(),
+            lastName = firstNonBlank(
+                claims["lastName"]?.toString(),
+                claims["family_name"]?.toString()
+            ).orEmpty(),
+            groups = normalizeClaimArray(claims["groups"]),
+            roles = normalizeClaimArray(claims["roles"]),
+            permissions = normalizeClaimArray(claims["permissions"])
         )
     }
 
@@ -542,13 +617,22 @@ class PitScoutingRepository(
 
     private fun buildUserAgent(): String = "Android/${android.os.Build.VERSION.RELEASE} (${android.os.Build.MODEL})"
 
+    private fun buildUploadImagePayload(image: PitImageAsset): Map<String, Any?> {
+        return mapOf(
+            "id" to image.id.ifBlank { image.url },
+            "url" to image.url,
+            "name" to image.name,
+            "size" to image.size
+        )
+    }
+
     private fun guessMimeType(fileName: String): String {
         val extension = fileName.substringAfterLast('.', missingDelimiterValue = "jpg")
         return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension) ?: "image/jpeg"
     }
 
     private fun deleteLocalFiles(images: PitImageBundle) {
-        (images.fullRobotImages + images.driveTrainImages).forEach { image ->
+        (images.fullRobotImages + images.driveTrainImages + images.intakeImages).forEach { image ->
             image.localPath?.let { path -> runCatching { File(path).delete() } }
         }
     }
@@ -604,15 +688,52 @@ class PitScoutingRepository(
         return TeamSuggestion(normalizedNumber, normalizedName)
     }
 
+    private fun CurrentEventResponse.toPitCurrentEvent(): PitCurrentEvent? {
+        val normalizedEventId = eventId.trim()
+        if (normalizedEventId.isBlank()) {
+            return null
+        }
+
+        val normalizedName = eventName.trim()
+        return PitCurrentEvent(
+            eventId = normalizedEventId,
+            eventDisplayName = if (normalizedName.isBlank()) {
+                normalizedEventId
+            } else {
+                "$normalizedEventId | $normalizedName"
+            }
+        )
+    }
+
+    private suspend fun decodeTokenClaims(): Map<String, Any?> {
+        val token = ScoutifyClient.tokenManager.getToken().orEmpty()
+        val payload = token.split('.').getOrNull(1).orEmpty()
+        if (payload.isBlank()) {
+            return emptyMap()
+        }
+
+        return runCatching {
+            val normalizedPayload = payload.padEnd(payload.length + (4 - payload.length % 4) % 4, '=')
+            val decodedPayload = String(Base64.decode(normalizedPayload, Base64.URL_SAFE or Base64.NO_WRAP))
+            val type = object : TypeToken<Map<String, Any?>>() {}.type
+            gson.fromJson<Map<String, Any?>>(decodedPayload, type) ?: emptyMap()
+        }.getOrDefault(emptyMap())
+    }
+
+    private fun normalizeClaimArray(raw: Any?): List<String> {
+        return when (raw) {
+            is List<*> -> raw.mapNotNull { item -> item?.toString()?.trim() }.filter { it.isNotBlank() }
+            is Array<*> -> raw.mapNotNull { item -> item?.toString()?.trim() }.filter { it.isNotBlank() }
+            is String -> raw.split(',').map { it.trim() }.filter { it.isNotBlank() }
+            else -> emptyList()
+        }
+    }
+
+    private fun firstNonBlank(vararg values: String?): String? = values.firstOrNull { !it.isNullOrBlank() }
+
     companion object {
         const val FULL_ROBOT_BUCKET = "fullRobotImages"
         const val DRIVE_TRAIN_BUCKET = "driveTrainImages"
+        const val INTAKE_BUCKET = "intakeImages"
     }
 }
-
-
-
-
-
-
-

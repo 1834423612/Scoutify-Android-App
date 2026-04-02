@@ -115,8 +115,8 @@ class NetworkMonitor(
 
     private suspend fun retryFetchUntilSuccess(maxErrors: Int) {
         withContext(Dispatchers.IO) {
-            var errors: Int = 0
-            var gameDetailsSuccess: Boolean = false
+            var errors = 0
+            var gameDetailsSuccess = false
 
             // fetch game details first since the other repos are dependent on it
             while (!gameDetailsSuccess && errors < maxErrors) {
@@ -125,26 +125,32 @@ class NetworkMonitor(
 
                 if (result.isSuccess) {
                     Log.d("Network_Monitor", "successfully fetched game details")
+
                     gameDetailsSuccess = true
-                }
-                else {
+                } else {
+                    ++errors
+
                     Log.d("Network_Monitor", "Error fetching game details, retrying...")
-                    errors += 1
+
                     delay(RETRY_BASE_INTERVAL)
                 }
             }
 
             if (gameDetailsSuccess) {
                 Log.d("Network_Monitor", "Fetched game details successfully!")
-            }
-            else {
-                Log.e("Network_Monitor", "Maximum errors limit exceeded for fetching game details: $maxErrors errors")
+            } else {
+                Log.e(
+                    "Network_Monitor",
+                    "Maximum errors limit exceeded for fetching game details: $maxErrors errors"
+                )
+
                 return@withContext
             }
 
             // after game details fetched, fetch all other repositories.
-            val fetchList: MutableList<Repository> = repoList.toMutableList()
+            val fetchList = repoList.toMutableList()
             var duration = RETRY_BASE_INTERVAL
+
             errors = 0
 
             // delay(duration)
@@ -153,39 +159,45 @@ class NetworkMonitor(
                 isConnected.first { it }
 
                 val iter = fetchList.iterator()
+
                 while (iter.hasNext()) {
                     val repo = iter.next()
                     val result = repo.fetch()
 
                     if (result.isSuccess) {
                         iter.remove()
-                    }
-                    else {
-                        errors += 1
+                    } else {
+                        ++errors
+
                         val exception = result.exceptionOrNull()
+
                         Log.e("Network_Monitor", "Error fetching repo", exception)
                     }
                 }
 
                 if (fetchList.isNotEmpty() && errors < maxErrors) {
                     delay(duration)
-                    duration = (duration + RETRY_BASE_INTERVAL).coerceAtMost(40.seconds)
+
+                    duration = (duration + RETRY_BASE_INTERVAL)
+                        .coerceAtMost(40.seconds)
                 }
             }
 
             if (fetchList.isEmpty()) {
                 Log.d("Network_Monitor", "Fetched all data successfully!")
-            }
-            else {
-                Log.e("Network_Monitor", "Maximum errors limit exceeded for fetching repositories: $maxErrors errors")
+            } else {
+                Log.e(
+                    "Network_Monitor",
+                    "Maximum errors limit exceeded for fetching repositories: $maxErrors errors"
+                )
             }
         }
     }
 
     suspend fun retryPushUntilSuccess(maxErrors: Int) {
         withContext(Dispatchers.IO) {
-            var errors: Int = 0
-            var gameDetailsSuccess: Boolean = false
+            var errors = 0
+            var gameDetailsSuccess = false
 
             // push game details first
             while (!gameDetailsSuccess && errors < maxErrors) {
@@ -194,18 +206,21 @@ class NetworkMonitor(
 
                 if (result.isSuccess) {
                     gameDetailsSuccess = true
-                }
-                else {
-                    errors += 1
+                } else {
+                    ++errors
+
                     delay(RETRY_BASE_INTERVAL)
                 }
             }
 
             if (gameDetailsSuccess) {
                 Log.d("Network_Monitor", "Pushed game details successfully!")
-            }
-            else {
-                Log.e("Network_Monitor", "Maximum errors limit exceeded for pushing game details: $maxErrors errors")
+            } else {
+                Log.e(
+                    "Network_Monitor",
+                    "Maximum errors limit exceeded for pushing game details: $maxErrors errors"
+                )
+
                 return@withContext
             }
 
@@ -224,8 +239,7 @@ class NetworkMonitor(
 
                     if (result.isSuccess) {
                         iter.remove()
-                    }
-                    else {
+                    } else {
                         errors += 1
                         val exception = result.exceptionOrNull()
                         Log.e("Network_Monitor", "Error pushing repo", exception)
@@ -240,9 +254,11 @@ class NetworkMonitor(
 
             if (pushList.isEmpty()) {
                 Log.d("Network_Monitor", "Pushed all data successfully!")
-            }
-            else {
-                Log.d("Network_Monitor", "Maximum errors limit exceeded for pushing repositories: $maxErrors errors")
+            } else {
+                Log.d(
+                    "Network_Monitor",
+                    "Maximum errors limit exceeded for pushing repositories: $maxErrors errors"
+                )
             }
         }
     }

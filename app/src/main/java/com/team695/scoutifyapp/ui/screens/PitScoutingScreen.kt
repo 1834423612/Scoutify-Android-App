@@ -7,8 +7,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,11 +21,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.Backup
@@ -42,7 +41,6 @@ import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -56,6 +54,7 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -78,17 +77,16 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.team695.scoutifyapp.data.repository.PitScoutingRepository
-import com.team695.scoutifyapp.data.types.PitFieldValue
 import com.team695.scoutifyapp.data.types.PitImageAsset
 import com.team695.scoutifyapp.data.types.PitScoutingStatus
 import com.team695.scoutifyapp.data.types.PitScoutingTab
 import com.team695.scoutifyapp.ui.components.form.DynamicFormField
 import com.team695.scoutifyapp.ui.components.form.SectionCard
-import com.team695.scoutifyapp.ui.components.form.StatChip
 import com.team695.scoutifyapp.ui.viewModels.PitScoutingViewModel
 import java.io.File
 import kotlin.math.roundToInt
@@ -193,6 +191,15 @@ fun PitScoutingScreen(
         if (activeTab == null) {
             EmptyPitState(modifier = Modifier.padding(innerPadding), onCreate = { viewModel.createNewTab() })
         } else {
+            val assignedTeams = remember(state.assignments) {
+                state.assignments.flatMap { it.assignedTeamNumbers }.distinct()
+            }
+            val sectionEntries = remember(activeTab.fields) {
+                activeTab.fields.groupBy {
+                    if (it.section.isBlank()) "Form" else it.section
+                }.entries.toList()
+            }
+
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -200,28 +207,24 @@ fun PitScoutingScreen(
                 contentPadding = PaddingValues(
                     start = 12.dp,
                     end = 12.dp,
-                    top = innerPadding.calculateTopPadding() + 8.dp,
-                    bottom = innerPadding.calculateBottomPadding() + 12.dp
+                    top = innerPadding.calculateTopPadding() + 4.dp,
+                    bottom = innerPadding.calculateBottomPadding() + 10.dp
                 ),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                if (state.assignments.isNotEmpty()) {
+                if (assignedTeams.isNotEmpty()) {
                     item {
                         AssignmentBoard(
                             completedTeams = state.completedTeams,
-                            assignedTeams = state.assignments.flatMap { it.assignedTeamNumbers }.distinct(),
+                            assignedTeams = assignedTeams,
                             onSelectTeam = viewModel::selectAssignedTeam
                         )
                     }
                 }
 
-                val sectionEntries = activeTab.fields.groupBy {
-                    if (it.section.isBlank()) "Form" else it.section
-                }.entries.toList()
-
                 items(sectionEntries, key = { it.key }) { entry ->
                     SectionCard(title = entry.key) {
-                        Column(verticalArrangement = Arrangement.spacedBy(18.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
                             entry.value.forEach { field ->
                                 DynamicFormField(
                                     field = field,
@@ -260,6 +263,18 @@ fun PitScoutingScreen(
                         onRemove = { viewModel.removeImage(PitScoutingRepository.DRIVE_TRAIN_BUCKET, it) }
                     )
                 }
+
+                item {
+                    ImageBoard(
+                        title = "Intake Photos",
+                        subtitle = "Capture intake geometry and deployment details.",
+                        images = activeTab.images.intakeImages,
+                        onCamera = { launchCamera(PitScoutingRepository.INTAKE_BUCKET) },
+                        onGallery = { launchGallery(PitScoutingRepository.INTAKE_BUCKET) },
+                        onFiles = { launchFiles(PitScoutingRepository.INTAKE_BUCKET) },
+                        onRemove = { viewModel.removeImage(PitScoutingRepository.INTAKE_BUCKET, it) }
+                    )
+                }
             }
         }
     }
@@ -285,58 +300,70 @@ private fun PitTopChrome(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Brush.verticalGradient(listOf(Color(0xFF10273F), Color(0xFF173C53), Color(0xFFF7FAFC))))
-                .padding(horizontal = 10.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+                .background(Brush.verticalGradient(listOf(Color(0xFF10273F), Color(0xFF173C53), Color(0xFFEAF1F6))))
+                .padding(horizontal = 10.dp, vertical = 6.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Card(
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f))
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.08f))
             ) {
-                Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Column(modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Box(
-                            modifier = Modifier.size(30.dp).clip(CircleShape).background(Color.White.copy(alpha = 0.14f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(Icons.Default.AutoAwesome, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
-                        }
                         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                            Text("Pit Scouting", color = Color.White, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.titleSmall)
-                            Text("$eventDisplayName | $formVersion", color = Color.White.copy(alpha = 0.72f), style = MaterialTheme.typography.bodySmall)
+                            Text("Pit Scouting", color = Color.White, fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyMedium)
+                            Text("$eventDisplayName | $formVersion", color = Color.White.copy(alpha = 0.72f), style = MaterialTheme.typography.labelSmall)
                         }
                         Text(
                             text = activeTab?.let { syncLabel(it.syncStatus) } ?: "No tab",
                             color = Color.White,
-                            modifier = Modifier.background(Color.White.copy(alpha = 0.12f), RoundedCornerShape(99.dp)).padding(horizontal = 8.dp, vertical = 4.dp),
+                            modifier = Modifier
+                                .background(Color.White.copy(alpha = 0.12f), RoundedCornerShape(99.dp))
+                                .padding(horizontal = 8.dp, vertical = 3.dp),
                             style = MaterialTheme.typography.labelSmall
                         )
                     }
 
                     if (activeTab != null) {
                         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                            StatChip("Team", activeTab.teamNumber.ifBlank { "Open" }, Brush.linearGradient(listOf(Color(0xFF1C5E96), Color(0xFF2791AD))), Modifier.weight(1f))
-                            StatChip("Progress", "${(activeTab.completionRatio * 100).roundToInt()}%", Brush.linearGradient(listOf(Color(0xFF126F64), Color(0xFF2DB39B))), Modifier.weight(1f))
-                            StatChip("Sync", syncLabel(activeTab.syncStatus), Brush.linearGradient(listOf(Color(0xFF80611F), Color(0xFFC09B4B))), Modifier.weight(1f))
+                            TopStatPill(
+                                text = "Team ${activeTab.teamNumber.ifBlank { "Open" }}",
+                                modifier = Modifier.weight(1f)
+                            )
+                            TopStatPill(
+                                text = "${(activeTab.completionRatio * 100).roundToInt()}% done",
+                                modifier = Modifier.weight(1f)
+                            )
+                            TopStatPill(
+                                text = syncLabel(activeTab.syncStatus),
+                                modifier = Modifier.weight(1f)
+                            )
                         }
                         LinearProgressIndicator(
                             progress = { activeTab.completionRatio },
-                            modifier = Modifier.fillMaxWidth().height(6.dp).clip(RoundedCornerShape(99.dp)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(4.dp)
+                                .clip(RoundedCornerShape(99.dp)),
                             color = Color(0xFF8BE1C3),
                             trackColor = Color.White.copy(alpha = 0.14f)
                         )
                     }
                 }
             }
+
             syncBanner?.takeIf { it.isNotBlank() }?.let { message ->
                 Row(
-                    modifier = Modifier.fillMaxWidth().background(Color(0xFF153A54), RoundedCornerShape(16.dp)).padding(horizontal = 12.dp, vertical = 10.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFF153A54), RoundedCornerShape(14.dp))
+                        .padding(horizontal = 10.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Row(modifier = Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Icon(Icons.Default.CloudDone, contentDescription = null, tint = Color(0xFF8BE1C3), modifier = Modifier.size(18.dp))
-                        Text(message, color = Color.White, style = MaterialTheme.typography.bodySmall)
+                        Icon(Icons.Default.CloudDone, contentDescription = null, tint = Color(0xFF8BE1C3), modifier = Modifier.size(16.dp))
+                        Text(message, color = Color.White, style = MaterialTheme.typography.labelMedium)
                     }
                     IconButton(onClick = onDismissBanner, modifier = Modifier.size(24.dp)) {
                         Icon(Icons.Default.Close, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
@@ -346,7 +373,11 @@ private fun PitTopChrome(
 
             if (versionMismatch) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().background(Color(0xFFFFF4E4), RoundedCornerShape(16.dp)).border(1.dp, Color(0xFFE6C890), RoundedCornerShape(16.dp)).padding(horizontal = 12.dp, vertical = 10.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFFFFF4E4), RoundedCornerShape(14.dp))
+                        .border(1.dp, Color(0xFFE6C890), RoundedCornerShape(14.dp))
+                        .padding(horizontal = 10.dp, vertical = 8.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -354,7 +385,11 @@ private fun PitTopChrome(
                         Text("Template updated", color = Color(0xFF7A4B00), fontWeight = FontWeight.SemiBold)
                         Text("Reset local tabs once so fields line up with web.", color = Color(0xFF8A6427), style = MaterialTheme.typography.bodySmall)
                     }
-                    FilledTonalButton(onClick = onResetVersion, shape = RoundedCornerShape(12.dp)) {
+                    FilledTonalButton(
+                        onClick = onResetVersion,
+                        shape = RoundedCornerShape(12.dp),
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 8.dp)
+                    ) {
                         Icon(Icons.Default.Tune, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(4.dp))
                         Text("Reset")
@@ -362,38 +397,45 @@ private fun PitTopChrome(
                 }
             }
 
-            Card(shape = RoundedCornerShape(18.dp), colors = CardDefaults.cardColors(containerColor = Color(0xFFF7FAFC))) {
-                Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                        Text("Open tabs", color = Color(0xFF17344F), fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodyMedium)
-                        Text("${tabs.size} active", color = Color(0xFF6E879A), style = MaterialTheme.typography.bodySmall)
-                    }
-                    Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        tabs.forEach { tab ->
-                            TabChip(
-                                tab = tab,
-                                selected = activeTab?.tabId == tab.tabId,
-                                onSelect = { onSwitchTab(tab.tabId) },
-                                onClose = { onCloseTab(tab.tabId) }
-                            )
+            Card(shape = RoundedCornerShape(16.dp), colors = CardDefaults.cardColors(containerColor = Color(0xFFF7FAFC))) {
+                Column(modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    if (tabs.isNotEmpty()) {
+                        LazyRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            items(items = tabs, key = { it.tabId }) { tab ->
+                                TabChip(
+                                    tab = tab,
+                                    selected = activeTab?.tabId == tab.tabId,
+                                    onSelect = { onSwitchTab(tab.tabId) },
+                                    onClose = { onCloseTab(tab.tabId) }
+                                )
+                            }
                         }
                     }
+
                     Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedTextField(
                             value = newTabTeamNumber,
                             onValueChange = onNewTabTeamNumberChange,
                             modifier = Modifier
                                 .weight(1f)
-                                .heightIn(min = 48.dp),
+                                .heightIn(min = 42.dp),
                             singleLine = true,
                             shape = RoundedCornerShape(14.dp),
-                            placeholder = { Text("Team #", style = MaterialTheme.typography.bodySmall) },
-                            textStyle = MaterialTheme.typography.bodyMedium
+                            placeholder = { Text("Add team #", style = MaterialTheme.typography.bodySmall) },
+                            textStyle = MaterialTheme.typography.bodyMedium,
+                            colors = topChromeFieldColors()
                         )
-                        FilledTonalButton(onClick = onCreateTab, shape = RoundedCornerShape(14.dp), contentPadding = PaddingValues(horizontal = 12.dp, vertical = 9.dp)) {
-                            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                        FilledTonalButton(
+                            onClick = onCreateTab,
+                            shape = RoundedCornerShape(14.dp),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(15.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Tab")
+                            Text("New")
                         }
                     }
                 }
@@ -411,16 +453,20 @@ private fun TabChip(
 ) {
     Surface(onClick = onSelect, color = if (selected) Color(0xFF163650) else Color.White, shape = RoundedCornerShape(14.dp)) {
         Row(
-            modifier = Modifier.padding(start = 8.dp, top = 6.dp, bottom = 6.dp, end = 2.dp),
+            modifier = Modifier.padding(start = 8.dp, top = 5.dp, bottom = 5.dp, end = 2.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             Box(modifier = Modifier.size(6.dp).clip(CircleShape).background(syncColor(tab.syncStatus)))
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(tab.tabName, color = if (selected) Color.White else Color(0xFF17344F), fontWeight = FontWeight.SemiBold, style = MaterialTheme.typography.bodySmall)
-                Text("${(tab.completionRatio * 100).roundToInt()}%", color = if (selected) Color.White.copy(alpha = 0.64f) else Color(0xFF6E879A), style = MaterialTheme.typography.labelSmall)
-            }
-            IconButton(onClick = onClose, modifier = Modifier.size(22.dp)) {
+            Text(
+                text = "${tab.tabName} ${(tab.completionRatio * 100).roundToInt()}%",
+                color = if (selected) Color.White else Color(0xFF17344F),
+                fontWeight = FontWeight.SemiBold,
+                style = MaterialTheme.typography.bodySmall,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            IconButton(onClick = onClose, modifier = Modifier.size(20.dp)) {
                 Icon(Icons.Default.Close, contentDescription = null, tint = if (selected) Color.White else Color(0xFF7A90A2), modifier = Modifier.size(14.dp))
             }
         }
@@ -434,8 +480,8 @@ private fun AssignmentBoard(
     onSelectTeam: (String) -> Unit
 ) {
     SectionCard(title = "Assigned Teams") {
-        Row(modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            assignedTeams.forEach { teamNumber ->
+        LazyRow(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            items(items = assignedTeams, key = { it }) { teamNumber ->
                 val completed = completedTeams.contains(teamNumber)
                 FilterChip(
                     selected = completed,
@@ -449,6 +495,7 @@ private fun AssignmentBoard(
         }
     }
 }
+
 @Composable
 private fun ImageBoard(
     title: String,
@@ -481,7 +528,7 @@ private fun ImageBoard(
                 Icon(Icons.Default.Image, contentDescription = null, tint = Color(0xFF135D7A))
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text("Visual evidence", color = Color(0xFF17344F), fontWeight = FontWeight.SemiBold)
+                Text("Add photos", color = Color(0xFF17344F), fontWeight = FontWeight.SemiBold)
                 Text("Camera, gallery, or files.", color = Color(0xFF6E879A), style = MaterialTheme.typography.bodySmall)
             }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -489,7 +536,6 @@ private fun ImageBoard(
                 SourceAction("Gallery", Icons.Default.PhotoLibrary, Modifier.weight(1f), onGallery)
                 SourceAction("Files", Icons.Default.FolderOpen, Modifier.weight(1f), onFiles)
             }
-            Text("Camera permission is requested when needed. Gallery/files use the Android picker.", color = Color(0xFF7A90A2), style = MaterialTheme.typography.labelSmall)
         }
 
         if (images.isEmpty()) {
@@ -498,7 +544,11 @@ private fun ImageBoard(
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 images.forEach { image ->
                     Row(
-                        modifier = Modifier.fillMaxWidth().background(Color(0xFFF8FBFD), RoundedCornerShape(16.dp)).border(1.dp, Color(0xFFD7E3EC), RoundedCornerShape(16.dp)).padding(horizontal = 12.dp, vertical = 10.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFFF8FBFD), RoundedCornerShape(16.dp))
+                            .border(1.dp, Color(0xFFD7E3EC), RoundedCornerShape(16.dp))
+                            .padding(horizontal = 12.dp, vertical = 10.dp),
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -507,7 +557,11 @@ private fun ImageBoard(
                         }
                         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                             Text(image.name, color = Color(0xFF17344F), fontWeight = FontWeight.Medium)
-                            Text("${formatBytes(image.size)} | ${if (image.uploaded) "Uploaded" else "Stored locally"}", color = if (image.uploaded) Color(0xFF15705D) else Color(0xFF8B651E), style = MaterialTheme.typography.bodySmall)
+                            Text(
+                                "${formatBytes(image.size)} | ${if (image.uploaded) "Uploaded" else "Stored locally"}",
+                                color = if (image.uploaded) Color(0xFF15705D) else Color(0xFF8B651E),
+                                style = MaterialTheme.typography.bodySmall
+                            )
                         }
                         IconButton(onClick = { onRemove(image) }, modifier = Modifier.size(28.dp)) {
                             Icon(Icons.Default.DeleteOutline, contentDescription = null, tint = Color(0xFFCC4D57))
@@ -547,20 +601,32 @@ private fun ActionDock(
     onSubmit: () -> Unit
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp).background(Color.White.copy(alpha = 0.96f), RoundedCornerShape(20.dp)).border(1.dp, Color(0xFFD8E3EB), RoundedCornerShape(20.dp)).padding(10.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 6.dp)
+            .background(Color.White.copy(alpha = 0.96f), RoundedCornerShape(20.dp))
+            .border(1.dp, Color(0xFFD8E3EB), RoundedCornerShape(20.dp))
+            .padding(8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        OutlinedButton(onClick = onClear, modifier = Modifier.weight(1f), shape = RoundedCornerShape(14.dp), contentPadding = PaddingValues(vertical = 10.dp)) {
+        OutlinedButton(onClick = onClear, modifier = Modifier.weight(1f), shape = RoundedCornerShape(14.dp), contentPadding = PaddingValues(vertical = 9.dp)) {
             Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
             Spacer(modifier = Modifier.width(4.dp))
             Text("Reset")
         }
-        FilledTonalButton(onClick = onSaveDraft, modifier = Modifier.weight(1f), shape = RoundedCornerShape(14.dp), contentPadding = PaddingValues(vertical = 10.dp)) {
+        FilledTonalButton(onClick = onSaveDraft, modifier = Modifier.weight(1f), shape = RoundedCornerShape(14.dp), contentPadding = PaddingValues(vertical = 9.dp)) {
             Icon(Icons.Default.Backup, contentDescription = null, modifier = Modifier.size(16.dp))
             Spacer(modifier = Modifier.width(4.dp))
             Text("Draft")
         }
-        Button(onClick = onSubmit, modifier = Modifier.weight(1f), enabled = !isSubmitting, shape = RoundedCornerShape(14.dp), colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF153A54), contentColor = Color.White), contentPadding = PaddingValues(vertical = 10.dp)) {
+        Button(
+            onClick = onSubmit,
+            modifier = Modifier.weight(1f),
+            enabled = !isSubmitting,
+            shape = RoundedCornerShape(14.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF153A54), contentColor = Color.White),
+            contentPadding = PaddingValues(vertical = 9.dp)
+        ) {
             Icon(Icons.AutoMirrored.Filled.Send, contentDescription = null, modifier = Modifier.size(16.dp))
             Spacer(modifier = Modifier.width(4.dp))
             Text(if (isSubmitting) "Syncing" else "Submit")
@@ -613,6 +679,42 @@ private fun syncColor(status: PitScoutingStatus): Color = when (status) {
     PitScoutingStatus.FAILED -> Color(0xFFDC2626)
 }
 
+@Composable
+private fun TopStatPill(
+    text: String,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .background(Color.White.copy(alpha = 0.12f), RoundedCornerShape(12.dp))
+            .padding(horizontal = 8.dp, vertical = 6.dp)
+    ) {
+        Text(
+            text = text,
+            color = Color.White,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Medium,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
+private fun topChromeFieldColors() = OutlinedTextFieldDefaults.colors(
+    focusedTextColor = Color(0xFF17344F),
+    unfocusedTextColor = Color(0xFF17344F),
+    disabledTextColor = Color(0xFF61788C),
+    focusedContainerColor = Color.White,
+    unfocusedContainerColor = Color.White,
+    disabledContainerColor = Color(0xFFF5F8FA),
+    cursorColor = Color(0xFF1C5E96),
+    focusedBorderColor = Color(0xFF2A6DB0),
+    unfocusedBorderColor = Color(0xFFC9D8E5),
+    focusedPlaceholderColor = Color(0xFF7D92A3),
+    unfocusedPlaceholderColor = Color(0xFF7D92A3)
+)
+
 private fun createTempImageFile(context: Context): File {
     val targetDir = File(context.cacheDir, "pit-captures").apply { mkdirs() }
     return File.createTempFile("pit_capture_", ".jpg", targetDir)
@@ -628,13 +730,3 @@ private fun formatBytes(size: Long): String {
         else -> "$size B"
     }
 }
-
-
-
-
-
-
-
-
-
-

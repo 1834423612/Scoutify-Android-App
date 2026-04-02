@@ -1,4 +1,4 @@
-﻿package com.team695.scoutifyapp
+package com.team695.scoutifyapp
 
 import android.Manifest
 import android.app.DownloadManager
@@ -232,7 +232,7 @@ class MainActivity : ComponentActivity() {
                     this.launch {
                         val githubResult: GithubResponse = appService.getAssets()
                         val link: Asset? = githubResult.assets.find {
-                            it.browserDownloadUrl.takeLast(4) == "apk"
+                            it.browserDownloadUrl.endsWith(".apk", ignoreCase = true)
                         }
 
                         if (link != null) {
@@ -271,6 +271,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
 
 
 
