@@ -155,7 +155,9 @@ class PitScoutingRepository(
                 lastError = null
             )
             deleteLocalFiles(existing.images)
-            db.pitscoutQueries.deletePitscoutByFormId(existing.formId)
+            LocalDatabaseWriteCoordinator.withWriteLock {
+                db.pitscoutQueries.deletePitscoutByFormId(existing.formId)
+            }
             persistTab(cleared)
             cleared
         }
@@ -179,9 +181,13 @@ class PitScoutingRepository(
             val existing = getTabById(tabId)
             if (existing != null) {
                 deleteLocalFiles(existing.images)
-                db.pitscoutQueries.deletePitscoutByFormId(existing.formId)
+                LocalDatabaseWriteCoordinator.withWriteLock {
+                    db.pitscoutQueries.deletePitscoutByFormId(existing.formId)
+                }
             }
-            db.pitScoutingTabQueries.deleteTab(tabId)
+            LocalDatabaseWriteCoordinator.withWriteLock {
+                db.pitScoutingTabQueries.deleteTab(tabId)
+            }
         }
     }
 
@@ -190,9 +196,13 @@ class PitScoutingRepository(
             db.pitScoutingTabQueries.getAllTabsForEvent(eventKey).executeAsList().forEach { row ->
                 val tab = rowToTab(row)
                 deleteLocalFiles(tab.images)
-                db.pitscoutQueries.deletePitscoutByFormId(tab.formId)
+                LocalDatabaseWriteCoordinator.withWriteLock {
+                    db.pitscoutQueries.deletePitscoutByFormId(tab.formId)
+                }
             }
-            db.pitScoutingTabQueries.deleteTabsForEvent(eventKey)
+            LocalDatabaseWriteCoordinator.withWriteLock {
+                db.pitScoutingTabQueries.deleteTabsForEvent(eventKey)
+            }
         }
     }
 
@@ -305,7 +315,9 @@ class PitScoutingRepository(
                         }
                     }
 
-                    db.pitscoutQueries.deletePitscoutByFormId(preparedTab.formId)
+                    LocalDatabaseWriteCoordinator.withWriteLock {
+                        db.pitscoutQueries.deletePitscoutByFormId(preparedTab.formId)
+                    }
                     runCatching {
                         clearTab(preparedTab.tabId, regenerateFormId = true)
                     }.onFailure { resetError ->
@@ -362,17 +374,19 @@ class PitScoutingRepository(
         userData: SubmissionUserData,
         language: String
     ) {
-        db.pitscoutQueries.deletePitscoutByFormId(tab.formId)
-        db.pitscoutQueries.insertPitscout(
-            event_id = tab.eventKey,
-            form_id = tab.formId,
-            data_ = gson.toJson(data),
-            upload = gson.toJson(upload),
-            user_data = gson.toJson(userData),
-            user_agent = buildUserAgent(),
-            ip = null,
-            language = language
-        )
+        LocalDatabaseWriteCoordinator.withWriteLock {
+            db.pitscoutQueries.deletePitscoutByFormId(tab.formId)
+            db.pitscoutQueries.insertPitscout(
+                event_id = tab.eventKey,
+                form_id = tab.formId,
+                data_ = gson.toJson(data),
+                upload = gson.toJson(upload),
+                user_data = gson.toJson(userData),
+                user_agent = buildUserAgent(),
+                ip = null,
+                language = language
+            )
+        }
         persistTab(
             tab.copy(
                 isDraft = false,
@@ -545,22 +559,24 @@ class PitScoutingRepository(
         }
     }
 
-    private fun persistTab(tab: PitScoutingTab) {
-        db.pitScoutingTabQueries.insertTab(
-            tabId = tab.tabId,
-            teamNumber = tab.teamNumber,
-            eventKey = tab.eventKey,
-            formId = tab.formId,
-            formVersion = tab.formVersion,
-            fieldValuesJson = json.encodeToString(ListSerializer(PitFormField.serializer()), tab.fields),
-            uploadDataJson = json.encodeToString(PitImageBundle.serializer(), tab.images),
-            isDraft = if (tab.isDraft) 1L else 0L,
-            isSubmitted = if (tab.isSubmitted) 1L else 0L,
-            submissionTime = tab.submissionTime,
-            createdAt = tab.createdAt,
-            updatedAt = tab.updatedAt,
-            syncStatus = tab.syncStatus.name
-        )
+    private suspend fun persistTab(tab: PitScoutingTab) {
+        LocalDatabaseWriteCoordinator.withWriteLock {
+            db.pitScoutingTabQueries.insertTab(
+                tabId = tab.tabId,
+                teamNumber = tab.teamNumber,
+                eventKey = tab.eventKey,
+                formId = tab.formId,
+                formVersion = tab.formVersion,
+                fieldValuesJson = json.encodeToString(ListSerializer(PitFormField.serializer()), tab.fields),
+                uploadDataJson = json.encodeToString(PitImageBundle.serializer(), tab.images),
+                isDraft = if (tab.isDraft) 1L else 0L,
+                isSubmitted = if (tab.isSubmitted) 1L else 0L,
+                submissionTime = tab.submissionTime,
+                createdAt = tab.createdAt,
+                updatedAt = tab.updatedAt,
+                syncStatus = tab.syncStatus.name
+            )
+        }
     }
 
     private fun rowToTab(row: com.team695.scoutifyapp.db.PitscoutingTab): PitScoutingTab {

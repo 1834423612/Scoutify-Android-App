@@ -46,17 +46,19 @@ class CommentRepository (
         comments: List<CommentBody>
     ) {
         withContext(Dispatchers.IO) {
-            db.transaction {
-                comments.forEach { c ->
-                    db.commentsQueries.insertComment(
-                        c.match_number,
-                        c.team_number,
-                        c.alliance,
-                        c.alliance_position,
-                        c.timestamp,
-                        c.comment,
-                        c.submitted
-                    )
+            LocalDatabaseWriteCoordinator.withWriteLock {
+                db.transaction {
+                    comments.forEach { c ->
+                        db.commentsQueries.insertComment(
+                            c.match_number,
+                            c.team_number,
+                            c.alliance,
+                            c.alliance_position,
+                            c.timestamp,
+                            c.comment,
+                            c.submitted
+                        )
+                    }
                 }
             }
         }
@@ -101,7 +103,11 @@ class CommentRepository (
 
     // Update the 'submitted' value for a specific match
     suspend fun updateSubmissionStatus(matchNumber: Int, submitted: Int) {
-        db.commentsQueries.updateSubmissionStatus(submitted, matchNumber)
+        withContext(Dispatchers.IO) {
+            LocalDatabaseWriteCoordinator.withWriteLock {
+                db.commentsQueries.updateSubmissionStatus(submitted, matchNumber)
+            }
+        }
     }
 
 

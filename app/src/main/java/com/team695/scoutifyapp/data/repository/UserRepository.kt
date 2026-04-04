@@ -58,21 +58,25 @@ class UserRepository(
                     userRes != null &&
                     (userRes.androidID == context.androidID || BuildConfig.DEBUG)
                 ) {
-                    db.userQueries.insertUser(
-                        name = userRes.name,
-                        display_name = userRes.displayName,
-                        email = userRes.email,
-                        android_id = userRes.androidID
-                    )
+                    LocalDatabaseWriteCoordinator.withWriteLock {
+                        db.userQueries.insertUser(
+                            name = userRes.name,
+                            display_name = userRes.displayName,
+                            email = userRes.email,
+                            android_id = userRes.androidID
+                        )
+                    }
 
                     return@withContext true
                 } else {
-                    db.userQueries.insertUser(
-                        name = "WRONG_USER",
-                        display_name = "WRONG_USER",
-                        email = "WRONG_USER",
-                        android_id = "WRONG_USER"
-                    )
+                    LocalDatabaseWriteCoordinator.withWriteLock {
+                        db.userQueries.insertUser(
+                            name = "WRONG_USER",
+                            display_name = "WRONG_USER",
+                            email = "WRONG_USER",
+                            android_id = "WRONG_USER"
+                        )
+                    }
 
                     return@withContext false
                 }
@@ -94,13 +98,15 @@ class UserRepository(
 
     suspend fun logout() {
         withContext(Dispatchers.IO) {
-            db.userQueries.deleteUser()
+            LocalDatabaseWriteCoordinator.withWriteLock {
+                db.userQueries.deleteUser()
 
-            // clear all data
-            db.transaction {
-                db.matchQueries.clearAllMatches()
-                db.taskQueries.clearAllTasks()
-                db.commentsQueries.clearAllComments()
+                // clear all data
+                db.transaction {
+                    db.matchQueries.clearAllMatches()
+                    db.taskQueries.clearAllTasks()
+                    db.commentsQueries.clearAllComments()
+                }
             }
 
             ScoutifyClient.tokenManager.saveToken("")
