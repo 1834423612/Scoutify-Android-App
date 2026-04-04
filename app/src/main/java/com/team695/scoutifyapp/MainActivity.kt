@@ -135,6 +135,8 @@ class MainActivity : ComponentActivity() {
                 endgame_defending_timeAdapter = intAdapter,
                 endgame_broken_timeAdapter = intAdapter,
                 teleop_fuel_countAdapter = intAdapter,
+                local_teleop_total_millisecondsAdapter = intAdapter,
+                local_teleop_cached_millisecondsAdapter = intAdapter,
             ),
             commentsEntityAdapter = CommentsEntity.Adapter(
                 match_numberAdapter = intAdapter,

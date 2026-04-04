@@ -45,6 +45,8 @@ class DataViewModel(
     private val taskId: Int,
 ) : ViewModel() {
     private val persistMutex = Mutex()
+    private var lastLiveTeleopPersistTotalMilliseconds = -1
+    private var lastLiveTeleopPersistCachedMilliseconds = -1
 
     private val _formState = MutableStateFlow(
         GameFormState(
@@ -108,7 +110,10 @@ class DataViewModel(
     private suspend fun persistFormState(currentFormState: GameFormState) {
         persistMutex.withLock {
             val gameDetails: GameDetails = currentFormState.gameDetails.copy(
-                autonPath = pathsToJson(currentFormState.paths)
+                autonPath = pathsToJson(currentFormState.paths),
+                localTeleopSection = currentFormState.teleopSection.name,
+                localTeleopTotalMilliseconds = currentFormState.teleopTotalMilliseconds,
+                localTeleopCachedMilliseconds = currentFormState.teleopCachedMilliseconds,
             )
 
             Log.d("DATA_MODEL", gameDetails.toString())
@@ -144,6 +149,30 @@ class DataViewModel(
         }
     }
 
+    private fun flushAfterStateMutation() {
+        flushNowAsync()
+    }
+
+    private fun maybeFlushLiveTeleopSnapshot() {
+        val currentState = _formState.value
+        if (!currentState.teleopRunning && currentState.teleopCachedMilliseconds <= 0) {
+            return
+        }
+
+        val totalMilliseconds = currentState.teleopTotalMilliseconds
+        val cachedMilliseconds = currentState.teleopCachedMilliseconds
+        val totalDelta = kotlin.math.abs(totalMilliseconds - lastLiveTeleopPersistTotalMilliseconds)
+        val cachedDelta = kotlin.math.abs(cachedMilliseconds - lastLiveTeleopPersistCachedMilliseconds)
+
+        if (totalDelta < 1000 && cachedDelta < 1000) {
+            return
+        }
+
+        lastLiveTeleopPersistTotalMilliseconds = totalMilliseconds
+        lastLiveTeleopPersistCachedMilliseconds = cachedMilliseconds
+        flushNowAsync()
+    }
+
     fun formEvent(gameDetails: GameDetails) {
         if (gameDetails.task_id == null) {
             Log.d("DataViewModel", "Invalid operation", Throwable())
@@ -154,6 +183,7 @@ class DataViewModel(
                 gameDetails = gameDetails
             )
         }
+        flushAfterStateMutation()
     }
 
     fun getAllianceForMatch(matchNum: Long, teamNum: Long): Char {
@@ -192,6 +222,7 @@ class DataViewModel(
                 )
             }
         }
+        maybeFlushLiveTeleopSnapshot()
     }
 
     fun resetCacheTime() {
@@ -200,6 +231,7 @@ class DataViewModel(
                 teleopCachedMilliseconds = 0
             )
         }
+        flushAfterStateMutation()
     }
 
     //resets all teleop data and starts teleop
@@ -266,6 +298,7 @@ class DataViewModel(
                 )
             )
         }
+        flushAfterStateMutation()
     }
 
     fun endTeleop() {
@@ -274,6 +307,7 @@ class DataViewModel(
                 teleopRunning = false,
             )
         }
+        flushAfterStateMutation()
     }
 
     fun completeTeleop() {
@@ -288,6 +322,7 @@ class DataViewModel(
                 )
             )
         }
+        flushAfterStateMutation()
     }
 
     fun setTeleopSection(teleopSection: TeleopSection, teleopTotalMilliseconds: Int) {
@@ -297,6 +332,7 @@ class DataViewModel(
                 teleopTotalMilliseconds = teleopTotalMilliseconds
             )
         }
+        flushAfterStateMutation()
     }
 
     fun startPath(offset: Offset) {
@@ -327,6 +363,7 @@ class DataViewModel(
                 else _formState.value.undoTree
             )
         }
+        flushAfterStateMutation()
     }
 
     fun addLabeledPoint(offset: Offset, label: String) {
@@ -339,6 +376,7 @@ class DataViewModel(
                 else _formState.value.undoTree
             )
         }
+        flushAfterStateMutation()
     }
 
     private fun pathsToJson(paths: List<Stroke>) =
@@ -391,6 +429,7 @@ class DataViewModel(
                     justUndid = true
                 )
             }
+            flushAfterStateMutation()
         }
     }
 
@@ -403,6 +442,7 @@ class DataViewModel(
                     justUndid = false
                 )
             }
+            flushAfterStateMutation()
         }
     }
 
@@ -422,9 +462,32 @@ class DataViewModel(
                 justUndid = false
             )
         }
+        flushAfterStateMutation()
     }
 
     private fun restoreTeleopState(gameDetails: GameDetails): RestoredTeleopState {
+        val hasPersistedLocalTeleopState =
+            gameDetails.localTeleopSection != null &&
+            gameDetails.localTeleopTotalMilliseconds != null &&
+            gameDetails.localTeleopCachedMilliseconds != null &&
+            (
+                gameDetails.localTeleopSection != TeleopSection.UNSTARTED.name ||
+                    gameDetails.localTeleopTotalMilliseconds != 0 ||
+                    gameDetails.localTeleopCachedMilliseconds != 0
+                )
+
+        if (hasPersistedLocalTeleopState) {
+            val persistedSection = TeleopSection.entries.find {
+                it.name == gameDetails.localTeleopSection
+            } ?: TeleopSection.UNSTARTED
+
+            return RestoredTeleopState(
+                section = persistedSection,
+                totalMilliseconds = gameDetails.localTeleopTotalMilliseconds,
+                cachedMilliseconds = gameDetails.localTeleopCachedMilliseconds
+            )
+        }
+
         if (gameDetails.teleopCompleted == true || gameDetails.postgameProgress > 0f) {
             return RestoredTeleopState(
                 section = TeleopSection.ENDED,

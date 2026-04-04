@@ -3,6 +3,7 @@ import android.util.Log
 import com.team695.scoutifyapp.db.GameDetailsEntity
 import kotlin.Boolean
 import kotlin.Double
+import kotlin.jvm.Transient
 import kotlin.reflect.KProperty1
 import kotlin.reflect.full.memberProperties
 
@@ -56,6 +57,9 @@ data class GameDetails(
     val teleopFuelCount: Int? = null,
     val teleopFlag: Boolean? = null,
     val teleopCompleted: Boolean? = null,
+    @Transient val localTeleopSection: String? = null,
+    @Transient val localTeleopTotalMilliseconds: Int? = null,
+    @Transient val localTeleopCachedMilliseconds: Int? = null,
     val postgameShootWhileMoving: Boolean? = null,
     val postgameStockpileNeutral: Boolean? = null,
     val postgameStockpileCrossCourt: Boolean? = null,
@@ -158,6 +162,9 @@ fun GameDetailsEntity.createGameDetailsFromDb(): GameDetails {
         teleopFuelCount = this.teleop_fuel_count,
         teleopFlag = this.teleop_flag,
         teleopCompleted = this.teleop_completed,
+        localTeleopSection = this.local_teleop_section,
+        localTeleopTotalMilliseconds = this.local_teleop_total_milliseconds,
+        localTeleopCachedMilliseconds = this.local_teleop_cached_milliseconds,
         postgameShootAnywhere = this.postgame_shoot_anywhere,
         postgameShootWhileMoving = this.postgame_shoot_while_moving,
         postgameStockpileNeutral = this.postgame_stockpile_neutral,

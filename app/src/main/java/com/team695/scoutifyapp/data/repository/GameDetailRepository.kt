@@ -171,6 +171,9 @@ class GameDetailRepository(
                 teleop_fuel_count = details.teleopFuelCount,
                 teleop_flag = details.teleopFlag,
                 teleop_completed = details.teleopCompleted,
+                local_teleop_section = details.localTeleopSection ?: "UNSTARTED",
+                local_teleop_total_milliseconds = details.localTeleopTotalMilliseconds ?: 0,
+                local_teleop_cached_milliseconds = details.localTeleopCachedMilliseconds ?: 0,
 
                 // Postgame
                 postgame_shoot_anywhere = details.postgameShootAnywhere,

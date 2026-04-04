@@ -68,6 +68,9 @@ CREATE TABLE gameDetailsEntity (
     teleop_fuel_count INTEGER AS Int,
     teleop_flag INTEGER AS Boolean,
     teleop_completed INTEGER AS Boolean,
+    local_teleop_section TEXT NOT NULL DEFAULT 'UNSTARTED',
+    local_teleop_total_milliseconds INTEGER AS Int NOT NULL DEFAULT 0,
+    local_teleop_cached_milliseconds INTEGER AS Int NOT NULL DEFAULT 0,
 
     -- Postgame
     postgame_shoot_anywhere INTEGER AS Boolean,
@@ -142,6 +145,9 @@ INSERT OR REPLACE INTO gameDetailsEntity(
     teleop_fuel_count,
     teleop_flag,
     teleop_completed,
+    local_teleop_section,
+    local_teleop_total_milliseconds,
+    local_teleop_cached_milliseconds,
     postgame_shoot_anywhere,
     postgame_shoot_while_moving,
     postgame_stockpile_neutral,
@@ -152,7 +158,7 @@ INSERT OR REPLACE INTO gameDetailsEntity(
     postgame_over_bump,
     postgame_flag
 )
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 selectDetailsForTask:
 SELECT * FROM gameDetailsEntity
