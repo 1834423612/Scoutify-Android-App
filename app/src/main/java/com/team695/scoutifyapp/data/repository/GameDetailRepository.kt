@@ -48,18 +48,27 @@ class GameDetailRepository(
     override suspend fun push(): Result<List<GameDetails>> {
         return withContext(Dispatchers.IO) {
             try {
-                val gameDetails = db.gameDetailsQueries
+                val pendingEntities = db.gameDetailsQueries
                     .selectCompletedTasks()
                     .executeAsList()
-                    .map { entity ->
-                        entity.createGameDetailsFromDb()
-                    }
+                val gameDetails = pendingEntities.map { entity -> entity.createGameDetailsFromDb() }
 
                 if (gameDetails.isNotEmpty()) {
                     gameDetailsService.updateGameDetails(
                         acToken = ScoutifyClient.tokenManager.getToken()!!,
                         gameDetails = gameDetails
                     )
+
+                    LocalDatabaseWriteCoordinator.withWriteLock {
+                        db.transaction {
+                            pendingEntities.forEach { entity ->
+                                db.gameDetailsQueries.updatePendingUploadState(
+                                    pending_upload = false,
+                                    task_id = entity.task_id
+                                )
+                            }
+                        }
+                    }
 
                     Log.d("Game Details", "Pushed game details successfully")
                 }  else {
@@ -111,6 +120,16 @@ class GameDetailRepository(
     suspend fun updateDbFromGameDetails(details: GameDetails) {
         withContext(Dispatchers.IO) {
             LocalDatabaseWriteCoordinator.withWriteLock {
+                val existingEntity = details.task_id?.let { taskId ->
+                    db.gameDetailsQueries.selectDetailsForTask(taskId).executeAsOneOrNull()
+                }
+                val existingDetails = existingEntity?.createGameDetailsFromDb()
+                val pendingUpload = when {
+                    existingEntity == null -> hasMeaningfulUploadData(details)
+                    areUploadRelevantFieldsEqual(existingDetails, details) -> existingEntity.pending_upload
+                    else -> true
+                }
+
                 db.gameDetailsQueries.insertDetails(
                     task_id = details.task_id!!,
                     alliance = details.alliance!!.uppercaseChar(),
@@ -175,6 +194,7 @@ class GameDetailRepository(
                     local_teleop_section = details.localTeleopSection ?: "UNSTARTED",
                     local_teleop_total_milliseconds = details.localTeleopTotalMilliseconds ?: 0,
                     local_teleop_cached_milliseconds = details.localTeleopCachedMilliseconds ?: 0,
+                    pending_upload = pendingUpload,
 
                     // Postgame
                     postgame_shoot_anywhere = details.postgameShootAnywhere,
@@ -279,4 +299,32 @@ class GameDetailRepository(
     /*suspend fun fetchGameDetails(): Result<List<Match>> {
 
     }*/
+
+    private fun areUploadRelevantFieldsEqual(
+        existing: GameDetails?,
+        updated: GameDetails
+    ): Boolean {
+        return existing?.normalizedForUploadTracking() == updated.normalizedForUploadTracking()
+    }
+
+    private fun hasMeaningfulUploadData(details: GameDetails): Boolean {
+        val normalized = details.normalizedForUploadTracking()
+
+        return normalized != GameDetails(
+            task_id = details.task_id,
+            matchNumber = details.matchNumber,
+            alliance = details.alliance,
+            alliancePosition = details.alliancePosition
+        ).normalizedForUploadTracking()
+    }
+
+    private fun GameDetails.normalizedForUploadTracking(): GameDetails {
+        return copy(
+            id = null,
+            localTeleopSection = null,
+            localTeleopTotalMilliseconds = null,
+            localTeleopCachedMilliseconds = null,
+            reviewMatchFlag = null
+        )
+    }
 }

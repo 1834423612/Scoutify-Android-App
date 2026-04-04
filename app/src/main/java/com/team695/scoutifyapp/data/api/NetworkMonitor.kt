@@ -16,11 +16,14 @@ import com.team695.scoutifyapp.data.repository.TeamNameRepository
 import com.team695.scoutifyapp.data.repository.UserRepository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.minutes
 import kotlin.time.Duration.Companion.seconds
@@ -54,6 +57,11 @@ class NetworkMonitor(
     private val _isConnected = MutableStateFlow(false)
     override val isConnected: StateFlow<Boolean> = _isConnected
     private var isMonitoringRegistered = false
+    private val syncRequests = MutableSharedFlow<Unit>(
+        replay = 0,
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
 
     // listener for when network has changed
     private val networkCallback = object : ConnectivityManager.NetworkCallback() {
@@ -65,7 +73,12 @@ class NetworkMonitor(
                  NetworkCapabilities.NET_CAPABILITY_VALIDATED
             )
 
+            val wasConnected = _isConnected.value
             _isConnected.value = validated
+
+            if (validated && !wasConnected) {
+                requestImmediateSync()
+            }
         }
 
         // lost connection to network
@@ -105,12 +118,27 @@ class NetworkMonitor(
                     it != null && it.name != "WRONG_USER" && it.name != "LOADING"
                 }
 
-                retryFetchUntilSuccess(maxErrors)
                 retryPushUntilSuccess(maxErrors)
+                retryFetchUntilSuccess(maxErrors)
 
-                delay(FETCH_INTERVAL)
+                waitForNextSyncWindow()
             }
         }
+    }
+
+    private suspend fun waitForNextSyncWindow() {
+        if (!isConnected.value) {
+            syncRequests.first()
+            return
+        }
+
+        withTimeoutOrNull(FETCH_INTERVAL) {
+            syncRequests.first()
+        }
+    }
+
+    fun requestImmediateSync() {
+        syncRequests.tryEmit(Unit)
     }
 
     private suspend fun retryFetchUntilSuccess(maxErrors: Int) {

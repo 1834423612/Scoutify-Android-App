@@ -18,7 +18,8 @@ class CommentRepository (
     override suspend fun push(): Result<List<CommentServerBody>> {
         return withContext(Dispatchers.IO) {
             try {
-                val submittedComments = db.commentsQueries.selectAllComments().executeAsList()
+                val submittedComments = db.commentsQueries.selectPendingSubmittedComments()
+                    .executeAsList()
                 val commentServerFormat = submittedComments.map { it.convertToServerBody() }
 
                 if (submittedComments.isNotEmpty()) {
@@ -26,6 +27,14 @@ class CommentRepository (
                         acToken = ScoutifyClient.tokenManager.getToken()!!,
                         comments = commentServerFormat
                     )
+
+                    LocalDatabaseWriteCoordinator.withWriteLock {
+                        db.transaction {
+                            submittedComments.forEach { comment ->
+                                db.commentsQueries.markCommentUploaded(comment.id)
+                            }
+                        }
+                    }
 
                     Log.d("Comments", "Comments uploaded successfully")
                 } else {
@@ -49,6 +58,16 @@ class CommentRepository (
             LocalDatabaseWriteCoordinator.withWriteLock {
                 db.transaction {
                     comments.forEach { c ->
+                        val existingComment = db.commentsQueries.selectCommentByMatchAndTeam(
+                            match_number = c.match_number,
+                            team_number = c.team_number
+                        ).executeAsOneOrNull()
+                        val uploaded = existingComment?.uploaded == true &&
+                            existingComment.comment == c.comment &&
+                            existingComment.submitted == c.submitted &&
+                            existingComment.alliance == c.alliance &&
+                            existingComment.alliance_position == c.alliance_position
+
                         db.commentsQueries.insertComment(
                             c.match_number,
                             c.team_number,
@@ -56,7 +75,8 @@ class CommentRepository (
                             c.alliance_position,
                             c.timestamp,
                             c.comment,
-                            c.submitted
+                            c.submitted,
+                            uploaded
                         )
                     }
                 }
@@ -79,6 +99,7 @@ class CommentRepository (
             Log.d("Comments", "Timestamp: ${comment.timestamp}")
             Log.d("Comments", "Comment: ${comment.comment}")
             Log.d("Comments", "Submitted: ${comment.submitted}")
+            Log.d("Comments", "Uploaded: ${comment.uploaded}")
             Log.d("Comments", "----------")
         }
     }
