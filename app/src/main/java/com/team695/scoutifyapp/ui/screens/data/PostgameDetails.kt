@@ -44,6 +44,7 @@ import com.team695.scoutifyapp.ui.theme.mediumCornerRadius
 import com.team695.scoutifyapp.ui.theme.smallCornerRadius
 import com.team695.scoutifyapp.ui.viewModels.DataViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 @Composable
@@ -54,7 +55,7 @@ fun PostgameDetails(
 ) {
 
     Log.d("DETAILS", formState.gameDetails.toString())
-
+    val coroutineScope = rememberCoroutineScope()
 
     Box(
         modifier = Modifier
@@ -71,7 +72,10 @@ fun PostgameDetails(
                 buttonColor = if(formState.totalProgress == 100) ProgressGreen else LightGunmetal,
                 onButtonPressed = {
                     if(formState.totalProgress == 100) {
-                        returnToHome()
+                        coroutineScope.launch {
+                            dataViewModel.flushNow()
+                            returnToHome()
+                        }
                     }
                 },
                 title = "Postgame",

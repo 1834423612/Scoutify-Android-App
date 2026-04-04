@@ -65,7 +65,6 @@ fun EndgameDetails(
     val previousTimer = formState.teleopCachedMilliseconds - currentTimer
     val coroutineScope = rememberCoroutineScope()
     val endgameCompleted = formState.gameDetails.endgameProgress == 1f &&
-            formState.gameDetails.teleopCompleted == true &&
             formState.teleopCachedMilliseconds == 0
 
     val timers = listOf(
@@ -151,6 +150,8 @@ fun EndgameDetails(
                 onButtonPressed = {
                     if (endgameCompleted) {
                         coroutineScope.launch {
+                            dataViewModel.completeTeleop()
+                            dataViewModel.flushNow()
                             switchToPostgame()
                         }
                     }
