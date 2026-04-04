@@ -37,6 +37,7 @@ import com.team695.scoutifyapp.data.api.service.TaskService
 import com.team695.scoutifyapp.data.repository.MatchRepository
 import com.team695.scoutifyapp.data.repository.TaskRepository
 import com.team695.scoutifyapp.data.repository.UserRepository
+import com.team695.scoutifyapp.data.repository.LocalDatabaseDebugRepository
 import com.team695.scoutifyapp.db.AppDatabase
 import com.team695.scoutifyapp.db.GameDetailsEntity
 import com.team695.scoutifyapp.db.CommentsEntity
@@ -180,6 +181,7 @@ class MainActivity : ComponentActivity() {
         )
         val commentRepository = CommentRepository(service = commentService, db=db)
         val teamNameRepository = TeamNameRepository(service = teamNameService, db = db)
+        val localDatabaseDebugRepository = LocalDatabaseDebugRepository(driver = driver)
 
         val networkMonitor = NetworkMonitor(
             applicationContext,
@@ -266,6 +268,7 @@ class MainActivity : ComponentActivity() {
                     gameDetailRepository = gameDetailRepository,
                     commentRepository = commentRepository,
                     teamNameRepository = teamNameRepository,
+                    localDatabaseDebugRepository = localDatabaseDebugRepository,
                     pitScoutingRepository = pitScoutingRepository,
                     networkMonitor = networkMonitor
                 )

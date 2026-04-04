@@ -14,6 +14,7 @@ import com.team695.scoutifyapp.config.DebugConfig
 import com.team695.scoutifyapp.data.api.NetworkMonitor
 import com.team695.scoutifyapp.data.repository.CommentRepository
 import com.team695.scoutifyapp.data.repository.GameDetailRepository
+import com.team695.scoutifyapp.data.repository.LocalDatabaseDebugRepository
 import com.team695.scoutifyapp.data.repository.MatchRepository
 import com.team695.scoutifyapp.data.repository.PitScoutingRepository
 import com.team695.scoutifyapp.data.repository.TaskRepository
@@ -31,6 +32,7 @@ import com.team695.scoutifyapp.ui.viewModels.DataViewModel
 import com.team695.scoutifyapp.ui.viewModels.HomeViewModel
 import com.team695.scoutifyapp.ui.viewModels.LoginViewModel
 import com.team695.scoutifyapp.ui.viewModels.PitScoutingViewModel
+import com.team695.scoutifyapp.ui.viewModels.SettingsViewModel
 import com.team695.scoutifyapp.ui.viewModels.ViewModelFactory
 
 @Composable
@@ -42,6 +44,7 @@ fun AppNav(
     commentRepository: CommentRepository,
     gameDetailRepository: GameDetailRepository,
     teamNameRepository: TeamNameRepository,
+    localDatabaseDebugRepository: LocalDatabaseDebugRepository,
     pitScoutingRepository: PitScoutingRepository,
     networkMonitor: NetworkMonitor
 ) {
@@ -170,7 +173,16 @@ fun AppNav(
                 navController = navController,
                 gameDetailRepository = gameDetailRepository
             ) {
-                FormScreen()
+                val settingsViewModel: SettingsViewModel = viewModel(
+                    viewModelStoreOwner = owner,
+                    factory = ViewModelFactory {
+                        SettingsViewModel(
+                            localDatabaseDebugRepository = localDatabaseDebugRepository
+                        )
+                    }
+                )
+
+                FormScreen(settingsViewModel = settingsViewModel)
             }
         }
 
