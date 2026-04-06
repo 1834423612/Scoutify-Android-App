@@ -13,6 +13,8 @@ import com.team695.scoutifyapp.data.repository.GameDetailRepository
 import com.team695.scoutifyapp.data.repository.MatchRepository
 import com.team695.scoutifyapp.data.repository.TaskRepository
 import com.team695.scoutifyapp.data.types.*
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.concurrent.atomic.AtomicReference
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,6 +28,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -44,9 +47,9 @@ class DataViewModel(
     private val taskId: Int,
 ) : ViewModel() {
     private val persistMutex = Mutex()
-    private var lastPersistedState: GameFormState? = null
-    private var lastLiveTeleopPersistTotalMilliseconds = -1
-    private var lastLiveTeleopPersistCachedMilliseconds = -1
+    private val lastPersistedState = AtomicReference<GameFormState?>(null)
+    private val lastLiveTeleopPersistTotalMilliseconds = AtomicInteger(-1)
+    private val lastLiveTeleopPersistCachedMilliseconds = AtomicInteger(-1)
 
     private val _formState = MutableStateFlow(
         GameFormState(
@@ -103,7 +106,7 @@ class DataViewModel(
                         Log.d("Dataviewmodel", "Do not save ${currentFormState.gameDetails.robotOnField}")
                         return@onEach
                     }
-                    if (currentFormState == lastPersistedState) {
+                    if (currentFormState == lastPersistedState.get()) {
                         return@onEach
                     }
                     Log.d("Dataviewmodel", "Save ${currentFormState.gameDetails.robotOnField}")
@@ -134,7 +137,7 @@ class DataViewModel(
                 progress = currentFormState.totalProgress
             )
 
-            lastPersistedState = currentFormState
+            lastPersistedState.set(currentFormState)
         }
     }
 
@@ -170,15 +173,15 @@ class DataViewModel(
 
         val totalMilliseconds = currentState.teleopTotalMilliseconds
         val cachedMilliseconds = currentState.teleopCachedMilliseconds
-        val totalDelta = kotlin.math.abs(totalMilliseconds - lastLiveTeleopPersistTotalMilliseconds)
-        val cachedDelta = kotlin.math.abs(cachedMilliseconds - lastLiveTeleopPersistCachedMilliseconds)
+        val totalDelta = kotlin.math.abs(totalMilliseconds - lastLiveTeleopPersistTotalMilliseconds.get())
+        val cachedDelta = kotlin.math.abs(cachedMilliseconds - lastLiveTeleopPersistCachedMilliseconds.get())
 
         if (totalDelta < 1000 && cachedDelta < 1000) {
             return
         }
 
-        lastLiveTeleopPersistTotalMilliseconds = totalMilliseconds
-        lastLiveTeleopPersistCachedMilliseconds = cachedMilliseconds
+        lastLiveTeleopPersistTotalMilliseconds.set(totalMilliseconds)
+        lastLiveTeleopPersistCachedMilliseconds.set(cachedMilliseconds)
         flushNowAsync()
     }
 
@@ -488,12 +491,14 @@ class DataViewModel(
             val persistedSection = TeleopSection.entries.find {
                 it.name == gameDetails.localTeleopSection
             } ?: TeleopSection.UNSTARTED
+            val persistedTotalMilliseconds = requireNotNull(gameDetails.localTeleopTotalMilliseconds)
+            val persistedCachedMilliseconds = requireNotNull(gameDetails.localTeleopCachedMilliseconds)
 
             return RestoredTeleopState(
                 section = persistedSection,
                 teleopRunning = gameDetails.localTeleopRunning == true,
-                totalMilliseconds = gameDetails.localTeleopTotalMilliseconds,
-                cachedMilliseconds = gameDetails.localTeleopCachedMilliseconds
+                totalMilliseconds = persistedTotalMilliseconds,
+                cachedMilliseconds = persistedCachedMilliseconds
             )
         }
 

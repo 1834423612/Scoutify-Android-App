@@ -36,10 +36,8 @@ data class LocalDatabaseDebugColumn(
 data class LocalDatabaseDebugRow(
     val index: Int,
     val cells: List<LocalDatabaseDebugCell>,
-) {
-    val searchableText: String
-        get() = cells.joinToString(separator = "\n") { "${it.column}: ${it.value}" }
-}
+    val searchableText: String = cells.joinToString(separator = "\n") { "${it.column}: ${it.value}" },
+)
 
 data class LocalDatabaseDebugCell(
     val column: String,
