@@ -437,7 +437,7 @@ class PitScoutingRepository(
     }
 
     private suspend fun uploadImageIfNeeded(image: PitImageAsset, apiType: String): PitImageAsset {
-        if (image.uploaded && image.url.isNotBlank()) {
+        if (image.uploaded && (image.id.isNotBlank() || image.url.isNotBlank())) {
             return image
         }
 
@@ -452,7 +452,13 @@ class PitScoutingRepository(
             file = MultipartBody.Part.createFormData("file", file.name, file.asRequestBody(mimeType.toMediaTypeOrNull())),
             type = apiType.toRequestBody("text/plain".toMediaTypeOrNull())
         )
-        return image.copy(id = response.id, url = response.url, uploaded = response.url.isNotBlank())
+        val remoteId = response.id.ifBlank { image.id }
+        val remoteUrl = response.url.ifBlank { image.url }
+        return image.copy(
+            id = remoteId,
+            url = remoteUrl,
+            uploaded = remoteId.isNotBlank() || remoteUrl.isNotBlank()
+        )
     }
 
     private fun buildSubmissionPayload(tab: PitScoutingTab, userData: SubmissionUserData): Map<String, Any?> {
