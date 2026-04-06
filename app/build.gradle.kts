@@ -27,7 +27,7 @@ configure<ApplicationExtension> {
         applicationId = "com.team695.scoutifyapp"
         minSdk = 34
         targetSdk = 36
-        versionCode = 2
+        versionCode = 42
         versionName = "1.4.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
