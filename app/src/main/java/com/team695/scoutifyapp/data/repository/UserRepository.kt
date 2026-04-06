@@ -6,6 +6,7 @@ import android.webkit.CookieManager
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToOneOrNull
 import com.team695.scoutifyapp.BuildConfig
+import com.team695.scoutifyapp.data.api.NetworkMonitorStatus
 import com.team695.scoutifyapp.data.api.client.ScoutifyClient
 import com.team695.scoutifyapp.data.api.model.User
 import com.team695.scoutifyapp.data.api.service.ApiResponse
@@ -18,6 +19,7 @@ import com.team695.scoutifyapp.ui.extensions.androidID
 import com.team695.scoutifyapp.ui.viewModels.LoginStatus
 import com.team695.scoutifyapp.utility.displayTime
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -98,14 +100,23 @@ class UserRepository(
 
     suspend fun logout() {
         withContext(Dispatchers.IO) {
-            LocalDatabaseWriteCoordinator.withWriteLock {
-                db.userQueries.deleteUser()
+            NetworkMonitorStatus.currentNetworkJob?.let { activeJob ->
+                runCatching {
+                    activeJob.cancelAndJoin()
+                }.onFailure { error ->
+                    Log.d("User", "Failed to stop network sync cleanly during logout: $error")
+                }
+                NetworkMonitorStatus.currentNetworkJob = null
+            }
 
-                // clear all data
+            LocalDatabaseWriteCoordinator.withWriteLock {
                 db.transaction {
+                    db.userQueries.deleteUser()
                     db.matchQueries.clearAllMatches()
                     db.taskQueries.clearAllTasks()
                     db.commentsQueries.clearAllComments()
+                    db.pitscoutQueries.clearAllPitscout()
+                    db.pitScoutingTabQueries.clearAllTabs()
                 }
             }
 

@@ -61,11 +61,23 @@ class GameDetailRepository(
 
                     LocalDatabaseWriteCoordinator.withWriteLock {
                         db.transaction {
-                            pendingEntities.forEach { entity ->
-                                db.gameDetailsQueries.updatePendingUploadState(
-                                    pending_upload = false,
-                                    task_id = entity.task_id
-                                )
+                            gameDetails.forEach { sentDetails ->
+                                val taskId = sentDetails.task_id ?: return@forEach
+                                val currentEntity = db.gameDetailsQueries
+                                    .selectDetailsForTask(taskId)
+                                    .executeAsOneOrNull()
+                                    ?: return@forEach
+
+                                if (areUploadRelevantFieldsEqual(
+                                        currentEntity.createGameDetailsFromDb(),
+                                        sentDetails
+                                    )
+                                ) {
+                                    db.gameDetailsQueries.updatePendingUploadState(
+                                        pending_upload = false,
+                                        task_id = taskId
+                                    )
+                                }
                             }
                         }
                     }
@@ -125,7 +137,7 @@ class GameDetailRepository(
                 }
                 val existingDetails = existingEntity?.createGameDetailsFromDb()
                 val pendingUpload = when {
-                    existingEntity == null -> hasMeaningfulUploadData(details)
+                    existingEntity == null -> true
                     areUploadRelevantFieldsEqual(existingDetails, details) -> existingEntity.pending_upload
                     else -> true
                 }
@@ -192,6 +204,7 @@ class GameDetailRepository(
                     teleop_flag = details.teleopFlag,
                     teleop_completed = details.teleopCompleted,
                     local_teleop_section = details.localTeleopSection ?: "UNSTARTED",
+                    local_teleop_running = details.localTeleopRunning ?: false,
                     local_teleop_total_milliseconds = details.localTeleopTotalMilliseconds ?: 0,
                     local_teleop_cached_milliseconds = details.localTeleopCachedMilliseconds ?: 0,
                     pending_upload = pendingUpload,
@@ -307,21 +320,11 @@ class GameDetailRepository(
         return existing?.normalizedForUploadTracking() == updated.normalizedForUploadTracking()
     }
 
-    private fun hasMeaningfulUploadData(details: GameDetails): Boolean {
-        val normalized = details.normalizedForUploadTracking()
-
-        return normalized != GameDetails(
-            task_id = details.task_id,
-            matchNumber = details.matchNumber,
-            alliance = details.alliance,
-            alliancePosition = details.alliancePosition
-        ).normalizedForUploadTracking()
-    }
-
     private fun GameDetails.normalizedForUploadTracking(): GameDetails {
         return copy(
             id = null,
             localTeleopSection = null,
+            localTeleopRunning = null,
             localTeleopTotalMilliseconds = null,
             localTeleopCachedMilliseconds = null,
             reviewMatchFlag = null

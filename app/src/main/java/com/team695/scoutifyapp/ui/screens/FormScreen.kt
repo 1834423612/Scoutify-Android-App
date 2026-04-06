@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -76,11 +77,11 @@ fun FormScreen(
     val filteredRows = remember(selectedTable, uiState.rowSearchQuery) {
         val searchQuery = uiState.rowSearchQuery.trim()
         if (searchQuery.isBlank()) {
-            selectedTable?.rows ?: emptyList()
+            uiState.loadedRows
         } else {
-            selectedTable?.rows?.filter {
+            uiState.loadedRows.filter {
                 it.searchableText.contains(searchQuery, ignoreCase = true)
-            } ?: emptyList()
+            }
         }
     }
 
@@ -146,6 +147,7 @@ fun FormScreen(
                                     modifier = Modifier.weight(0.68f),
                                     table = selectedTable,
                                     filteredRows = filteredRows,
+                                    isLoadingRows = uiState.isLoadingRows,
                                     rowSearchQuery = uiState.rowSearchQuery,
                                     onRowSearchQueryChanged = settingsViewModel::updateRowSearchQuery,
                                     errorMessage = uiState.errorMessage,
@@ -172,6 +174,7 @@ fun FormScreen(
                                         .weight(0.6f),
                                     table = selectedTable,
                                     filteredRows = filteredRows,
+                                    isLoadingRows = uiState.isLoadingRows,
                                     rowSearchQuery = uiState.rowSearchQuery,
                                     onRowSearchQueryChanged = settingsViewModel::updateRowSearchQuery,
                                     errorMessage = uiState.errorMessage,
@@ -488,6 +491,7 @@ private fun DatabaseTableDetailPane(
     modifier: Modifier = Modifier,
     table: LocalDatabaseDebugTable?,
     filteredRows: List<LocalDatabaseDebugRow>,
+    isLoadingRows: Boolean,
     rowSearchQuery: String,
     onRowSearchQueryChanged: (String) -> Unit,
     errorMessage: String?,
@@ -576,7 +580,14 @@ private fun DatabaseTableDetailPane(
 
         TableColumnsCard(table = table)
 
-        if (filteredRows.isEmpty()) {
+        if (isLoadingRows) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = Accent)
+            }
+        } else if (filteredRows.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
@@ -672,6 +683,7 @@ private fun TableColumnsCard(
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .heightIn(max = 220.dp)
             .background(DarkishGunmetal, RoundedCornerShape(10.dp))
             .border(1.dp, LightGunmetal, RoundedCornerShape(10.dp))
             .padding(12.dp),

@@ -16,6 +16,9 @@ object DebugConfig {
     val BYPASS_AUTH: Boolean
         get() = BuildConfig.DEBUG && LOCAL_BYPASS_AUTH
 
+    val ENABLE_LOCAL_DATABASE_DEBUGGING: Boolean
+        get() = BuildConfig.DEBUG
+
     /**
      * Mock user used when BYPASS_AUTH is enabled
      */

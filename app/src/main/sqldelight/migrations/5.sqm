@@ -1,0 +1,2 @@
+ALTER TABLE gameDetailsEntity
+ADD COLUMN local_teleop_running INTEGER NOT NULL DEFAULT 0;

@@ -52,6 +52,7 @@ fun NavRail(
     onNavigateToUpload: () -> Unit = {},
     onNavigateToSettings: () -> Unit = {},
     onNavigateToLogin: () -> Unit = {},
+    showSettings: Boolean = false,
     userRepository: UserRepository,
     navController: NavHostController,
 ) {
@@ -193,14 +194,16 @@ fun NavRail(
                                 onNavigateToUpload()
                             }
                         )
-                        NavItem(
-                            icon = R.drawable.settings,
-                            label = "Settings",
-                            selected = currentRoute == "settings",
-                            onClick = {
-                                onNavigateToSettings()
-                            }
-                        )
+                        if (showSettings) {
+                            NavItem(
+                                icon = R.drawable.settings,
+                                label = "Settings",
+                                selected = currentRoute == "settings",
+                                onClick = {
+                                    onNavigateToSettings()
+                                }
+                            )
+                        }
                     }
                 }
             }

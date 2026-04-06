@@ -69,6 +69,7 @@ CREATE TABLE gameDetailsEntity (
     teleop_flag INTEGER AS Boolean,
     teleop_completed INTEGER AS Boolean,
     local_teleop_section TEXT NOT NULL DEFAULT 'UNSTARTED',
+    local_teleop_running INTEGER AS Boolean NOT NULL DEFAULT 0,
     local_teleop_total_milliseconds INTEGER AS Int NOT NULL DEFAULT 0,
     local_teleop_cached_milliseconds INTEGER AS Int NOT NULL DEFAULT 0,
     pending_upload INTEGER AS Boolean NOT NULL DEFAULT 0,
@@ -147,6 +148,7 @@ INSERT OR REPLACE INTO gameDetailsEntity(
     teleop_flag,
     teleop_completed,
     local_teleop_section,
+    local_teleop_running,
     local_teleop_total_milliseconds,
     local_teleop_cached_milliseconds,
     pending_upload,
@@ -163,7 +165,7 @@ INSERT OR REPLACE INTO gameDetailsEntity(
 VALUES (
     ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
     ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
-    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
     ?, ?, ?, ?, ?, ?, ?, ?, ?
 );
 

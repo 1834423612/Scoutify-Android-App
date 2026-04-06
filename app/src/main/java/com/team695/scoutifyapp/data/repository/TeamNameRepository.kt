@@ -19,13 +19,15 @@ class TeamNameRepository (
                 val teams = service.fetchTeamNames()
 
                 LocalDatabaseWriteCoordinator.withWriteLock {
-                    queries.deleteAll()
+                    db.transaction {
+                        queries.deleteAll()
 
-                    teams.forEach {
-                        queries.insertTeam(
-                            team_number = it.team_number,
-                            team_name = it.team_name
-                        )
+                        teams.forEach {
+                            queries.insertTeam(
+                                team_number = it.team_number,
+                                team_name = it.team_name
+                            )
+                        }
                     }
                 }
 

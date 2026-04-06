@@ -33,6 +33,7 @@ import kotlinx.serialization.json.Json
 
 private data class RestoredTeleopState(
     val section: TeleopSection,
+    val teleopRunning: Boolean,
     val totalMilliseconds: Int,
     val cachedMilliseconds: Int = 0,
 )
@@ -45,6 +46,7 @@ class DataViewModel(
     private val taskId: Int,
 ) : ViewModel() {
     private val persistMutex = Mutex()
+    private var lastPersistedState: GameFormState? = null
     private var lastLiveTeleopPersistTotalMilliseconds = -1
     private var lastLiveTeleopPersistCachedMilliseconds = -1
 
@@ -76,6 +78,7 @@ class DataViewModel(
                 it.copy(
                     teamNumber = task?.teamNum ?: -2,
                     gameDetails = gameDetails,
+                    teleopRunning = restoredTeleopState.teleopRunning,
                     teleopSection = restoredTeleopState.section,
                     teleopTotalMilliseconds = restoredTeleopState.totalMilliseconds,
                     teleopCachedMilliseconds = restoredTeleopState.cachedMilliseconds,
@@ -101,6 +104,9 @@ class DataViewModel(
                     Log.d("Dataviewmodel", "Do not save ${currentFormState.gameDetails.robotOnField}")
                     return@onEach
                 }
+                if (currentFormState == lastPersistedState) {
+                    return@onEach
+                }
                 Log.d("Dataviewmodel", "Save ${currentFormState.gameDetails.robotOnField}")
                 persistFormState(currentFormState)
             }
@@ -112,6 +118,7 @@ class DataViewModel(
             val gameDetails: GameDetails = currentFormState.gameDetails.copy(
                 autonPath = pathsToJson(currentFormState.paths),
                 localTeleopSection = currentFormState.teleopSection.name,
+                localTeleopRunning = currentFormState.teleopRunning,
                 localTeleopTotalMilliseconds = currentFormState.teleopTotalMilliseconds,
                 localTeleopCachedMilliseconds = currentFormState.teleopCachedMilliseconds,
             )
@@ -126,6 +133,8 @@ class DataViewModel(
                 id = currentFormState.gameDetails.task_id!!,
                 progress = currentFormState.totalProgress
             )
+
+            lastPersistedState = currentFormState
         }
     }
 
@@ -355,12 +364,12 @@ class DataViewModel(
     fun endPath() {
         val stroke = _formState.value.currentStroke as? Stroke.Path ?: return
 
-        _formState.update {
-            it.copy(
-                paths = _formState.value.paths + stroke,
+        _formState.update { state ->
+            val updatedUndoTree = if (state.justUndid) emptyList() else state.undoTree
+            state.copy(
+                paths = state.paths + stroke,
                 currentStroke = null,
-                undoTree = if (_formState.value.justUndid) emptyList()
-                else _formState.value.undoTree
+                undoTree = updatedUndoTree
             )
         }
         flushAfterStateMutation()
@@ -369,11 +378,11 @@ class DataViewModel(
     fun addLabeledPoint(offset: Offset, label: String) {
         val stroke = Stroke.Labeled(offset to label)
 
-        _formState.update {
-            it.copy(
-                paths = _formState.value.paths + stroke,
-                undoTree = if (_formState.value.justUndid) emptyList()
-                else _formState.value.undoTree
+        _formState.update { state ->
+            val updatedUndoTree = if (state.justUndid) emptyList() else state.undoTree
+            state.copy(
+                paths = state.paths + stroke,
+                undoTree = updatedUndoTree
             )
         }
         flushAfterStateMutation()
@@ -422,10 +431,10 @@ class DataViewModel(
 
     fun undo() {
         if (_formState.value.paths.isNotEmpty()) {
-            _formState.update {
-                it.copy(
-                    paths = _formState.value.paths.dropLast(1),
-                    undoTree = _formState.value.undoTree + listOf(_formState.value.paths.last()),
+            _formState.update { state ->
+                state.copy(
+                    paths = state.paths.dropLast(1),
+                    undoTree = state.undoTree + listOf(state.paths.last()),
                     justUndid = true
                 )
             }
@@ -435,10 +444,10 @@ class DataViewModel(
 
     fun redo() {
         if (_formState.value.undoTree.isNotEmpty()) {
-            _formState.update {
-                it.copy(
-                    paths = _formState.value.paths + listOf(_formState.value.undoTree.last()),
-                    undoTree = _formState.value.undoTree.dropLast(1),
+            _formState.update { state ->
+                state.copy(
+                    paths = state.paths + listOf(state.undoTree.last()),
+                    undoTree = state.undoTree.dropLast(1),
                     justUndid = false
                 )
             }
@@ -455,9 +464,9 @@ class DataViewModel(
     }
 
     fun reset() {
-        _formState.update {
-            it.copy(
-                undoTree = _formState.value.paths,
+        _formState.update { state ->
+            state.copy(
+                undoTree = state.paths,
                 paths = emptyList(),
                 justUndid = false
             )
@@ -483,6 +492,7 @@ class DataViewModel(
 
             return RestoredTeleopState(
                 section = persistedSection,
+                teleopRunning = gameDetails.localTeleopRunning == true,
                 totalMilliseconds = gameDetails.localTeleopTotalMilliseconds,
                 cachedMilliseconds = gameDetails.localTeleopCachedMilliseconds
             )
@@ -491,6 +501,7 @@ class DataViewModel(
         if (gameDetails.teleopCompleted == true || gameDetails.postgameProgress > 0f) {
             return RestoredTeleopState(
                 section = TeleopSection.ENDED,
+                teleopRunning = false,
                 totalMilliseconds = ENDGAME_END_TIME
             )
         }
@@ -555,6 +566,7 @@ class DataViewModel(
         return when {
             hasEndgameData -> RestoredTeleopState(
                 section = TeleopSection.ENDGAME,
+                teleopRunning = false,
                 totalMilliseconds = (SHIFT4_END_TIME + endgameTotal).coerceIn(
                     SHIFT4_END_TIME,
                     ENDGAME_END_TIME
@@ -562,6 +574,7 @@ class DataViewModel(
             )
             hasShift4Data -> RestoredTeleopState(
                 section = TeleopSection.SHIFT4,
+                teleopRunning = false,
                 totalMilliseconds = (SHIFT3_END_TIME + shift4Total).coerceIn(
                     SHIFT3_END_TIME,
                     SHIFT4_END_TIME
@@ -569,6 +582,7 @@ class DataViewModel(
             )
             hasShift3Data -> RestoredTeleopState(
                 section = TeleopSection.SHIFT3,
+                teleopRunning = false,
                 totalMilliseconds = (SHIFT2_END_TIME + shift3Total).coerceIn(
                     SHIFT2_END_TIME,
                     SHIFT3_END_TIME
@@ -576,6 +590,7 @@ class DataViewModel(
             )
             hasShift2Data -> RestoredTeleopState(
                 section = TeleopSection.SHIFT2,
+                teleopRunning = false,
                 totalMilliseconds = (SHIFT1_END_TIME + shift2Total).coerceIn(
                     SHIFT1_END_TIME,
                     SHIFT2_END_TIME
@@ -583,6 +598,7 @@ class DataViewModel(
             )
             hasShift1Data -> RestoredTeleopState(
                 section = TeleopSection.SHIFT1,
+                teleopRunning = false,
                 totalMilliseconds = (TRANSITION_END_TIME + shift1Total).coerceIn(
                     TRANSITION_END_TIME,
                     SHIFT1_END_TIME
@@ -590,10 +606,12 @@ class DataViewModel(
             )
             hasTransitionData -> RestoredTeleopState(
                 section = TeleopSection.TRANSITION,
+                teleopRunning = false,
                 totalMilliseconds = transitionTotal.coerceIn(0, TRANSITION_END_TIME)
             )
             else -> RestoredTeleopState(
                 section = TeleopSection.UNSTARTED,
+                teleopRunning = false,
                 totalMilliseconds = 0
             )
         }

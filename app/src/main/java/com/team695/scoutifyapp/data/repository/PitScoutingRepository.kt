@@ -156,9 +156,11 @@ class PitScoutingRepository(
             )
             deleteLocalFiles(existing.images)
             LocalDatabaseWriteCoordinator.withWriteLock {
-                db.pitscoutQueries.deletePitscoutByFormId(existing.formId)
+                db.transaction {
+                    db.pitscoutQueries.deletePitscoutByFormId(existing.formId)
+                    persistTabInternal(cleared)
+                }
             }
-            persistTab(cleared)
             cleared
         }
     }
@@ -182,26 +184,36 @@ class PitScoutingRepository(
             if (existing != null) {
                 deleteLocalFiles(existing.images)
                 LocalDatabaseWriteCoordinator.withWriteLock {
-                    db.pitscoutQueries.deletePitscoutByFormId(existing.formId)
+                    db.transaction {
+                        db.pitscoutQueries.deletePitscoutByFormId(existing.formId)
+                        db.pitScoutingTabQueries.deleteTab(tabId)
+                    }
                 }
-            }
-            LocalDatabaseWriteCoordinator.withWriteLock {
-                db.pitScoutingTabQueries.deleteTab(tabId)
+            } else {
+                LocalDatabaseWriteCoordinator.withWriteLock {
+                    db.pitScoutingTabQueries.deleteTab(tabId)
+                }
             }
         }
     }
 
     suspend fun deleteTabsForEvent(eventKey: String) {
         withContext(Dispatchers.IO) {
-            db.pitScoutingTabQueries.getAllTabsForEvent(eventKey).executeAsList().forEach { row ->
-                val tab = rowToTab(row)
+            val tabs = db.pitScoutingTabQueries.getAllTabsForEvent(eventKey)
+                .executeAsList()
+                .map { row -> rowToTab(row) }
+
+            tabs.forEach { tab ->
                 deleteLocalFiles(tab.images)
-                LocalDatabaseWriteCoordinator.withWriteLock {
-                    db.pitscoutQueries.deletePitscoutByFormId(tab.formId)
-                }
             }
+
             LocalDatabaseWriteCoordinator.withWriteLock {
-                db.pitScoutingTabQueries.deleteTabsForEvent(eventKey)
+                db.transaction {
+                    tabs.forEach { tab ->
+                        db.pitscoutQueries.deletePitscoutByFormId(tab.formId)
+                    }
+                    db.pitScoutingTabQueries.deleteTabsForEvent(eventKey)
+                }
             }
         }
     }
@@ -315,11 +327,15 @@ class PitScoutingRepository(
                         }
                     }
 
-                    LocalDatabaseWriteCoordinator.withWriteLock {
-                        db.pitscoutQueries.deletePitscoutByFormId(preparedTab.formId)
-                    }
+                    deleteLocalFiles(preparedTab.images)
+                    val clearedTab = buildClearedTab(preparedTab, regenerateFormId = true)
                     runCatching {
-                        clearTab(preparedTab.tabId, regenerateFormId = true)
+                        LocalDatabaseWriteCoordinator.withWriteLock {
+                            db.transaction {
+                                db.pitscoutQueries.deletePitscoutByFormId(preparedTab.formId)
+                                persistTabInternal(clearedTab)
+                            }
+                        }
                     }.onFailure { resetError ->
                         persistTab(
                             preparedTab.copy(
@@ -375,27 +391,30 @@ class PitScoutingRepository(
         language: String
     ) {
         LocalDatabaseWriteCoordinator.withWriteLock {
-            db.pitscoutQueries.deletePitscoutByFormId(tab.formId)
-            db.pitscoutQueries.insertPitscout(
-                event_id = tab.eventKey,
-                form_id = tab.formId,
-                data_ = gson.toJson(data),
-                upload = gson.toJson(upload),
-                user_data = gson.toJson(userData),
-                user_agent = buildUserAgent(),
-                ip = null,
-                language = language
-            )
+            db.transaction {
+                db.pitscoutQueries.deletePitscoutByFormId(tab.formId)
+                db.pitscoutQueries.insertPitscout(
+                    event_id = tab.eventKey,
+                    form_id = tab.formId,
+                    data_ = gson.toJson(data),
+                    upload = gson.toJson(upload),
+                    user_data = gson.toJson(userData),
+                    user_agent = buildUserAgent(),
+                    ip = null,
+                    language = language
+                )
+
+                persistTabInternal(
+                    tab.copy(
+                        isDraft = false,
+                        isSubmitted = false,
+                        updatedAt = nowIso(),
+                        syncStatus = PitScoutingStatus.PENDING_SUBMISSION,
+                        lastError = null
+                    )
+                )
+            }
         }
-        persistTab(
-            tab.copy(
-                isDraft = false,
-                isSubmitted = false,
-                updatedAt = nowIso(),
-                syncStatus = PitScoutingStatus.PENDING_SUBMISSION,
-                lastError = null
-            )
-        )
     }
 
     private suspend fun ensureUploadedImages(tab: PitScoutingTab): PitScoutingTab {
@@ -561,22 +580,26 @@ class PitScoutingRepository(
 
     private suspend fun persistTab(tab: PitScoutingTab) {
         LocalDatabaseWriteCoordinator.withWriteLock {
-            db.pitScoutingTabQueries.insertTab(
-                tabId = tab.tabId,
-                teamNumber = tab.teamNumber,
-                eventKey = tab.eventKey,
-                formId = tab.formId,
-                formVersion = tab.formVersion,
-                fieldValuesJson = json.encodeToString(ListSerializer(PitFormField.serializer()), tab.fields),
-                uploadDataJson = json.encodeToString(PitImageBundle.serializer(), tab.images),
-                isDraft = if (tab.isDraft) 1L else 0L,
-                isSubmitted = if (tab.isSubmitted) 1L else 0L,
-                submissionTime = tab.submissionTime,
-                createdAt = tab.createdAt,
-                updatedAt = tab.updatedAt,
-                syncStatus = tab.syncStatus.name
-            )
+            persistTabInternal(tab)
         }
+    }
+
+    private fun persistTabInternal(tab: PitScoutingTab) {
+        db.pitScoutingTabQueries.insertTab(
+            tabId = tab.tabId,
+            teamNumber = tab.teamNumber,
+            eventKey = tab.eventKey,
+            formId = tab.formId,
+            formVersion = tab.formVersion,
+            fieldValuesJson = json.encodeToString(ListSerializer(PitFormField.serializer()), tab.fields),
+            uploadDataJson = json.encodeToString(PitImageBundle.serializer(), tab.images),
+            isDraft = if (tab.isDraft) 1L else 0L,
+            isSubmitted = if (tab.isSubmitted) 1L else 0L,
+            submissionTime = tab.submissionTime,
+            createdAt = tab.createdAt,
+            updatedAt = tab.updatedAt,
+            syncStatus = tab.syncStatus.name
+        )
     }
 
     private fun rowToTab(row: com.team695.scoutifyapp.db.PitscoutingTab): PitScoutingTab {
@@ -615,6 +638,23 @@ class PitScoutingRepository(
             submissionTime = null,
             updatedAt = nowIso(),
             syncStatus = PitScoutingStatus.DIRTY,
+            lastError = null
+        )
+    }
+
+    private fun buildClearedTab(existing: PitScoutingTab, regenerateFormId: Boolean): PitScoutingTab {
+        return existing.copy(
+            teamNumber = "",
+            tabName = buildFallbackTabName(existing.tabId),
+            formId = if (regenerateFormId) UUID.randomUUID().toString() else existing.formId,
+            fields = PitFormDataProvider.createEmptyFormFields(),
+            images = PitImageBundle(),
+            isDraft = true,
+            isSubmitted = false,
+            submissionTime = null,
+            createdAt = if (regenerateFormId) nowIso() else existing.createdAt,
+            updatedAt = nowIso(),
+            syncStatus = PitScoutingStatus.DRAFT,
             lastError = null
         )
     }

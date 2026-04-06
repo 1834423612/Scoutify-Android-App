@@ -11,7 +11,3 @@ WHERE task_id IN (
 
 ALTER TABLE commentsEntity
 ADD COLUMN uploaded INTEGER NOT NULL DEFAULT 0;
-
-UPDATE commentsEntity
-SET uploaded = 0
-WHERE submitted = 1;

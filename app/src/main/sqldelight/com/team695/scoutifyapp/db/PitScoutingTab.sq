@@ -88,3 +88,6 @@ deleteTabsForEvent:
 DELETE FROM pitscoutingTab
 WHERE eventKey = ?;
 
+clearAllTabs:
+DELETE FROM pitscoutingTab;
+

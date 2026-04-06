@@ -4,6 +4,7 @@ import app.cash.sqldelight.db.QueryResult
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.db.SqlPreparedStatement
+import com.team695.scoutifyapp.config.DebugConfig
 import com.team695.scoutifyapp.db.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -21,7 +22,7 @@ data class LocalDatabaseDebugTable(
     val name: String,
     val rowCount: Int,
     val columns: List<LocalDatabaseDebugColumn>,
-    val rows: List<LocalDatabaseDebugRow>,
+    val rows: List<LocalDatabaseDebugRow> = emptyList(),
 )
 
 data class LocalDatabaseDebugColumn(
@@ -48,18 +49,17 @@ data class LocalDatabaseDebugCell(
 class LocalDatabaseDebugRepository(
     private val driver: SqlDriver,
 ) {
+    private val redactedColumnPattern = Regex("token|secret|password|api[_-]?key|email", RegexOption.IGNORE_CASE)
+
     suspend fun loadSnapshot(): LocalDatabaseDebugSnapshot {
         return withContext(Dispatchers.IO) {
+            requireDebugAccess()
             val tableNames = loadTableNames()
             val tables = tableNames.map { tableName ->
-                val columns = loadColumns(tableName)
-                val rows = loadRows(tableName, columns)
-
                 LocalDatabaseDebugTable(
                     name = tableName,
-                    rowCount = rows.size,
-                    columns = columns,
-                    rows = rows
+                    rowCount = getTableRowCount(tableName),
+                    columns = loadColumns(tableName)
                 )
             }
 
@@ -67,6 +67,26 @@ class LocalDatabaseDebugRepository(
                 schemaVersion = AppDatabase.Schema.version,
                 loadedAtMillis = System.currentTimeMillis(),
                 tables = tables
+            )
+        }
+    }
+
+    suspend fun loadRowsForTable(
+        tableName: String,
+        limit: Int = DEFAULT_ROW_PAGE_SIZE,
+        offset: Int = 0,
+    ): List<LocalDatabaseDebugRow> {
+        return withContext(Dispatchers.IO) {
+            requireDebugAccess()
+            val normalizedLimit = limit.coerceIn(1, MAX_ROW_PAGE_SIZE)
+            val normalizedOffset = offset.coerceAtLeast(0)
+            val columns = loadColumns(tableName)
+
+            loadRows(
+                tableName = tableName,
+                columns = columns,
+                limit = normalizedLimit,
+                offset = normalizedOffset
             )
         }
     }
@@ -86,6 +106,20 @@ class LocalDatabaseDebugRepository(
                 tables += cursor.getString(0).orEmpty()
             }
             tables
+        }
+    }
+
+    private fun getTableRowCount(tableName: String): Int {
+        val escapedTableName = tableName.replace("\"", "\"\"")
+
+        return executeQuery(
+            sql = "SELECT COUNT(*) FROM \"$escapedTableName\""
+        ) { cursor ->
+            if (cursor.next().value) {
+                cursor.getLong(0)?.toInt() ?: 0
+            } else {
+                0
+            }
         }
     }
 
@@ -112,14 +146,16 @@ class LocalDatabaseDebugRepository(
     private fun loadRows(
         tableName: String,
         columns: List<LocalDatabaseDebugColumn>,
+        limit: Int,
+        offset: Int,
     ): List<LocalDatabaseDebugRow> {
         val escapedTableName = tableName.replace("\"", "\"\"")
 
         return executeQuery(
-            sql = "SELECT * FROM \"$escapedTableName\""
+            sql = "SELECT * FROM \"$escapedTableName\" LIMIT $limit OFFSET $offset"
         ) { cursor ->
             val rows = mutableListOf<LocalDatabaseDebugRow>()
-            var index = 0
+            var index = offset
 
             while (cursor.next().value) {
                 rows += LocalDatabaseDebugRow(
@@ -127,7 +163,7 @@ class LocalDatabaseDebugRepository(
                     cells = columns.mapIndexed { columnIndex, column ->
                         LocalDatabaseDebugCell(
                             column = column.name,
-                            value = readValue(cursor, columnIndex, column.type)
+                            value = readValue(cursor, columnIndex, column)
                         )
                     }
                 )
@@ -141,9 +177,13 @@ class LocalDatabaseDebugRepository(
     private fun readValue(
         cursor: SqlCursor,
         columnIndex: Int,
-        columnType: String,
+        column: LocalDatabaseDebugColumn,
     ): String {
-        val normalizedType = columnType.uppercase()
+        if (redactedColumnPattern.containsMatchIn(column.name)) {
+            return "<REDACTED>"
+        }
+
+        val normalizedType = column.type.uppercase()
 
         return when {
             normalizedType.contains("INT") ->
@@ -169,6 +209,12 @@ class LocalDatabaseDebugRepository(
         } ?: "NULL"
     }
 
+    private fun requireDebugAccess() {
+        check(DebugConfig.ENABLE_LOCAL_DATABASE_DEBUGGING) {
+            "Local database debugging is disabled in this build."
+        }
+    }
+
     private fun <T> executeQuery(
         sql: String,
         parameterCount: Int = 0,
@@ -182,5 +228,10 @@ class LocalDatabaseDebugRepository(
             parameters = parameterCount,
             binders = binders
         ).value
+    }
+
+    private companion object {
+        const val DEFAULT_ROW_PAGE_SIZE = 250
+        const val MAX_ROW_PAGE_SIZE = 500
     }
 }

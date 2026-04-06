@@ -1,5 +1,6 @@
 package com.team695.scoutifyapp.ui.screens.data
 
+import android.widget.Toast
 import android.util.Log
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
@@ -26,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
+import androidx.compose.ui.platform.LocalContext
 import com.team695.scoutifyapp.data.types.ENDGAME_END_TIME
 import com.team695.scoutifyapp.data.types.GameFormState
 import com.team695.scoutifyapp.data.types.SHIFT3_END_TIME
@@ -58,6 +60,7 @@ fun EndgameDetails(
     formState: GameFormState,
     switchToPostgame: suspend () -> Unit
 ) {
+    val context = LocalContext.current
     val currentTimer = min(
         formState.teleopTotalMilliseconds - SHIFT4_END_TIME,
         formState.teleopCachedMilliseconds
@@ -151,8 +154,18 @@ fun EndgameDetails(
                     if (endgameCompleted) {
                         coroutineScope.launch {
                             dataViewModel.completeTeleop()
-                            dataViewModel.flushNow()
-                            switchToPostgame()
+                            runCatching {
+                                dataViewModel.flushNow()
+                            }.onSuccess {
+                                switchToPostgame()
+                            }.onFailure { error ->
+                                Log.e("EndgameDetails", "Failed to save endgame state before postgame", error)
+                                Toast.makeText(
+                                    context,
+                                    "Failed to save endgame progress. Please try again.",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
                         }
                     }
                 },
