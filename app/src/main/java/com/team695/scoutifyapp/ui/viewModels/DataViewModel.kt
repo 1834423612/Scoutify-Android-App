@@ -432,27 +432,37 @@ class DataViewModel(
     }
 
     fun undo() {
-        if (_formState.value.paths.isNotEmpty()) {
-            _formState.update { state ->
-                state.copy(
-                    paths = state.paths.dropLast(1),
-                    undoTree = state.undoTree + listOf(state.paths.last()),
-                    justUndid = true
-                )
+        var didChange = false
+        _formState.update { state ->
+            if (state.paths.isEmpty()) {
+                return@update state
             }
+            didChange = true
+            state.copy(
+                paths = state.paths.dropLast(1),
+                undoTree = state.undoTree + state.paths.takeLast(1),
+                justUndid = true
+            )
+        }
+        if (didChange) {
             flushAfterStateMutation()
         }
     }
 
     fun redo() {
-        if (_formState.value.undoTree.isNotEmpty()) {
-            _formState.update { state ->
-                state.copy(
-                    paths = state.paths + listOf(state.undoTree.last()),
-                    undoTree = state.undoTree.dropLast(1),
-                    justUndid = false
-                )
+        var didChange = false
+        _formState.update { state ->
+            if (state.undoTree.isEmpty()) {
+                return@update state
             }
+            didChange = true
+            state.copy(
+                paths = state.paths + state.undoTree.takeLast(1),
+                undoTree = state.undoTree.dropLast(1),
+                justUndid = false
+            )
+        }
+        if (didChange) {
             flushAfterStateMutation()
         }
     }
