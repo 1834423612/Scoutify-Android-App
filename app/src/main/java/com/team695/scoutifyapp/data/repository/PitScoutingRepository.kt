@@ -154,13 +154,13 @@ class PitScoutingRepository(
                 syncStatus = PitScoutingStatus.DRAFT,
                 lastError = null
             )
-            deleteLocalFiles(existing.images)
             LocalDatabaseWriteCoordinator.withWriteLock {
                 db.transaction {
                     db.pitscoutQueries.deletePitscoutByFormId(existing.formId)
                     persistTabInternal(cleared)
                 }
             }
+            deleteLocalFiles(existing.images)
             cleared
         }
     }
@@ -182,13 +182,13 @@ class PitScoutingRepository(
         withContext(Dispatchers.IO) {
             val existing = getTabById(tabId)
             if (existing != null) {
-                deleteLocalFiles(existing.images)
                 LocalDatabaseWriteCoordinator.withWriteLock {
                     db.transaction {
                         db.pitscoutQueries.deletePitscoutByFormId(existing.formId)
                         db.pitScoutingTabQueries.deleteTab(tabId)
                     }
                 }
+                deleteLocalFiles(existing.images)
             } else {
                 LocalDatabaseWriteCoordinator.withWriteLock {
                     db.pitScoutingTabQueries.deleteTab(tabId)
@@ -199,21 +199,20 @@ class PitScoutingRepository(
 
     suspend fun deleteTabsForEvent(eventKey: String) {
         withContext(Dispatchers.IO) {
-            val tabs = db.pitScoutingTabQueries.getAllTabsForEvent(eventKey)
-                .executeAsList()
-                .map { row -> rowToTab(row) }
-
-            tabs.forEach { tab ->
-                deleteLocalFiles(tab.images)
-            }
+            val tabsToDelete = mutableListOf<PitScoutingTab>()
 
             LocalDatabaseWriteCoordinator.withWriteLock {
                 db.transaction {
-                    tabs.forEach { tab ->
-                        db.pitscoutQueries.deletePitscoutByFormId(tab.formId)
-                    }
+                    tabsToDelete += db.pitScoutingTabQueries.getAllTabsForEvent(eventKey)
+                        .executeAsList()
+                        .map { row -> rowToTab(row) }
+                    db.pitscoutQueries.deletePitscoutByEventId(eventKey)
                     db.pitScoutingTabQueries.deleteTabsForEvent(eventKey)
                 }
+            }
+
+            tabsToDelete.forEach { tab ->
+                deleteLocalFiles(tab.images)
             }
         }
     }
@@ -327,7 +326,6 @@ class PitScoutingRepository(
                         }
                     }
 
-                    deleteLocalFiles(preparedTab.images)
                     val clearedTab = buildClearedTab(preparedTab, regenerateFormId = true)
                     runCatching {
                         LocalDatabaseWriteCoordinator.withWriteLock {
@@ -336,6 +334,7 @@ class PitScoutingRepository(
                                 persistTabInternal(clearedTab)
                             }
                         }
+                        deleteLocalFiles(preparedTab.images)
                     }.onFailure { resetError ->
                         persistTab(
                             preparedTab.copy(

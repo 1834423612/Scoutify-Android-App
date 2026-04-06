@@ -132,13 +132,15 @@ fun DataScreen(
         while (isActive && latestFormState.teleopRunning) {
             withFrameMillis { frameTimeMillis ->
                 var remainingDelta = (frameTimeMillis - startTime).toInt()
+                var localSection = latestFormState.teleopSection
+                var localTotalMilliseconds = latestFormState.teleopTotalMilliseconds
+                var teleopRunning = latestFormState.teleopRunning
 
-                while (remainingDelta > 0 && latestFormState.teleopRunning) {
-                    val currentFormState = latestFormState
+                while (remainingDelta > 0 && teleopRunning) {
                     val switchTime: Int
                     val nextSection: TeleopSection
 
-                    when (currentFormState.teleopSection) {
+                    when (localSection) {
                         TeleopSection.TRANSITION -> {
                             switchTime = TRANSITION_END_TIME
                             nextSection = TeleopSection.SHIFT1
@@ -175,26 +177,32 @@ fun DataScreen(
                         }
                     }
 
-                    val currentTotal = currentFormState.teleopTotalMilliseconds
-                    val timeUntilBoundary = (switchTime - currentTotal).coerceAtLeast(0)
+                    val timeUntilBoundary = (switchTime - localTotalMilliseconds).coerceAtLeast(0)
 
                     if (remainingDelta > timeUntilBoundary && switchTime != Int.MAX_VALUE) {
                         if (timeUntilBoundary > 0) {
                             dataViewModel.updateTime(deltaTime = timeUntilBoundary)
+                            localTotalMilliseconds += timeUntilBoundary
                             remainingDelta -= timeUntilBoundary
                         }
 
                         if (nextSection == TeleopSection.ENDED) {
                             dataViewModel.completeTeleop()
+                            localSection = TeleopSection.ENDED
+                            localTotalMilliseconds = ENDGAME_END_TIME
+                            teleopRunning = false
                             remainingDelta = 0
                         } else {
                             dataViewModel.setTeleopSection(
                                 teleopSection = nextSection,
                                 teleopTotalMilliseconds = switchTime
                             )
+                            localSection = nextSection
+                            localTotalMilliseconds = switchTime
                         }
                     } else {
                         dataViewModel.updateTime(deltaTime = remainingDelta)
+                        localTotalMilliseconds += remainingDelta
                         remainingDelta = 0
                     }
                 }

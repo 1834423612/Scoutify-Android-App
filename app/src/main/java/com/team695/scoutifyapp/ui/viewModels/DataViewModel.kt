@@ -17,13 +17,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
@@ -89,28 +87,30 @@ class DataViewModel(
             }
         }
 
-        _formState
-            .debounce(2000L)
-            .distinctUntilChanged() // Only save if the state actually changed
-            .onEach { currentFormState: GameFormState ->
-                //println("FORM STATE: $currentFormState")
-                // ignore if critical fields are not set - still waiting to be loaded from the database
-                if (
-                    currentFormState.gameDetails.task_id == null ||
-                    currentFormState.gameDetails.matchNumber == null ||
-                    currentFormState.gameDetails.alliance == null ||
-                    currentFormState.gameDetails.alliancePosition == null
-                ) {
-                    Log.d("Dataviewmodel", "Do not save ${currentFormState.gameDetails.robotOnField}")
-                    return@onEach
+        viewModelScope.launch(Dispatchers.IO) {
+            _formState
+                .debounce(2000L)
+                .distinctUntilChanged() // Only save if the state actually changed
+                .onEach { currentFormState: GameFormState ->
+                    //println("FORM STATE: $currentFormState")
+                    // ignore if critical fields are not set - still waiting to be loaded from the database
+                    if (
+                        currentFormState.gameDetails.task_id == null ||
+                        currentFormState.gameDetails.matchNumber == null ||
+                        currentFormState.gameDetails.alliance == null ||
+                        currentFormState.gameDetails.alliancePosition == null
+                    ) {
+                        Log.d("Dataviewmodel", "Do not save ${currentFormState.gameDetails.robotOnField}")
+                        return@onEach
+                    }
+                    if (currentFormState == lastPersistedState) {
+                        return@onEach
+                    }
+                    Log.d("Dataviewmodel", "Save ${currentFormState.gameDetails.robotOnField}")
+                    persistFormState(currentFormState)
                 }
-                if (currentFormState == lastPersistedState) {
-                    return@onEach
-                }
-                Log.d("Dataviewmodel", "Save ${currentFormState.gameDetails.robotOnField}")
-                persistFormState(currentFormState)
-            }
-            .launchIn(viewModelScope)
+                .collect()
+        }
     }
 
     private suspend fun persistFormState(currentFormState: GameFormState) {
@@ -325,7 +325,6 @@ class DataViewModel(
                 teleopRunning = false,
                 teleopSection = TeleopSection.ENDED,
                 teleopTotalMilliseconds = ENDGAME_END_TIME,
-                teleopCachedMilliseconds = 0,
                 gameDetails = it.gameDetails.copy(
                     teleopCompleted = true
                 )

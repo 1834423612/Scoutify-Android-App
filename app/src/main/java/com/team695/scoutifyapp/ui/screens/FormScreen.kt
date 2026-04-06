@@ -74,7 +74,7 @@ fun FormScreen(
     val selectedTable = remember(snapshot, uiState.selectedTableName) {
         snapshot?.tables?.firstOrNull { it.name == uiState.selectedTableName }
     }
-    val filteredRows = remember(selectedTable, uiState.rowSearchQuery) {
+    val filteredRows = remember(selectedTable, uiState.rowSearchQuery, uiState.loadedRows) {
         val searchQuery = uiState.rowSearchQuery.trim()
         if (searchQuery.isBlank()) {
             uiState.loadedRows
