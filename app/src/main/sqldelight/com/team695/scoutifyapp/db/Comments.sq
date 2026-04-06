@@ -1,3 +1,4 @@
+import kotlin.Boolean;
 import kotlin.Int;
 
 CREATE TABLE commentsEntity (
@@ -9,6 +10,7 @@ CREATE TABLE commentsEntity (
     timestamp INTEGER,
     comment TEXT,
     submitted INTEGER AS Int,
+    uploaded INTEGER AS Boolean NOT NULL DEFAULT 0,
 
     UNIQUE(match_number, team_number)
 );
@@ -25,6 +27,16 @@ selectCommentsById:
 SELECT * FROM commentsEntity
 WHERE id = ?;
 
+selectCommentByMatchAndTeam:
+SELECT * FROM commentsEntity
+WHERE match_number = ?
+AND team_number = ?;
+
+selectPendingSubmittedComments:
+SELECT * FROM commentsEntity
+WHERE submitted = 1
+AND uploaded = 0;
+
 clearAllComments:
 DELETE FROM commentsEntity;
 
@@ -36,15 +48,21 @@ INSERT OR REPLACE INTO commentsEntity(
         alliance_position,
         timestamp,
         comment,
-        submitted
+        submitted,
+        uploaded
         )
         VALUES(
-        ?,?,?,?,?,?,?
+        ?,?,?,?,?,?,?,?
         );
 
 updateSubmissionStatus:
 UPDATE commentsEntity
-SET submitted = ?
+SET submitted = ?,
+    uploaded = 0
 WHERE match_number = ?;
 
+markCommentUploaded:
+UPDATE commentsEntity
+SET uploaded = 1
+WHERE id = ?;
 

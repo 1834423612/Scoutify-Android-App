@@ -40,3 +40,10 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 deletePitscoutByFormId:
 DELETE FROM pitscout
 WHERE form_id = ?;
+
+deletePitscoutByEventId:
+DELETE FROM pitscout
+WHERE event_id = ?;
+
+clearAllPitscout:
+DELETE FROM pitscout;

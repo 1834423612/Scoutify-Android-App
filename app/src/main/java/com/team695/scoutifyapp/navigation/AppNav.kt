@@ -14,6 +14,7 @@ import com.team695.scoutifyapp.config.DebugConfig
 import com.team695.scoutifyapp.data.api.NetworkMonitor
 import com.team695.scoutifyapp.data.repository.CommentRepository
 import com.team695.scoutifyapp.data.repository.GameDetailRepository
+import com.team695.scoutifyapp.data.repository.LocalDatabaseDebugRepository
 import com.team695.scoutifyapp.data.repository.MatchRepository
 import com.team695.scoutifyapp.data.repository.PitScoutingRepository
 import com.team695.scoutifyapp.data.repository.TaskRepository
@@ -31,7 +32,14 @@ import com.team695.scoutifyapp.ui.viewModels.DataViewModel
 import com.team695.scoutifyapp.ui.viewModels.HomeViewModel
 import com.team695.scoutifyapp.ui.viewModels.LoginViewModel
 import com.team695.scoutifyapp.ui.viewModels.PitScoutingViewModel
+import com.team695.scoutifyapp.ui.viewModels.SettingsViewModel
 import com.team695.scoutifyapp.ui.viewModels.ViewModelFactory
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.material3.Text
 
 @Composable
 fun AppNav(
@@ -42,6 +50,7 @@ fun AppNav(
     commentRepository: CommentRepository,
     gameDetailRepository: GameDetailRepository,
     teamNameRepository: TeamNameRepository,
+    localDatabaseDebugRepository: LocalDatabaseDebugRepository,
     pitScoutingRepository: PitScoutingRepository,
     networkMonitor: NetworkMonitor
 ) {
@@ -170,7 +179,25 @@ fun AppNav(
                 navController = navController,
                 gameDetailRepository = gameDetailRepository
             ) {
-                FormScreen()
+                if (DebugConfig.ENABLE_LOCAL_DATABASE_DEBUGGING) {
+                    val settingsViewModel: SettingsViewModel = viewModel(
+                        viewModelStoreOwner = owner,
+                        factory = ViewModelFactory {
+                            SettingsViewModel(
+                                localDatabaseDebugRepository = localDatabaseDebugRepository
+                            )
+                        }
+                    )
+
+                    FormScreen(settingsViewModel = settingsViewModel)
+                } else {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(text = "Settings debug tools are unavailable in release builds.")
+                    }
+                }
             }
         }
 
@@ -188,3 +215,4 @@ fun AppNav(
         }
     }
 }
+

@@ -85,7 +85,9 @@ class MatchRepository(
                 if (apiMatches.data != null) {
                     val filteredMatches = apiMatches.data.filterNotNull()
 
-                    updateDbFromMatchList(filteredMatches)
+                    LocalDatabaseWriteCoordinator.withWriteLock {
+                        updateDbFromMatchList(filteredMatches)
+                    }
 
                     return@withContext Result.success(filteredMatches)
                 }
@@ -101,7 +103,9 @@ class MatchRepository(
 
     suspend fun clearMatches() {
         return withContext(Dispatchers.IO) {
-            db.matchQueries.clearAllMatches()
+            LocalDatabaseWriteCoordinator.withWriteLock {
+                db.matchQueries.clearAllMatches()
+            }
         }
     }
 }

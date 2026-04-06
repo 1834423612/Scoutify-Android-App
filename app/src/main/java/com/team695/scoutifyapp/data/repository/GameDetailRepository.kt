@@ -48,18 +48,39 @@ class GameDetailRepository(
     override suspend fun push(): Result<List<GameDetails>> {
         return withContext(Dispatchers.IO) {
             try {
-                val gameDetails = db.gameDetailsQueries
+                val pendingEntities = db.gameDetailsQueries
                     .selectCompletedTasks()
                     .executeAsList()
-                    .map { entity ->
-                        entity.createGameDetailsFromDb()
-                    }
+                val gameDetails = pendingEntities.map { entity -> entity.createGameDetailsFromDb() }
 
                 if (gameDetails.isNotEmpty()) {
                     gameDetailsService.updateGameDetails(
                         acToken = ScoutifyClient.tokenManager.getToken()!!,
                         gameDetails = gameDetails
                     )
+
+                    LocalDatabaseWriteCoordinator.withWriteLock {
+                        db.transaction {
+                            gameDetails.forEach { sentDetails ->
+                                val taskId = sentDetails.task_id ?: return@forEach
+                                val currentEntity = db.gameDetailsQueries
+                                    .selectDetailsForTask(taskId)
+                                    .executeAsOneOrNull()
+                                    ?: return@forEach
+
+                                if (areUploadRelevantFieldsEqual(
+                                        currentEntity.createGameDetailsFromDb(),
+                                        sentDetails
+                                    )
+                                ) {
+                                    db.gameDetailsQueries.updatePendingUploadState(
+                                        pending_upload = false,
+                                        task_id = taskId
+                                    )
+                                }
+                            }
+                        }
+                    }
 
                     Log.d("Game Details", "Pushed game details successfully")
                 }  else {
@@ -110,79 +131,96 @@ class GameDetailRepository(
 
     suspend fun updateDbFromGameDetails(details: GameDetails) {
         withContext(Dispatchers.IO) {
-            db.gameDetailsQueries.insertDetails(
-                task_id = details.task_id!!,
-                alliance = details.alliance!!.uppercaseChar(),
-                alliance_position = details.alliancePosition!!,
-                match_number = details.matchNumber!!,
+            LocalDatabaseWriteCoordinator.withWriteLock {
+                val existingEntity = details.task_id?.let { taskId ->
+                    db.gameDetailsQueries.selectDetailsForTask(taskId).executeAsOneOrNull()
+                }
+                val existingDetails = existingEntity?.createGameDetailsFromDb()
+                val pendingUpload = when {
+                    existingEntity == null -> true
+                    areUploadRelevantFieldsEqual(existingDetails, details) -> existingEntity.pending_upload
+                    else -> true
+                }
 
-                // Starting
-                starting_location = details.startingLocation,
-                robot_on_field = details.robotOnField,
-                robot_preloaded = details.robotPreloaded,
-                pregame_flag = details.pregameFlag,
+                db.gameDetailsQueries.insertDetails(
+                    task_id = details.task_id!!,
+                    alliance = details.alliance!!.uppercaseChar(),
+                    alliance_position = details.alliancePosition!!,
+                    match_number = details.matchNumber!!,
 
-                // Auton
-                auton_path = details.autonPath,
-                auton_attempts_climb = details.autonAttemptsClimb,
-                auton_climb_success = details.autonClimbSuccess,
-                auton_climb_position = details.autonClimbPosition,
-                auton_fuel_count = details.autonFuelCount,
-                auton_flag = details.autonFlag,
+                    // Starting
+                    starting_location = details.startingLocation,
+                    robot_on_field = details.robotOnField,
+                    robot_preloaded = details.robotPreloaded,
+                    pregame_flag = details.pregameFlag,
 
-                // Transition
-                transition_cycling_time = details.transitionCyclingTime,
-                transition_stockpiling_time = details.transitionStockpilingTime,
-                transition_defending_time = details.transitionDefendingTime,
-                transition_broken_time = details.transitionBrokenTime,
-                transition_first_active = details.transitionFirstActive,
+                    // Auton
+                    auton_path = details.autonPath,
+                    auton_attempts_climb = details.autonAttemptsClimb,
+                    auton_climb_success = details.autonClimbSuccess,
+                    auton_climb_position = details.autonClimbPosition,
+                    auton_fuel_count = details.autonFuelCount,
+                    auton_flag = details.autonFlag,
 
-                // Shifts (1-4)
-                shift1_cycling_time = details.shift1CyclingTime,
-                shift1_stockpiling_time = details.shift1StockpilingTime,
-                shift1_defending_time = details.shift1DefendingTime,
-                shift1_broken_time = details.shift1BrokenTime,
+                    // Transition
+                    transition_cycling_time = details.transitionCyclingTime,
+                    transition_stockpiling_time = details.transitionStockpilingTime,
+                    transition_defending_time = details.transitionDefendingTime,
+                    transition_broken_time = details.transitionBrokenTime,
+                    transition_first_active = details.transitionFirstActive,
 
-                shift2_cycling_time = details.shift2CyclingTime,
-                shift2_stockpiling_time = details.shift2StockpilingTime,
-                shift2_defending_time = details.shift2DefendingTime,
-                shift2_broken_time = details.shift2BrokenTime,
+                    // Shifts (1-4)
+                    shift1_cycling_time = details.shift1CyclingTime,
+                    shift1_stockpiling_time = details.shift1StockpilingTime,
+                    shift1_defending_time = details.shift1DefendingTime,
+                    shift1_broken_time = details.shift1BrokenTime,
 
-                shift3_cycling_time = details.shift3CyclingTime,
-                shift3_stockpiling_time = details.shift3StockpilingTime,
-                shift3_defending_time = details.shift3DefendingTime,
-                shift3_broken_time = details.shift3BrokenTime,
+                    shift2_cycling_time = details.shift2CyclingTime,
+                    shift2_stockpiling_time = details.shift2StockpilingTime,
+                    shift2_defending_time = details.shift2DefendingTime,
+                    shift2_broken_time = details.shift2BrokenTime,
 
-                shift4_cycling_time = details.shift4CyclingTime,
-                shift4_stockpiling_time = details.shift4StockpilingTime,
-                shift4_defending_time = details.shift4DefendingTime,
-                shift4_broken_time = details.shift4BrokenTime,
+                    shift3_cycling_time = details.shift3CyclingTime,
+                    shift3_stockpiling_time = details.shift3StockpilingTime,
+                    shift3_defending_time = details.shift3DefendingTime,
+                    shift3_broken_time = details.shift3BrokenTime,
 
-                // Endgame
-                endgame_cycling_time = details.endgameCyclingTime,
-                endgame_stockpiling_time = details.endgameStockpilingTime,
-                endgame_defending_time = details.endgameDefendingTime,
-                endgame_broken_time = details.endgameBrokenTime,
-                endgame_attempts_climb = details.endgameAttemptsClimb,
-                endgame_climb_success = details.endgameClimbSuccess,
-                endgame_climb_position = details.endgameClimbPosition,
-                endgame_climb_code = details.endgameClimbCode,
+                    shift4_cycling_time = details.shift4CyclingTime,
+                    shift4_stockpiling_time = details.shift4StockpilingTime,
+                    shift4_defending_time = details.shift4DefendingTime,
+                    shift4_broken_time = details.shift4BrokenTime,
 
-                teleop_fuel_count = details.teleopFuelCount,
-                teleop_flag = details.teleopFlag,
-                teleop_completed = details.teleopCompleted,
+                    // Endgame
+                    endgame_cycling_time = details.endgameCyclingTime,
+                    endgame_stockpiling_time = details.endgameStockpilingTime,
+                    endgame_defending_time = details.endgameDefendingTime,
+                    endgame_broken_time = details.endgameBrokenTime,
+                    endgame_attempts_climb = details.endgameAttemptsClimb,
+                    endgame_climb_success = details.endgameClimbSuccess,
+                    endgame_climb_position = details.endgameClimbPosition,
+                    endgame_climb_code = details.endgameClimbCode,
 
-                // Postgame
-                postgame_shoot_anywhere = details.postgameShootAnywhere,
-                postgame_shoot_while_moving = details.postgameShootWhileMoving,
-                postgame_stockpile_neutral = details.postgameStockpileNeutral,
-                postgame_stockpile_cross_court = details.postgameStockpileCrossCourt,
-                postgame_feed_outpost = details.postgameFeedOutpost,
-                postgame_receive_outpost = details.postgameReceiveOutpost,
-                postgame_under_trench = details.postgameUnderTrench,
-                postgame_over_bump = details.postgameOverBump,
-                postgame_flag = details.postgameFlag,
-            )
+                    teleop_fuel_count = details.teleopFuelCount,
+                    teleop_flag = details.teleopFlag,
+                    teleop_completed = details.teleopCompleted,
+                    local_teleop_section = details.localTeleopSection ?: "UNSTARTED",
+                    local_teleop_running = details.localTeleopRunning ?: false,
+                    local_teleop_total_milliseconds = details.localTeleopTotalMilliseconds ?: 0,
+                    local_teleop_cached_milliseconds = details.localTeleopCachedMilliseconds ?: 0,
+                    pending_upload = pendingUpload,
+
+                    // Postgame
+                    postgame_shoot_anywhere = details.postgameShootAnywhere,
+                    postgame_shoot_while_moving = details.postgameShootWhileMoving,
+                    postgame_stockpile_neutral = details.postgameStockpileNeutral,
+                    postgame_stockpile_cross_court = details.postgameStockpileCrossCourt,
+                    postgame_feed_outpost = details.postgameFeedOutpost,
+                    postgame_receive_outpost = details.postgameReceiveOutpost,
+                    postgame_under_trench = details.postgameUnderTrench,
+                    postgame_over_bump = details.postgameOverBump,
+                    postgame_flag = details.postgameFlag,
+                )
+            }
         }
     }
 
@@ -196,10 +234,12 @@ class GameDetailRepository(
                 if (result.data != null) {
                     if (result.data != GameConstantsStore.constants) {
                         // clear all data
-                        db.transaction {
-                            db.taskQueries.clearAllTasks()
-                            db.matchQueries.clearAllMatches()
-                            db.commentsQueries.clearAllComments()
+                        LocalDatabaseWriteCoordinator.withWriteLock {
+                            db.transaction {
+                                db.taskQueries.clearAllTasks()
+                                db.matchQueries.clearAllMatches()
+                                db.commentsQueries.clearAllComments()
+                            }
                         }
 
                         if (BuildConfig.VERSION_NAME != result.data.app_version) {
@@ -223,12 +263,14 @@ class GameDetailRepository(
                     val game_type = result.data.game_matchup_gm_game_type
                     val app_version = result.data.app_version
 
-                    db.gameConstantsQueries.insertOrUpdateConstants(
-                        frc_season_master_sm_year = year,
-                        competition_master_cm_event_code = event_code,
-                        game_matchup_gm_game_type = game_type,
-                        app_version = app_version
-                    )
+                    LocalDatabaseWriteCoordinator.withWriteLock {
+                        db.gameConstantsQueries.insertOrUpdateConstants(
+                            frc_season_master_sm_year = year,
+                            competition_master_cm_event_code = event_code,
+                            game_matchup_gm_game_type = game_type,
+                            app_version = app_version
+                        )
+                    }
 
                     return@withContext Result.success(result.data)
                 } else {
@@ -270,4 +312,22 @@ class GameDetailRepository(
     /*suspend fun fetchGameDetails(): Result<List<Match>> {
 
     }*/
+
+    private fun areUploadRelevantFieldsEqual(
+        existing: GameDetails?,
+        updated: GameDetails
+    ): Boolean {
+        return existing?.normalizedForUploadTracking() == updated.normalizedForUploadTracking()
+    }
+
+    private fun GameDetails.normalizedForUploadTracking(): GameDetails {
+        return copy(
+            id = null,
+            localTeleopSection = null,
+            localTeleopRunning = null,
+            localTeleopTotalMilliseconds = null,
+            localTeleopCachedMilliseconds = null,
+            reviewMatchFlag = null
+        )
+    }
 }

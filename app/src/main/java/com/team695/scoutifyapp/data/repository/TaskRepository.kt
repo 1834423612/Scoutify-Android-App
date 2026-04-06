@@ -73,16 +73,18 @@ class TaskRepository(
 
     suspend private fun updateDbFromTaskList(tasks: List<Task>) {
         withContext(Dispatchers.IO) {
-            db.transaction {
-                tasks.forEach {
-                    db.taskQueries.insertTask(
-                        id = it.id.toLong(),
-                        type = it.type.toString(),
-                        matchNum = it.matchNum.toLong(),
-                        teamNum = it.teamNum.toLong(),
-                        time = it.time,
-                        progress = it.progress.toLong(),
-                    )
+            LocalDatabaseWriteCoordinator.withWriteLock {
+                db.transaction {
+                    tasks.forEach {
+                        db.taskQueries.insertTask(
+                            id = it.id.toLong(),
+                            type = it.type.toString(),
+                            matchNum = it.matchNum.toLong(),
+                            teamNum = it.teamNum.toLong(),
+                            time = it.time,
+                            progress = it.progress.toLong(),
+                        )
+                    }
                 }
             }
         }
@@ -90,7 +92,9 @@ class TaskRepository(
 
     suspend fun updateTaskProgress(id: Int, progress: Int) {
         withContext(Dispatchers.IO) {
-            db.taskQueries.updateTaskProgress(id = id.toLong(), progress = progress.toLong())
+            LocalDatabaseWriteCoordinator.withWriteLock {
+                db.taskQueries.updateTaskProgress(id = id.toLong(), progress = progress.toLong())
+            }
         }
     }
 
@@ -134,7 +138,9 @@ class TaskRepository(
 
     suspend fun clearTasks() {
         withContext(Dispatchers.IO) {
-            db.taskQueries.clearAllTasks()
+            LocalDatabaseWriteCoordinator.withWriteLock {
+                db.taskQueries.clearAllTasks()
+            }
         }
     }
 }

@@ -14,6 +14,7 @@ import androidx.navigation.compose.rememberNavController
 import com.team695.scoutifyapp.data.api.NetworkMonitor
 import com.team695.scoutifyapp.data.repository.CommentRepository
 import com.team695.scoutifyapp.data.repository.GameDetailRepository
+import com.team695.scoutifyapp.data.repository.LocalDatabaseDebugRepository
 import com.team695.scoutifyapp.data.repository.MatchRepository
 import com.team695.scoutifyapp.data.repository.PitScoutingRepository
 import com.team695.scoutifyapp.data.repository.TaskRepository
@@ -22,6 +23,7 @@ import com.team695.scoutifyapp.data.repository.UserRepository
 import com.team695.scoutifyapp.navigation.AppNav
 import com.team695.scoutifyapp.ui.components.NavRail
 import com.team695.scoutifyapp.ui.theme.Background
+import com.team695.scoutifyapp.config.DebugConfig
 
 @Composable
 fun Root(
@@ -31,6 +33,7 @@ fun Root(
     gameDetailRepository: GameDetailRepository,
     commentRepository: CommentRepository,
     teamNameRepository: TeamNameRepository,
+    localDatabaseDebugRepository: LocalDatabaseDebugRepository,
     pitScoutingRepository: PitScoutingRepository,
     networkMonitor: NetworkMonitor
 ) {
@@ -52,6 +55,7 @@ fun Root(
                 onNavigateToUpload = { navController.navigate(route = "upload") },
                 onNavigateToSettings = { navController.navigate(route = "settings") },
                 onNavigateToLogin = { navController.navigate(route = "login") },
+                showSettings = DebugConfig.ENABLE_LOCAL_DATABASE_DEBUGGING,
                 userRepository = userRepository,
                 navController = navController
             )
@@ -69,6 +73,7 @@ fun Root(
                         gameDetailRepository = gameDetailRepository,
                         commentRepository = commentRepository,
                         teamNameRepository = teamNameRepository,
+                        localDatabaseDebugRepository = localDatabaseDebugRepository,
                         pitScoutingRepository = pitScoutingRepository,
                         networkMonitor = networkMonitor
                     )

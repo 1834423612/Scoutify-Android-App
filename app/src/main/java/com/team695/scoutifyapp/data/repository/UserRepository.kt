@@ -6,6 +6,7 @@ import android.webkit.CookieManager
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToOneOrNull
 import com.team695.scoutifyapp.BuildConfig
+import com.team695.scoutifyapp.data.api.NetworkMonitorStatus
 import com.team695.scoutifyapp.data.api.client.ScoutifyClient
 import com.team695.scoutifyapp.data.api.model.User
 import com.team695.scoutifyapp.data.api.service.ApiResponse
@@ -18,6 +19,7 @@ import com.team695.scoutifyapp.ui.extensions.androidID
 import com.team695.scoutifyapp.ui.viewModels.LoginStatus
 import com.team695.scoutifyapp.utility.displayTime
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
@@ -58,21 +60,25 @@ class UserRepository(
                     userRes != null &&
                     (userRes.androidID == context.androidID || BuildConfig.DEBUG)
                 ) {
-                    db.userQueries.insertUser(
-                        name = userRes.name,
-                        display_name = userRes.displayName,
-                        email = userRes.email,
-                        android_id = userRes.androidID
-                    )
+                    LocalDatabaseWriteCoordinator.withWriteLock {
+                        db.userQueries.insertUser(
+                            name = userRes.name,
+                            display_name = userRes.displayName,
+                            email = userRes.email,
+                            android_id = userRes.androidID
+                        )
+                    }
 
                     return@withContext true
                 } else {
-                    db.userQueries.insertUser(
-                        name = "WRONG_USER",
-                        display_name = "WRONG_USER",
-                        email = "WRONG_USER",
-                        android_id = "WRONG_USER"
-                    )
+                    LocalDatabaseWriteCoordinator.withWriteLock {
+                        db.userQueries.insertUser(
+                            name = "WRONG_USER",
+                            display_name = "WRONG_USER",
+                            email = "WRONG_USER",
+                            android_id = "WRONG_USER"
+                        )
+                    }
 
                     return@withContext false
                 }
@@ -94,13 +100,24 @@ class UserRepository(
 
     suspend fun logout() {
         withContext(Dispatchers.IO) {
-            db.userQueries.deleteUser()
+            NetworkMonitorStatus.currentNetworkJob?.let { activeJob ->
+                runCatching {
+                    activeJob.cancelAndJoin()
+                }.onFailure { error ->
+                    Log.d("User", "Failed to stop network sync cleanly during logout: $error")
+                }
+                NetworkMonitorStatus.currentNetworkJob = null
+            }
 
-            // clear all data
-            db.transaction {
-                db.matchQueries.clearAllMatches()
-                db.taskQueries.clearAllTasks()
-                db.commentsQueries.clearAllComments()
+            LocalDatabaseWriteCoordinator.withWriteLock {
+                db.transaction {
+                    db.userQueries.deleteUser()
+                    db.matchQueries.clearAllMatches()
+                    db.taskQueries.clearAllTasks()
+                    db.commentsQueries.clearAllComments()
+                    db.pitscoutQueries.clearAllPitscout()
+                    db.pitScoutingTabQueries.clearAllTabs()
+                }
             }
 
             ScoutifyClient.tokenManager.saveToken("")

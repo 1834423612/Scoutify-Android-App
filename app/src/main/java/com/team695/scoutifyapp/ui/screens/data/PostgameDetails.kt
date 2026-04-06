@@ -1,6 +1,7 @@
 package com.team695.scoutifyapp.ui.screens.data
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
@@ -21,6 +22,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
 import com.team695.scoutifyapp.data.types.ENDGAME_END_TIME
 import com.team695.scoutifyapp.data.types.GameFormState
 import com.team695.scoutifyapp.data.types.SHIFT1_END_TIME
@@ -44,6 +46,7 @@ import com.team695.scoutifyapp.ui.theme.mediumCornerRadius
 import com.team695.scoutifyapp.ui.theme.smallCornerRadius
 import com.team695.scoutifyapp.ui.viewModels.DataViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 @Composable
@@ -54,7 +57,8 @@ fun PostgameDetails(
 ) {
 
     Log.d("DETAILS", formState.gameDetails.toString())
-
+    val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier
@@ -71,7 +75,20 @@ fun PostgameDetails(
                 buttonColor = if(formState.totalProgress == 100) ProgressGreen else LightGunmetal,
                 onButtonPressed = {
                     if(formState.totalProgress == 100) {
-                        returnToHome()
+                        coroutineScope.launch {
+                            runCatching {
+                                dataViewModel.flushNow()
+                            }.onSuccess {
+                                returnToHome()
+                            }.onFailure { error ->
+                                Log.e("PostgameDetails", "Failed to save postgame state before returning home", error)
+                                Toast.makeText(
+                                    context,
+                                    "Failed to save postgame answers. Please try again.",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
                     }
                 },
                 title = "Postgame",

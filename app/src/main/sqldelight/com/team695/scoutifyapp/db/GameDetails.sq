@@ -68,6 +68,11 @@ CREATE TABLE gameDetailsEntity (
     teleop_fuel_count INTEGER AS Int,
     teleop_flag INTEGER AS Boolean,
     teleop_completed INTEGER AS Boolean,
+    local_teleop_section TEXT NOT NULL DEFAULT 'UNSTARTED',
+    local_teleop_running INTEGER AS Boolean NOT NULL DEFAULT 0,
+    local_teleop_total_milliseconds INTEGER AS Int NOT NULL DEFAULT 0,
+    local_teleop_cached_milliseconds INTEGER AS Int NOT NULL DEFAULT 0,
+    pending_upload INTEGER AS Boolean NOT NULL DEFAULT 0,
 
     -- Postgame
     postgame_shoot_anywhere INTEGER AS Boolean,
@@ -142,6 +147,11 @@ INSERT OR REPLACE INTO gameDetailsEntity(
     teleop_fuel_count,
     teleop_flag,
     teleop_completed,
+    local_teleop_section,
+    local_teleop_running,
+    local_teleop_total_milliseconds,
+    local_teleop_cached_milliseconds,
+    pending_upload,
     postgame_shoot_anywhere,
     postgame_shoot_while_moving,
     postgame_stockpile_neutral,
@@ -152,7 +162,12 @@ INSERT OR REPLACE INTO gameDetailsEntity(
     postgame_over_bump,
     postgame_flag
 )
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+VALUES (
+    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+    ?, ?, ?, ?, ?, ?, ?, ?, ?
+);
 
 selectDetailsForTask:
 SELECT * FROM gameDetailsEntity
@@ -161,4 +176,10 @@ WHERE task_id = ?;
 selectCompletedTasks:
 SELECT gameDetailsEntity.* FROM gameDetailsEntity
 INNER JOIN taskEntity ON gameDetailsEntity.task_id = taskEntity.id
-WHERE taskEntity.progress = 100;
+WHERE taskEntity.progress = 100
+AND gameDetailsEntity.pending_upload = 1;
+
+updatePendingUploadState:
+UPDATE gameDetailsEntity
+SET pending_upload = ?
+WHERE task_id = ?;

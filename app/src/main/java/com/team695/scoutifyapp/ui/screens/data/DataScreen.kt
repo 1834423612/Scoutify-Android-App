@@ -45,10 +45,12 @@ import androidx.compose.material3.adaptive.navigation.BackNavigationBehavior
 import androidx.compose.material3.adaptive.navigation.NavigableListDetailPaneScaffold
 import androidx.compose.material3.adaptive.navigation.ThreePaneScaffoldNavigator
 import androidx.compose.material3.adaptive.navigation.rememberListDetailPaneScaffoldNavigator
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.withFrameMillis
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
@@ -93,6 +95,13 @@ fun DataScreen(
     dataViewModel: DataViewModel
 ) {
     val formState: GameFormState by dataViewModel.formState.collectAsStateWithLifecycle()
+    val latestFormState by rememberUpdatedState(formState)
+
+    DisposableEffect(dataViewModel) {
+        onDispose {
+            dataViewModel.flushNowAsync()
+        }
+    }
 
     val sections: List<GameSection> = arrayOf(
         SectionType.PREGAME, SectionType.AUTON, SectionType.TELEOP, SectionType.POSTGAME)
@@ -114,74 +123,93 @@ fun DataScreen(
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(formState.teleopRunning) {
+        if (!formState.teleopRunning) {
+            return@LaunchedEffect
+        }
+
         var startTime: Long = withFrameMillis { it }
 
-        while(formState.teleopRunning) {
+        while (isActive && latestFormState.teleopRunning) {
             withFrameMillis { frameTimeMillis ->
-                val deltaTime = (frameTimeMillis-startTime).toInt()
-                val switchTime: Int
-                val nextSection: TeleopSection
+                var remainingDelta = (frameTimeMillis - startTime).toInt()
+                var localSection = latestFormState.teleopSection
+                var localTotalMilliseconds = latestFormState.teleopTotalMilliseconds
+                var teleopRunning = latestFormState.teleopRunning
 
-                when(formState.teleopSection) {
-                    TeleopSection.TRANSITION -> {
-                        switchTime = TRANSITION_END_TIME
-                        nextSection = TeleopSection.SHIFT1
+                while (remainingDelta > 0 && teleopRunning) {
+                    val switchTime: Int
+                    val nextSection: TeleopSection
+
+                    when (localSection) {
+                        TeleopSection.TRANSITION -> {
+                            switchTime = TRANSITION_END_TIME
+                            nextSection = TeleopSection.SHIFT1
+                        }
+
+                        TeleopSection.SHIFT1 -> {
+                            switchTime = SHIFT1_END_TIME
+                            nextSection = TeleopSection.SHIFT2
+                        }
+
+                        TeleopSection.SHIFT2 -> {
+                            switchTime = SHIFT2_END_TIME
+                            nextSection = TeleopSection.SHIFT3
+                        }
+
+                        TeleopSection.SHIFT3 -> {
+                            switchTime = SHIFT3_END_TIME
+                            nextSection = TeleopSection.SHIFT4
+                        }
+
+                        TeleopSection.SHIFT4 -> {
+                            switchTime = SHIFT4_END_TIME
+                            nextSection = TeleopSection.ENDGAME
+                        }
+
+                        TeleopSection.ENDGAME -> {
+                            switchTime = ENDGAME_END_TIME
+                            nextSection = TeleopSection.ENDED
+                        }
+
+                        else -> {
+                            switchTime = Int.MAX_VALUE
+                            nextSection = TeleopSection.ENDED
+                        }
                     }
 
-                    TeleopSection.SHIFT1 -> {
-                        switchTime = SHIFT1_END_TIME
-                        nextSection = TeleopSection.SHIFT2
-                    }
+                    val timeUntilBoundary = (switchTime - localTotalMilliseconds).coerceAtLeast(0)
 
-                    TeleopSection.SHIFT2 -> {
-                        switchTime = SHIFT2_END_TIME
-                        nextSection = TeleopSection.SHIFT3
-                    }
+                    if (remainingDelta > timeUntilBoundary && switchTime != Int.MAX_VALUE) {
+                        if (timeUntilBoundary > 0) {
+                            dataViewModel.updateTime(deltaTime = timeUntilBoundary)
+                            localTotalMilliseconds += timeUntilBoundary
+                            remainingDelta -= timeUntilBoundary
+                        }
 
-                    TeleopSection.SHIFT3 -> {
-                        switchTime = SHIFT3_END_TIME
-                        nextSection = TeleopSection.SHIFT4
-                    }
-
-                    TeleopSection.SHIFT4 -> {
-                        switchTime = SHIFT4_END_TIME
-                        nextSection = TeleopSection.ENDGAME
-                    }
-
-                    TeleopSection.ENDGAME -> {
-                        switchTime = ENDGAME_END_TIME
-                        nextSection = TeleopSection.ENDED
-                    }
-
-                    else -> {
-                        switchTime = Int.MAX_VALUE
-                        nextSection = TeleopSection.ENDED
-                    }
-                }
-
-                val newTime = formState.teleopTotalMilliseconds + deltaTime
-
-                if (newTime > switchTime) {
-                    if(nextSection == TeleopSection.ENDED) {
-                        dataViewModel.endTeleop()
-
-                        //mark teleop as done
-                        dataViewModel.formEvent(
-                            gameDetails = formState.gameDetails.copy(
-                                teleopCompleted = true
+                        if (nextSection == TeleopSection.ENDED) {
+                            dataViewModel.completeTeleop()
+                            localSection = TeleopSection.ENDED
+                            localTotalMilliseconds = ENDGAME_END_TIME
+                            teleopRunning = false
+                            remainingDelta = 0
+                        } else {
+                            dataViewModel.setTeleopSection(
+                                teleopSection = nextSection,
+                                teleopTotalMilliseconds = switchTime
                             )
-                        )
+                            localSection = nextSection
+                            localTotalMilliseconds = switchTime
+                        }
+                    } else {
+                        dataViewModel.updateTime(deltaTime = remainingDelta)
+                        localTotalMilliseconds += remainingDelta
+                        remainingDelta = 0
                     }
-
-                    dataViewModel.setTeleopSection(teleopSection = nextSection, teleopTotalMilliseconds = switchTime)
                 }
-
-                dataViewModel.updateTime(deltaTime = (frameTimeMillis-startTime).toInt())
                 startTime = frameTimeMillis
             }
         }
     }
-
 
 
     Row(
@@ -550,4 +578,7 @@ private fun DetailContent(
         }
     }
 }
+
+
+
 

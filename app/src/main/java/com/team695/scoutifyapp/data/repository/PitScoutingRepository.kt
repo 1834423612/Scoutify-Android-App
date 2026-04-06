@@ -154,9 +154,13 @@ class PitScoutingRepository(
                 syncStatus = PitScoutingStatus.DRAFT,
                 lastError = null
             )
+            LocalDatabaseWriteCoordinator.withWriteLock {
+                db.transaction {
+                    db.pitscoutQueries.deletePitscoutByFormId(existing.formId)
+                    persistTabInternal(cleared)
+                }
+            }
             deleteLocalFiles(existing.images)
-            db.pitscoutQueries.deletePitscoutByFormId(existing.formId)
-            persistTab(cleared)
             cleared
         }
     }
@@ -178,21 +182,38 @@ class PitScoutingRepository(
         withContext(Dispatchers.IO) {
             val existing = getTabById(tabId)
             if (existing != null) {
+                LocalDatabaseWriteCoordinator.withWriteLock {
+                    db.transaction {
+                        db.pitscoutQueries.deletePitscoutByFormId(existing.formId)
+                        db.pitScoutingTabQueries.deleteTab(tabId)
+                    }
+                }
                 deleteLocalFiles(existing.images)
-                db.pitscoutQueries.deletePitscoutByFormId(existing.formId)
+            } else {
+                LocalDatabaseWriteCoordinator.withWriteLock {
+                    db.pitScoutingTabQueries.deleteTab(tabId)
+                }
             }
-            db.pitScoutingTabQueries.deleteTab(tabId)
         }
     }
 
     suspend fun deleteTabsForEvent(eventKey: String) {
         withContext(Dispatchers.IO) {
-            db.pitScoutingTabQueries.getAllTabsForEvent(eventKey).executeAsList().forEach { row ->
-                val tab = rowToTab(row)
-                deleteLocalFiles(tab.images)
-                db.pitscoutQueries.deletePitscoutByFormId(tab.formId)
+            val tabsToDelete = mutableListOf<PitScoutingTab>()
+
+            LocalDatabaseWriteCoordinator.withWriteLock {
+                db.transaction {
+                    tabsToDelete += db.pitScoutingTabQueries.getAllTabsForEvent(eventKey)
+                        .executeAsList()
+                        .map { row -> rowToTab(row) }
+                    db.pitscoutQueries.deletePitscoutByEventId(eventKey)
+                    db.pitScoutingTabQueries.deleteTabsForEvent(eventKey)
+                }
             }
-            db.pitScoutingTabQueries.deleteTabsForEvent(eventKey)
+
+            tabsToDelete.forEach { tab ->
+                deleteLocalFiles(tab.images)
+            }
         }
     }
 
@@ -305,9 +326,15 @@ class PitScoutingRepository(
                         }
                     }
 
-                    db.pitscoutQueries.deletePitscoutByFormId(preparedTab.formId)
+                    val clearedTab = buildClearedTab(preparedTab, regenerateFormId = true)
                     runCatching {
-                        clearTab(preparedTab.tabId, regenerateFormId = true)
+                        LocalDatabaseWriteCoordinator.withWriteLock {
+                            db.transaction {
+                                db.pitscoutQueries.deletePitscoutByFormId(preparedTab.formId)
+                                persistTabInternal(clearedTab)
+                            }
+                        }
+                        deleteLocalFiles(preparedTab.images)
                     }.onFailure { resetError ->
                         persistTab(
                             preparedTab.copy(
@@ -362,26 +389,31 @@ class PitScoutingRepository(
         userData: SubmissionUserData,
         language: String
     ) {
-        db.pitscoutQueries.deletePitscoutByFormId(tab.formId)
-        db.pitscoutQueries.insertPitscout(
-            event_id = tab.eventKey,
-            form_id = tab.formId,
-            data_ = gson.toJson(data),
-            upload = gson.toJson(upload),
-            user_data = gson.toJson(userData),
-            user_agent = buildUserAgent(),
-            ip = null,
-            language = language
-        )
-        persistTab(
-            tab.copy(
-                isDraft = false,
-                isSubmitted = false,
-                updatedAt = nowIso(),
-                syncStatus = PitScoutingStatus.PENDING_SUBMISSION,
-                lastError = null
-            )
-        )
+        LocalDatabaseWriteCoordinator.withWriteLock {
+            db.transaction {
+                db.pitscoutQueries.deletePitscoutByFormId(tab.formId)
+                db.pitscoutQueries.insertPitscout(
+                    event_id = tab.eventKey,
+                    form_id = tab.formId,
+                    data_ = gson.toJson(data),
+                    upload = gson.toJson(upload),
+                    user_data = gson.toJson(userData),
+                    user_agent = buildUserAgent(),
+                    ip = null,
+                    language = language
+                )
+
+                persistTabInternal(
+                    tab.copy(
+                        isDraft = false,
+                        isSubmitted = false,
+                        updatedAt = nowIso(),
+                        syncStatus = PitScoutingStatus.PENDING_SUBMISSION,
+                        lastError = null
+                    )
+                )
+            }
+        }
     }
 
     private suspend fun ensureUploadedImages(tab: PitScoutingTab): PitScoutingTab {
@@ -405,7 +437,7 @@ class PitScoutingRepository(
     }
 
     private suspend fun uploadImageIfNeeded(image: PitImageAsset, apiType: String): PitImageAsset {
-        if (image.uploaded && image.url.isNotBlank()) {
+        if (image.uploaded && (image.id.isNotBlank() || image.url.isNotBlank())) {
             return image
         }
 
@@ -420,7 +452,13 @@ class PitScoutingRepository(
             file = MultipartBody.Part.createFormData("file", file.name, file.asRequestBody(mimeType.toMediaTypeOrNull())),
             type = apiType.toRequestBody("text/plain".toMediaTypeOrNull())
         )
-        return image.copy(id = response.id, url = response.url, uploaded = response.url.isNotBlank())
+        val remoteId = response.id.ifBlank { image.id }
+        val remoteUrl = response.url.ifBlank { image.url }
+        return image.copy(
+            id = remoteId,
+            url = remoteUrl,
+            uploaded = remoteId.isNotBlank() || remoteUrl.isNotBlank()
+        )
     }
 
     private fun buildSubmissionPayload(tab: PitScoutingTab, userData: SubmissionUserData): Map<String, Any?> {
@@ -545,7 +583,13 @@ class PitScoutingRepository(
         }
     }
 
-    private fun persistTab(tab: PitScoutingTab) {
+    private suspend fun persistTab(tab: PitScoutingTab) {
+        LocalDatabaseWriteCoordinator.withWriteLock {
+            persistTabInternal(tab)
+        }
+    }
+
+    private fun persistTabInternal(tab: PitScoutingTab) {
         db.pitScoutingTabQueries.insertTab(
             tabId = tab.tabId,
             teamNumber = tab.teamNumber,
@@ -599,6 +643,23 @@ class PitScoutingRepository(
             submissionTime = null,
             updatedAt = nowIso(),
             syncStatus = PitScoutingStatus.DIRTY,
+            lastError = null
+        )
+    }
+
+    private fun buildClearedTab(existing: PitScoutingTab, regenerateFormId: Boolean): PitScoutingTab {
+        return existing.copy(
+            teamNumber = "",
+            tabName = buildFallbackTabName(existing.tabId),
+            formId = if (regenerateFormId) UUID.randomUUID().toString() else existing.formId,
+            fields = PitFormDataProvider.createEmptyFormFields(),
+            images = PitImageBundle(),
+            isDraft = true,
+            isSubmitted = false,
+            submissionTime = null,
+            createdAt = if (regenerateFormId) nowIso() else existing.createdAt,
+            updatedAt = nowIso(),
+            syncStatus = PitScoutingStatus.DRAFT,
             lastError = null
         )
     }

@@ -18,13 +18,17 @@ class TeamNameRepository (
             try {
                 val teams = service.fetchTeamNames()
 
-                queries.deleteAll()
+                LocalDatabaseWriteCoordinator.withWriteLock {
+                    db.transaction {
+                        queries.deleteAll()
 
-                teams.forEach {
-                    queries.insertTeam(
-                        team_number = it.team_number,
-                        team_name = it.team_name
-                    )
+                        teams.forEach {
+                            queries.insertTeam(
+                                team_number = it.team_number,
+                                team_name = it.team_name
+                            )
+                        }
+                    }
                 }
 
                 return@withContext Result.success(Unit)

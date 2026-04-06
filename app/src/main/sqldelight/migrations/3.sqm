@@ -1,0 +1,8 @@
+ALTER TABLE gameDetailsEntity
+ADD COLUMN local_teleop_section TEXT NOT NULL DEFAULT 'UNSTARTED';
+
+ALTER TABLE gameDetailsEntity
+ADD COLUMN local_teleop_total_milliseconds INTEGER NOT NULL DEFAULT 0;
+
+ALTER TABLE gameDetailsEntity
+ADD COLUMN local_teleop_cached_milliseconds INTEGER NOT NULL DEFAULT 0;
