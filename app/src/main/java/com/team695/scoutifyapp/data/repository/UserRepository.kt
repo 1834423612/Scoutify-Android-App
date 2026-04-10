@@ -13,14 +13,13 @@ import com.team695.scoutifyapp.data.api.NetworkMonitorStatus
 import com.team695.scoutifyapp.data.api.client.ScoutifyClient
 import com.team695.scoutifyapp.data.api.model.User
 import com.team695.scoutifyapp.data.api.service.ApiResponse
+import com.team695.scoutifyapp.data.api.service.CasdoorUserInfoService
 import com.team695.scoutifyapp.data.api.service.LoginService
 import com.team695.scoutifyapp.data.api.service.TokenResponse
 import com.team695.scoutifyapp.data.api.service.UserInfoResponse
 import com.team695.scoutifyapp.data.api.service.UserService
 import com.team695.scoutifyapp.db.AppDatabase
 import com.team695.scoutifyapp.ui.extensions.androidID
-import com.team695.scoutifyapp.ui.viewModels.LoginStatus
-import com.team695.scoutifyapp.utility.displayTime
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.Flow
@@ -38,6 +37,7 @@ data class UserAccessProfile(
 
 class UserRepository(
     private val loginService: LoginService,
+    private val casdoorUserInfoService: CasdoorUserInfoService,
     private val userService: UserService,
     private val db: AppDatabase,
     private val context: Context,
@@ -61,25 +61,61 @@ class UserRepository(
 
     suspend fun getUserInfo(): Boolean {
         return withContext(Dispatchers.IO) {
+            val token = ScoutifyClient.tokenManager.getToken().orEmpty()
+            if (token.isBlank()) {
+                return@withContext false
+            }
+
             try {
-                val reqRes: ApiResponse<UserInfoResponse> = userService.getUserInfo(
-                    authHeader = "Bearer ${ScoutifyClient.tokenManager.getToken() ?: ""}"
+                val claims = getIdentityClaims(token)
+                val appProfile = runCatching {
+                    userService.getUserInfo(authHeader = "Bearer $token")
+                }.getOrNull()
+
+                val userRes: UserInfoResponse? = appProfile?.data
+                val mergedName = firstNonBlank(
+                    userRes?.name,
+                    claims["preferred_username"].asTrimmedString(),
+                    claims["username"].asTrimmedString(),
+                    claims["name"].asTrimmedString(),
+                    claims["sub"].asTrimmedString()
                 )
+                val mergedDisplayName = firstNonBlank(
+                    userRes?.displayName,
+                    claims["displayName"].asTrimmedString(),
+                    claims["fullName"].asTrimmedString(),
+                    claims["name"].asTrimmedString(),
+                    claims["preferred_username"].asTrimmedString(),
+                    mergedName
+                )
+                val mergedEmail = firstNonBlank(
+                    userRes?.email,
+                    claims["email"].asTrimmedString()
+                )
+                val mergedAndroidId = firstNonBlank(
+                    userRes?.androidID,
+                    claims["um_android_device_id"].asTrimmedString(),
+                    claims["androidID"].asTrimmedString(),
+                    claims["deviceId"].asTrimmedString()
+                )
+                val hasIdentityData = listOf(mergedName, mergedDisplayName, mergedEmail, mergedAndroidId)
+                    .any { !it.isNullOrBlank() }
+                val deviceMatches = mergedAndroidId.isNullOrBlank() ||
+                    mergedAndroidId == context.androidID ||
+                    BuildConfig.DEBUG
 
-                val userRes: UserInfoResponse? = reqRes.data
+                if (!hasIdentityData) {
+                    Log.d("User", "No identity fields returned from app profile or Casdoor userinfo.")
+                    return@withContext false
+                }
 
-                if (
-                    userRes != null &&
-                    (userRes.androidID == context.androidID || BuildConfig.DEBUG)
-                ) {
-                    LocalDatabaseWriteCoordinator.withWriteLock {
-                        db.userQueries.insertUser(
-                            name = userRes.name,
-                            display_name = userRes.displayName,
-                            email = userRes.email,
-                            android_id = userRes.androidID
-                        )
-                    }
+                if (deviceMatches) {
+                    persistUser(
+                        name = mergedName,
+                        displayName = mergedDisplayName,
+                        email = mergedEmail,
+                        androidId = mergedAndroidId
+                    )
 
                     return@withContext true
                 } else {
@@ -96,7 +132,7 @@ class UserRepository(
                 }
             } catch (e: Exception) {
                 Log.d("User", "Error when trying to get user info: $e")
-                return@withContext true
+                return@withContext false
             }
         }
     }
@@ -111,7 +147,8 @@ class UserRepository(
     }
 
     suspend fun getAccessProfile(): UserAccessProfile {
-        val claims = getTokenClaims()
+        val token = ScoutifyClient.tokenManager.getToken().orEmpty()
+        val claims = getIdentityClaims(token)
         val groups = normalizeClaimArray(claims["groups"])
         val roles = normalizeClaimArray(claims["roles"])
         val permissions = normalizeClaimArray(claims["permissions"])
@@ -163,6 +200,25 @@ class UserRepository(
 
     private suspend fun getTokenClaims(): Map<String, Any?> {
         val token = ScoutifyClient.tokenManager.getToken().orEmpty()
+        return getTokenClaims(token)
+    }
+
+    private suspend fun getIdentityClaims(token: String): Map<String, Any?> {
+        val tokenClaims = getTokenClaims(token)
+        if (token.isBlank()) {
+            return tokenClaims
+        }
+
+        val userInfoClaims = runCatching {
+            casdoorUserInfoService.getUserInfo(authHeader = "Bearer $token")
+        }.onFailure { error ->
+            Log.d("User", "Failed to fetch Casdoor userinfo: $error")
+        }.getOrDefault(emptyMap())
+
+        return tokenClaims + userInfoClaims
+    }
+
+    private fun getTokenClaims(token: String): Map<String, Any?> {
         val payload = token.split('.').getOrNull(1).orEmpty()
         if (payload.isBlank()) {
             return emptyMap()
@@ -174,6 +230,22 @@ class UserRepository(
             val type = object : TypeToken<Map<String, Any?>>() {}.type
             gson.fromJson<Map<String, Any?>>(decodedPayload, type) ?: emptyMap()
         }.getOrDefault(emptyMap())
+    }
+
+    private suspend fun persistUser(
+        name: String?,
+        displayName: String?,
+        email: String?,
+        androidId: String?,
+    ) {
+        LocalDatabaseWriteCoordinator.withWriteLock {
+            db.userQueries.insertUser(
+                name = name,
+                display_name = displayName,
+                email = email,
+                android_id = androidId
+            )
+        }
     }
 
     private fun normalizeClaimArray(raw: Any?): List<String> {
@@ -192,6 +264,10 @@ class UserRepository(
             is String -> this.equals("true", ignoreCase = true) || this == "1"
             else -> false
         }
+    }
+
+    private fun Any?.asTrimmedString(): String? {
+        return this?.toString()?.trim()?.takeIf { it.isNotBlank() }
     }
 
     private fun looksLikeAdminClaim(value: String): Boolean {
@@ -217,5 +293,9 @@ class UserRepository(
         ).any(normalized::contains)
 
         return referencesDatabase && grantsDatabaseAccess
+    }
+
+    private fun firstNonBlank(vararg values: String?): String? {
+        return values.firstOrNull { !it.isNullOrBlank() }?.trim()
     }
 }

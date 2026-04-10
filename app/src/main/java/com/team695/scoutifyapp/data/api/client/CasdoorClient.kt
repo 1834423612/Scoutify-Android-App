@@ -1,5 +1,6 @@
 package com.team695.scoutifyapp.data.api.client
 
+import com.team695.scoutifyapp.data.api.service.CasdoorUserInfoService
 import com.team695.scoutifyapp.data.api.service.LoginService
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -16,5 +17,9 @@ object CasdoorClient {
 
     val loginService: LoginService by lazy {
         retrofit.create(LoginService::class.java)
+    }
+
+    val userInfoService: CasdoorUserInfoService by lazy {
+        retrofit.create(CasdoorUserInfoService::class.java)
     }
 }

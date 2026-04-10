@@ -42,6 +42,15 @@ class LoginViewModel(private val repository: UserRepository): ViewModel() {
             _loginState.value = LoginStatus(
                 acToken = token?.ifEmpty { null }
             )
+
+            if (!token.isNullOrBlank()) {
+                val refreshed = repository.getUserInfo()
+                if (!refreshed) {
+                    _loginState.update {
+                        it.copy(error = LoginError.TOKEN_EXCHANGE)
+                    }
+                }
+            }
         }
     }
     fun generateLoginURL(): String {
