@@ -155,36 +155,14 @@ fun FormScreen(
 
                 SettingsSectionHeader(
                     title = "Overview",
-                    subtitle = "Version, account binding, and device metadata all live here now."
+                    subtitle = "Account, app, and device"
                 )
 
-                FlowRow(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    maxItemsInEachRow = 3
-                ) {
-                    AppOverviewCard(
-                        uiState = uiState,
-                        modifier = Modifier.widthIn(min = 280.dp, max = 420.dp)
-                    )
-                    AccountAccessCard(
-                        uiState = uiState,
-                        modifier = Modifier.widthIn(min = 280.dp, max = 420.dp)
-                    )
-                    DeviceDetailsCard(
-                        uiState = uiState,
-                        modifier = Modifier.widthIn(min = 280.dp, max = 420.dp)
-                    )
-                    DeviceIdentityCard(
-                        uiState = uiState,
-                        modifier = Modifier.widthIn(min = 280.dp, max = 420.dp)
-                    )
-                }
+                OverviewDashboard(uiState = uiState)
 
                 SettingsSectionHeader(
                     title = "Tools",
-                    subtitle = "Sensitive tools stay behind role-based access even though the Settings page is always visible."
+                    subtitle = "Admin tools"
                 )
 
                 SettingsCardsGrid(
@@ -206,13 +184,13 @@ fun FormScreen(
                 title = "Local Database Management",
                 buttonLabel = "Back",
                 buttonColor = AccentSecondary,
-                topBarHeight = 42.dp,
+                topBarHeight = 36.dp,
                 titleFontSize = 15.sp,
                 buttonFontSize = 12.sp,
                 buttonHorizontalPadding = 16.dp,
                 buttonVerticalPadding = 7.dp,
                 dividerTopSpacing = 4.dp,
-                dividerBottomSpacing = 8.dp,
+                dividerBottomSpacing = 6.dp,
                 onButtonPressed = {
                     currentSection = SettingsSection.HOME
                 }
@@ -288,8 +266,8 @@ private fun SettingsHeroCard(
                 shape = RoundedCornerShape(18.dp)
             )
             .border(1.dp, LightGunmetal, RoundedCornerShape(18.dp))
-            .padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+            .padding(horizontal = 18.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -300,13 +278,13 @@ private fun SettingsHeroCard(
                 Text(
                     text = "Scoutify Settings",
                     color = TextPrimary,
-                    fontSize = 24.sp,
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
                     text = "Signed in as $signedInAs",
                     color = TextSecondary,
-                    fontSize = 14.sp
+                    fontSize = 12.sp
                 )
             }
 
@@ -317,16 +295,9 @@ private fun SettingsHeroCard(
             )
         }
 
-        Text(
-            text = "The settings page is back for every user. Sensitive utilities such as local database inspection are now gated by admin privileges instead of disappearing entirely.",
-            color = TextPrimary,
-            fontSize = 14.sp,
-            lineHeight = 21.sp
-        )
-
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             InfoPill(
                 modifier = Modifier.weight(1f),
@@ -363,14 +334,14 @@ private fun SettingsSectionHeader(
         Text(
             text = title,
             color = TextPrimary,
-            fontSize = 20.sp,
+            fontSize = 17.sp,
             fontWeight = FontWeight.Bold
         )
         Text(
             text = subtitle,
             color = TextSecondary,
-            fontSize = 13.sp,
-            lineHeight = 18.sp
+            fontSize = 11.sp,
+            lineHeight = 14.sp
         )
     }
 }
@@ -386,25 +357,106 @@ private fun SettingsCard(
         modifier = modifier
             .background(DarkGunmetal, RoundedCornerShape(16.dp))
             .border(1.dp, LightGunmetal, RoundedCornerShape(16.dp))
-            .padding(18.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+            .padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
                 text = title,
                 color = TextPrimary,
-                fontSize = 18.sp,
+                fontSize = 15.sp,
                 fontWeight = FontWeight.Bold
             )
             Text(
                 text = subtitle,
                 color = TextSecondary,
-                fontSize = 13.sp,
-                lineHeight = 18.sp
+                fontSize = 11.sp,
+                lineHeight = 14.sp
             )
         }
         HorizontalDivider(color = LightGunmetal)
         content()
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun OverviewDashboard(
+    uiState: SettingsUiState,
+) {
+    FlowRow(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+        maxItemsInEachRow = 4
+    ) {
+        OverviewMetricCard(
+            label = "Version",
+            value = uiState.appVersionName.ifBlank { "--" },
+            modifier = Modifier.widthIn(min = 150.dp, max = 220.dp)
+        )
+        OverviewMetricCard(
+            label = "Access",
+            value = if (uiState.isAdmin) "Admin" else "Member",
+            modifier = Modifier.widthIn(min = 150.dp, max = 220.dp)
+        )
+        OverviewMetricCard(
+            label = "Device",
+            value = when (uiState.deviceIdMatches) {
+                true -> "Bound"
+                false -> "Mismatch"
+                null -> "Pending"
+            },
+            modifier = Modifier.widthIn(min = 150.dp, max = 220.dp)
+        )
+        OverviewMetricCard(
+            label = "Build",
+            value = uiState.buildTypeLabel.ifBlank { "--" },
+            modifier = Modifier.widthIn(min = 150.dp, max = 220.dp)
+        )
+        AppOverviewCard(
+            uiState = uiState,
+            modifier = Modifier.widthIn(min = 260.dp, max = 360.dp)
+        )
+        AccountAccessCard(
+            uiState = uiState,
+            modifier = Modifier.widthIn(min = 260.dp, max = 360.dp)
+        )
+        DeviceDetailsCard(
+            uiState = uiState,
+            modifier = Modifier.widthIn(min = 260.dp, max = 360.dp)
+        )
+        DeviceIdentityCard(
+            uiState = uiState,
+            modifier = Modifier.widthIn(min = 260.dp, max = 360.dp)
+        )
+    }
+}
+
+@Composable
+private fun OverviewMetricCard(
+    label: String,
+    value: String,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .background(DarkGunmetal, RoundedCornerShape(14.dp))
+            .border(1.dp, LightGunmetal, RoundedCornerShape(14.dp))
+            .padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        Text(
+            text = label,
+            color = Deselected,
+            fontSize = 10.sp
+        )
+        Text(
+            text = value,
+            color = TextPrimary,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold
+        )
     }
 }
 
@@ -415,16 +467,16 @@ private fun AppOverviewCard(
 ) {
     SettingsCard(
         modifier = modifier,
-        title = "App Overview",
-        subtitle = "Build metadata and package information for this installation."
+        title = "App",
+        subtitle = "Build"
     ) {
-        MetadataRow(label = "Version Name", value = uiState.appVersionName)
-        MetadataRow(label = "Version Code", value = uiState.appVersionCode)
-        MetadataRow(label = "Build Type", value = uiState.buildTypeLabel)
+        MetadataRow(label = "Version", value = uiState.appVersionName)
+        MetadataRow(label = "Code", value = uiState.appVersionCode)
+        MetadataRow(label = "Build", value = uiState.buildTypeLabel)
         MetadataRow(label = "Package", value = uiState.packageName, monospace = true)
         MetadataRow(
-            label = "Local Debugging",
-            value = if (uiState.isDebugBuild) "Enabled for this build" else "Disabled in this build"
+            label = "DB Access",
+            value = if (uiState.canManageLocalDatabase) "Allowed" else "Restricted"
         )
     }
 }
@@ -436,13 +488,13 @@ private fun AccountAccessCard(
 ) {
     SettingsCard(
         modifier = modifier,
-        title = "Account Access",
-        subtitle = "Current login identity plus the role and permission claims used for access control."
+        title = "Account",
+        subtitle = "Identity"
     ) {
-        MetadataRow(label = "Display Name", value = uiState.displayName)
-        MetadataRow(label = "Username", value = uiState.username, monospace = true)
+        MetadataRow(label = "Name", value = uiState.displayName)
+        MetadataRow(label = "User", value = uiState.username, monospace = true)
         MetadataRow(label = "Email", value = uiState.email, monospace = true)
-        MetadataRow(label = "Access Level", value = if (uiState.isAdmin) "Administrator" else "Standard Member")
+        MetadataRow(label = "Access", value = if (uiState.isAdmin) "Administrator" else "Member")
         MetadataRow(label = "Roles", value = uiState.roles.joinDisplayValue())
         MetadataRow(label = "Groups", value = uiState.groups.joinDisplayValue())
         MetadataRow(label = "Permissions", value = uiState.permissions.joinDisplayValue())
@@ -456,11 +508,11 @@ private fun DeviceDetailsCard(
 ) {
     SettingsCard(
         modifier = modifier,
-        title = "Device Details",
-        subtitle = "Hardware and OS details for the currently running handset or tablet."
+        title = "Device",
+        subtitle = "Hardware"
     ) {
         MetadataRow(label = "Device", value = uiState.deviceDisplayName)
-        MetadataRow(label = "Manufacturer", value = uiState.manufacturer)
+        MetadataRow(label = "Maker", value = uiState.manufacturer)
         MetadataRow(label = "Brand", value = uiState.brand)
         MetadataRow(label = "Model", value = uiState.model)
         MetadataRow(label = "Android", value = "${uiState.androidVersion.ifBlank { "--" }} (SDK ${uiState.sdkInt})")
@@ -474,24 +526,18 @@ private fun DeviceIdentityCard(
 ) {
     SettingsCard(
         modifier = modifier,
-        title = "Device Identity",
-        subtitle = "Scoutify compares the local Android secure ID with the server-bound device ID stored for the account."
+        title = "Binding",
+        subtitle = "Device ID"
     ) {
-        MetadataRow(label = "Local Device ID", value = uiState.localAndroidId, monospace = true)
-        MetadataRow(label = "Registered Device ID", value = uiState.registeredAndroidId, monospace = true)
+        MetadataRow(label = "Local ID", value = uiState.localAndroidId, monospace = true)
+        MetadataRow(label = "Registered ID", value = uiState.registeredAndroidId, monospace = true)
         MetadataRow(
-            label = "Binding Status",
+            label = "Status",
             value = when (uiState.deviceIdMatches) {
-                true -> "Local and registered IDs match"
-                false -> "IDs do not match"
-                null -> "Registered device ID not available yet"
+                true -> "Matched"
+                false -> "Mismatch"
+                null -> "Pending"
             }
-        )
-        Text(
-            text = "This value comes from Android's secure settings (`Settings.Secure.ANDROID_ID`) and is then compared against the device ID returned by your authenticated user profile.",
-            color = TextSecondary,
-            fontSize = 12.sp,
-            lineHeight = 18.sp
         )
     }
 }
@@ -502,11 +548,11 @@ private fun MetadataRow(
     value: String,
     monospace: Boolean = false,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Text(
             text = label,
             color = Deselected,
-            fontSize = 12.sp
+            fontSize = 10.sp
         )
 
         if (monospace) {
@@ -514,8 +560,8 @@ private fun MetadataRow(
                 Text(
                     text = value.ifBlank { "Not available" },
                     color = TextPrimary,
-                    fontSize = 13.sp,
-                    lineHeight = 18.sp,
+                    fontSize = 11.sp,
+                    lineHeight = 14.sp,
                     fontFamily = FontFamily.Monospace
                 )
             }
@@ -523,8 +569,8 @@ private fun MetadataRow(
             Text(
                 text = value.ifBlank { "Not available" },
                 color = TextPrimary,
-                fontSize = 14.sp,
-                lineHeight = 19.sp
+                fontSize = 12.sp,
+                lineHeight = 15.sp
             )
         }
     }
@@ -623,20 +669,11 @@ private fun SettingsCardsGrid(
                 SettingsFeatureCard(
                     modifier = Modifier.weight(1f),
                     title = "Local Database Management",
-                    description = "Inspect local tables, rows, and fields on this device. This tool is now always listed here, but only administrators can open it.",
+                    description = "Browse local tables and rows.",
                     badge = if (canManageLocalDatabase) "Admin Ready" else "Restricted",
-                    footer = if (canManageLocalDatabase) "Open management console" else "Tap to view access restriction",
+                    footer = if (canManageLocalDatabase) "Open" else "Permission required",
                     accentColor = if (canManageLocalDatabase) AccentSecondary else Color(0xFFFCA5A5),
                     onClick = onOpenLocalDatabase
-                )
-
-                SettingsFeatureCard(
-                    modifier = Modifier.weight(1f),
-                    title = "Device Binding Health",
-                    description = "Use the cards above to verify that this install is running on the same Android device ID that the backend has registered to the signed-in account.",
-                    badge = "Info",
-                    footer = "Identity details shown above",
-                    accentColor = Accent
                 )
             }
         } else {
@@ -646,19 +683,11 @@ private fun SettingsCardsGrid(
             ) {
                 SettingsFeatureCard(
                     title = "Local Database Management",
-                    description = "Inspect local tables, rows, and fields on this device. This tool is now always listed here, but only administrators can open it.",
+                    description = "Browse local tables and rows.",
                     badge = if (canManageLocalDatabase) "Admin Ready" else "Restricted",
-                    footer = if (canManageLocalDatabase) "Open management console" else "Tap to view access restriction",
+                    footer = if (canManageLocalDatabase) "Open" else "Permission required",
                     accentColor = if (canManageLocalDatabase) AccentSecondary else Color(0xFFFCA5A5),
                     onClick = onOpenLocalDatabase
-                )
-
-                SettingsFeatureCard(
-                    title = "Device Binding Health",
-                    description = "Use the cards above to verify that this install is running on the same Android device ID that the backend has registered to the signed-in account.",
-                    badge = "Info",
-                    footer = "Identity details shown above",
-                    accentColor = Accent
                 )
             }
         }
@@ -683,13 +712,13 @@ private fun SettingsFeatureCard(
 
     Column(
         modifier = cardModifier
-            .height(220.dp)
+            .height(132.dp)
             .background(DarkGunmetal, RoundedCornerShape(16.dp))
             .border(1.dp, LightGunmetal, RoundedCornerShape(16.dp))
-            .padding(18.dp),
+            .padding(14.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             StatusPill(
                 text = badge,
                 containerColor = accentColor.copy(alpha = 0.14f),
@@ -698,21 +727,21 @@ private fun SettingsFeatureCard(
             Text(
                 text = title,
                 color = TextPrimary,
-                fontSize = 20.sp,
+                fontSize = 15.sp,
                 fontWeight = FontWeight.Bold
             )
             Text(
                 text = description,
                 color = TextSecondary,
-                fontSize = 14.sp,
-                lineHeight = 20.sp
+                fontSize = 11.sp,
+                lineHeight = 14.sp
             )
         }
 
         Text(
             text = footer,
             color = accentColor,
-            fontSize = 13.sp,
+            fontSize = 11.sp,
             fontWeight = FontWeight.SemiBold
         )
     }

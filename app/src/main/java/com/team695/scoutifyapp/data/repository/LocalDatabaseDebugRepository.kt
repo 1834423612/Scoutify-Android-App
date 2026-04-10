@@ -4,7 +4,6 @@ import app.cash.sqldelight.db.QueryResult
 import app.cash.sqldelight.db.SqlCursor
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.db.SqlPreparedStatement
-import com.team695.scoutifyapp.config.DebugConfig
 import com.team695.scoutifyapp.db.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -51,7 +50,6 @@ class LocalDatabaseDebugRepository(
 
     suspend fun loadSnapshot(): LocalDatabaseDebugSnapshot {
         return withContext(Dispatchers.IO) {
-            requireDebugAccess()
             val tableNames = loadTableNames()
             val tables = tableNames.map { tableName ->
                 LocalDatabaseDebugTable(
@@ -75,7 +73,6 @@ class LocalDatabaseDebugRepository(
         offset: Int = 0,
     ): List<LocalDatabaseDebugRow> {
         return withContext(Dispatchers.IO) {
-            requireDebugAccess()
             val normalizedLimit = limit.coerceIn(1, MAX_ROW_PAGE_SIZE)
             val normalizedOffset = offset.coerceAtLeast(0)
             val columns = loadColumns(tableName)
@@ -205,12 +202,6 @@ class LocalDatabaseDebugRepository(
                     ?: cursor.getDouble(columnIndex)?.toString()
                     ?: cursor.getBytes(columnIndex)?.let { "<${it.size} bytes>" }
         } ?: "NULL"
-    }
-
-    private fun requireDebugAccess() {
-        check(DebugConfig.ENABLE_LOCAL_DATABASE_DEBUGGING) {
-            "Local database debugging is disabled in this build."
-        }
     }
 
     private fun <T> executeQuery(

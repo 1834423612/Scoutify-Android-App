@@ -42,7 +42,7 @@ fun TopbarWithButton(
     buttonHorizontalPadding: Dp = 36.dp,
     buttonVerticalPadding: Dp = 12.dp,
     dividerTopSpacing: Dp = 8.dp,
-    dividerBottomSpacing: Dp = 16.dp,
+    dividerBottomSpacing: Dp = 8.dp,
 ) {
     // Top bar
     Row(
