@@ -21,6 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.team695.scoutifyapp.data.types.GameFormState
@@ -34,19 +36,26 @@ fun TopbarWithButton(
     buttonLabel: String,
     buttonColor: Color,
     onButtonPressed: () -> Unit,
+    topBarHeight: Dp = 60.dp,
+    titleFontSize: TextUnit = 20.sp,
+    buttonFontSize: TextUnit = 18.sp,
+    buttonHorizontalPadding: Dp = 36.dp,
+    buttonVerticalPadding: Dp = 12.dp,
+    dividerTopSpacing: Dp = 8.dp,
+    dividerBottomSpacing: Dp = 16.dp,
 ) {
     // Top bar
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(60.dp),
+            .height(topBarHeight),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
             text = title,
             color = TextPrimary,
-            fontSize = 20.sp,
+            fontSize = titleFontSize,
             fontWeight = FontWeight.Bold
         )
 
@@ -62,21 +71,21 @@ fun TopbarWithButton(
                 .background(btnBg)
 
                 .clickable{onButtonPressed()}
-                .padding(horizontal = 36.dp, vertical = 12.dp),
+                .padding(horizontal = buttonHorizontalPadding, vertical = buttonVerticalPadding),
             contentAlignment = Alignment.Center
         ) {
             Text(
                 text = buttonLabel,
                 color = Color.White,
-                fontSize = 18.sp,
+                fontSize = buttonFontSize,
                 fontWeight = FontWeight.Bold
             )
         }
     }
 
-    Spacer(Modifier.height(8.dp))
+    Spacer(Modifier.height(dividerTopSpacing))
 
     HorizontalDivider(color = Deselected)
 
-    Spacer(Modifier.height(16.dp))
+    Spacer(Modifier.height(dividerBottomSpacing))
 }

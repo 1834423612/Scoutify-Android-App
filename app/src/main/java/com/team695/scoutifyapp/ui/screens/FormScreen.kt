@@ -206,6 +206,13 @@ fun FormScreen(
                 title = "Local Database Management",
                 buttonLabel = "Back",
                 buttonColor = AccentSecondary,
+                topBarHeight = 42.dp,
+                titleFontSize = 15.sp,
+                buttonFontSize = 12.sp,
+                buttonHorizontalPadding = 16.dp,
+                buttonVerticalPadding = 7.dp,
+                dividerTopSpacing = 4.dp,
+                dividerBottomSpacing = 8.dp,
                 onButtonPressed = {
                     currentSection = SettingsSection.HOME
                 }
@@ -722,7 +729,7 @@ private fun DebugSummaryRow(
         if (maxWidth >= 720.dp) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 SummaryCard(
                     modifier = Modifier.weight(1f),
@@ -746,7 +753,7 @@ private fun DebugSummaryRow(
         } else {
             Column(
                 modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 SummaryCard(
                     title = "Schema",
@@ -779,12 +786,12 @@ private fun SummaryCard(
         modifier = modifier
             .background(DarkGunmetal, RoundedCornerShape(12.dp))
             .border(1.dp, LightGunmetal, RoundedCornerShape(12.dp))
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+            .padding(horizontal = 10.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(3.dp)
     ) {
-        Text(text = title, color = Deselected, fontSize = 12.sp)
-        Text(text = value, color = TextPrimary, fontSize = 24.sp, fontWeight = FontWeight.Bold)
-        Text(text = subtitle, color = TextSecondary, fontSize = 12.sp)
+        Text(text = title, color = Deselected, fontSize = 9.sp)
+        Text(text = value, color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+        Text(text = subtitle, color = TextSecondary, fontSize = 9.sp, lineHeight = 11.sp)
     }
 }
 
