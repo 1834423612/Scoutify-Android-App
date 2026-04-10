@@ -83,6 +83,7 @@ fun DatabaseWorkbenchPage(
     openTableTabs: List<String>,
     onOpenTable: (String) -> Unit,
     onCloseTable: (String) -> Unit,
+    onGoToPage: (Int) -> Unit,
     onPreviousPage: () -> Unit,
     onNextPage: () -> Unit,
     onPageSizeChanged: (Int) -> Unit,
@@ -129,6 +130,7 @@ fun DatabaseWorkbenchPage(
                     customColumnWidths = customColumnWidths,
                     onOpenTable = onOpenTable,
                     onCloseTable = onCloseTable,
+                    onGoToPage = onGoToPage,
                     onPreviousPage = onPreviousPage,
                     onNextPage = onNextPage,
                     onPageSizeChanged = onPageSizeChanged,
@@ -166,6 +168,7 @@ fun DatabaseWorkbenchPage(
                     customColumnWidths = customColumnWidths,
                     onOpenTable = onOpenTable,
                     onCloseTable = onCloseTable,
+                    onGoToPage = onGoToPage,
                     onPreviousPage = onPreviousPage,
                     onNextPage = onNextPage,
                     onPageSizeChanged = onPageSizeChanged,
@@ -195,30 +198,62 @@ private fun DatabaseNavigatorPaneCompact(
         Text(
             text = "Navigator",
             color = TextPrimary,
-            fontSize = 13.sp,
+            fontSize = 12.sp,
             fontWeight = FontWeight.Bold
         )
 
         Text(
-            text = "${snapshot?.tables?.size ?: 0} tables",
+            text = "Local Database",
             color = TextSecondary,
             fontSize = 10.sp
         )
 
         HorizontalDivider(color = LightGunmetal)
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            items(snapshot?.tables.orEmpty(), key = { it.name }) { table ->
-                CompactNavigatorItem(
-                    table = table,
-                    selected = table.name == selectedTableName,
-                    onClick = { onOpenTable(table.name) }
-                )
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            TreeRootItem(label = "Database", childCount = snapshot?.tables?.size ?: 0)
+
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(3.dp)
+            ) {
+                items(snapshot?.tables.orEmpty(), key = { it.name }) { table ->
+                    CompactNavigatorItem(
+                        table = table,
+                        selected = table.name == selectedTableName,
+                        onClick = { onOpenTable(table.name) }
+                    )
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun TreeRootItem(
+    label: String,
+    childCount: Int,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Background, RoundedCornerShape(8.dp))
+            .border(1.dp, LightGunmetal, RoundedCornerShape(8.dp))
+            .padding(horizontal = 8.dp, vertical = 6.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = "▾ $label",
+            color = TextPrimary,
+            fontSize = 10.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+        Text(
+            text = childCount.toString(),
+            color = Deselected,
+            fontSize = 9.sp
+        )
     }
 }
 
@@ -234,6 +269,7 @@ private fun CompactNavigatorItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(start = 10.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(containerColor)
             .border(1.dp, borderColor, RoundedCornerShape(8.dp))
@@ -242,14 +278,33 @@ private fun CompactNavigatorItem(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        Box(
+            modifier = Modifier
+                .width(10.dp)
+                .height(24.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(1.dp)
+                    .fillMaxHeight()
+                    .background(LightGunmetal)
+            )
+            Box(
+                modifier = Modifier
+                    .padding(top = 11.dp)
+                    .width(8.dp)
+                    .height(1.dp)
+                    .background(LightGunmetal)
+            )
+        }
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(1.dp)
         ) {
             Text(
-                text = table.name,
+                text = "table  ${table.name}",
                 color = TextPrimary,
-                fontSize = 11.sp,
+                fontSize = 10.sp,
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -286,6 +341,7 @@ private fun DatabaseWorkspacePane(
     customColumnWidths: MutableMap<String, Float>,
     onOpenTable: (String) -> Unit,
     onCloseTable: (String) -> Unit,
+    onGoToPage: (Int) -> Unit,
     onPreviousPage: () -> Unit,
     onNextPage: () -> Unit,
     onPageSizeChanged: (Int) -> Unit,
@@ -309,13 +365,10 @@ private fun DatabaseWorkspacePane(
         )
 
         DatabaseToolbarStrip(
-            table = selectedTable,
             rowSearchQuery = rowSearchQuery,
             errorMessage = errorMessage,
             widthMode = widthMode,
-            pageSize = pageSize,
             onWidthModeChanged = onWidthModeChanged,
-            onPageSizeChanged = onPageSizeChanged,
             onRowSearchQueryChanged = onRowSearchQueryChanged,
             onRefreshRequested = onRefreshRequested
         )
@@ -365,6 +418,7 @@ private fun DatabaseWorkspacePane(
             pageIndex = pageIndex,
             pageCount = pageCount,
             pageSize = pageSize,
+            onGoToPage = onGoToPage,
             onPreviousPage = onPreviousPage,
             onNextPage = onNextPage,
             onPageSizeChanged = onPageSizeChanged
@@ -436,13 +490,10 @@ private fun DatabaseTabStrip(
 
 @Composable
 private fun DatabaseToolbarStrip(
-    table: LocalDatabaseDebugTable?,
     rowSearchQuery: String,
     errorMessage: String?,
     widthMode: ColumnWidthMode,
-    pageSize: Int,
     onWidthModeChanged: (ColumnWidthMode) -> Unit,
-    onPageSizeChanged: (Int) -> Unit,
     onRowSearchQueryChanged: (String) -> Unit,
     onRefreshRequested: () -> Unit,
 ) {
@@ -458,40 +509,9 @@ private fun DatabaseToolbarStrip(
             onValueChange = onRowSearchQueryChanged
         )
 
-        CompactActionChip(
-            label = table?.name ?: "No table",
-            highlighted = table != null,
-            onClick = {}
-        )
-
-        CompactActionChip(
-            label = "Width ${widthMode.name.lowercase().replaceFirstChar(Char::uppercase)}",
-            highlighted = widthMode != ColumnWidthMode.AUTO,
-            onClick = {
-                onWidthModeChanged(
-                    when (widthMode) {
-                        ColumnWidthMode.AUTO -> ColumnWidthMode.COMPACT
-                        ColumnWidthMode.COMPACT -> ColumnWidthMode.WIDE
-                        ColumnWidthMode.WIDE -> ColumnWidthMode.AUTO
-                        ColumnWidthMode.CUSTOM -> ColumnWidthMode.AUTO
-                    }
-                )
-            }
-        )
-
-        CompactActionChip(
-            label = "Page $pageSize",
-            highlighted = true,
-            onClick = {
-                onPageSizeChanged(
-                    when (pageSize) {
-                        50 -> 100
-                        100 -> 250
-                        250 -> 50
-                        else -> 100
-                    }
-                )
-            }
+        WidthModeSelector(
+            selectedMode = widthMode,
+            onWidthModeChanged = onWidthModeChanged
         )
 
         CompactActionChip(
@@ -503,10 +523,53 @@ private fun DatabaseToolbarStrip(
 }
 
 @Composable
+private fun WidthModeSelector(
+    selectedMode: ColumnWidthMode,
+    onWidthModeChanged: (ColumnWidthMode) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .background(Background, RoundedCornerShape(8.dp))
+            .border(1.dp, LightGunmetal, RoundedCornerShape(8.dp))
+            .padding(3.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        listOf(
+            ColumnWidthMode.AUTO to "Auto",
+            ColumnWidthMode.COMPACT to "Compact",
+            ColumnWidthMode.WIDE to "Wide",
+        ).forEach { (mode, label) ->
+            val selected = selectedMode == mode || (selectedMode == ColumnWidthMode.CUSTOM && mode == ColumnWidthMode.AUTO)
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(if (selected) AccentSecondary.copy(alpha = 0.18f) else Color.Transparent)
+                    .border(
+                        width = if (selected) 1.dp else 0.dp,
+                        color = if (selected) AccentSecondary.copy(alpha = 0.45f) else Color.Transparent,
+                        shape = RoundedCornerShape(6.dp)
+                    )
+                    .clickable { onWidthModeChanged(mode) }
+                    .padding(horizontal = 8.dp, vertical = 7.dp)
+            ) {
+                Text(
+                    text = label,
+                    color = if (selected) AccentSecondary else Deselected,
+                    fontSize = 10.sp,
+                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun DatabasePaginationStrip(
     pageIndex: Int,
     pageCount: Int,
     pageSize: Int,
+    onGoToPage: (Int) -> Unit,
     onPreviousPage: () -> Unit,
     onNextPage: () -> Unit,
     onPageSizeChanged: (Int) -> Unit,
@@ -533,12 +596,33 @@ private fun DatabasePaginationStrip(
             )
         }
 
-        Text(
-            text = "Page ${pageIndex + 1} / $pageCount",
-            color = TextPrimary,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.SemiBold
-        )
+        LazyRow(
+            modifier = Modifier.weight(1f),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            items(buildVisiblePages(pageIndex, pageCount), key = { it }) { page ->
+                val selected = page == pageIndex
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(if (selected) Accent.copy(alpha = 0.18f) else Color.Transparent)
+                        .border(
+                            width = 1.dp,
+                            color = if (selected) Accent else LightGunmetal,
+                            shape = RoundedCornerShape(6.dp)
+                        )
+                        .clickable { onGoToPage(page) }
+                        .padding(horizontal = 8.dp, vertical = 6.dp)
+                ) {
+                    Text(
+                        text = (page + 1).toString(),
+                        color = if (selected) Accent else TextPrimary,
+                        fontSize = 10.sp,
+                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
+                    )
+                }
+            }
+        }
 
         CompactActionChip(
             label = "${pageSize} rows/page",
@@ -555,6 +639,16 @@ private fun DatabasePaginationStrip(
             }
         )
     }
+}
+
+private fun buildVisiblePages(pageIndex: Int, pageCount: Int): List<Int> {
+    if (pageCount <= 1) {
+        return listOf(0)
+    }
+
+    val start = (pageIndex - 2).coerceAtLeast(0)
+    val end = (pageIndex + 2).coerceAtMost(pageCount - 1)
+    return (start..end).toList()
 }
 
 @Composable

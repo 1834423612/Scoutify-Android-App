@@ -190,6 +190,16 @@ class SettingsViewModel(
         loadRowsForTable(_uiState.value.selectedTableName)
     }
 
+    fun goToPage(pageIndex: Int) {
+        val current = _uiState.value
+        val normalizedPageIndex = pageIndex.coerceIn(0, (current.pageCount - 1).coerceAtLeast(0))
+        if (normalizedPageIndex == current.pageIndex) {
+            return
+        }
+        _uiState.update { it.copy(pageIndex = normalizedPageIndex, loadedRows = emptyList()) }
+        loadRowsForTable(_uiState.value.selectedTableName)
+    }
+
     fun updatePageSize(pageSize: Int) {
         val normalizedPageSize = pageSize.coerceIn(25, 500)
         _uiState.update {

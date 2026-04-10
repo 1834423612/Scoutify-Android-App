@@ -110,7 +110,9 @@ fun FormScreen(
     }
 
     fun openDatabaseTable(tableName: String) {
-        openTableTabs = (openTableTabs.filterNot { it == tableName } + tableName).takeLast(8)
+        if (tableName !in openTableTabs) {
+            openTableTabs = (openTableTabs + tableName).takeLast(8)
+        }
         settingsViewModel.selectTable(tableName)
     }
 
@@ -184,13 +186,13 @@ fun FormScreen(
                 title = "Local Database Management",
                 buttonLabel = "Back",
                 buttonColor = AccentSecondary,
-                topBarHeight = 36.dp,
-                titleFontSize = 15.sp,
-                buttonFontSize = 12.sp,
-                buttonHorizontalPadding = 16.dp,
-                buttonVerticalPadding = 7.dp,
+                topBarHeight = 32.dp,
+                titleFontSize = 13.sp,
+                buttonFontSize = 10.sp,
+                buttonHorizontalPadding = 12.dp,
+                buttonVerticalPadding = 5.dp,
                 dividerTopSpacing = 4.dp,
-                dividerBottomSpacing = 6.dp,
+                dividerBottomSpacing = 4.dp,
                 onButtonPressed = {
                     currentSection = SettingsSection.HOME
                 }
@@ -230,6 +232,7 @@ fun FormScreen(
                     openTableTabs = openTableTabs,
                     onOpenTable = ::openDatabaseTable,
                     onCloseTable = ::closeDatabaseTab,
+                    onGoToPage = settingsViewModel::goToPage,
                     onPreviousPage = settingsViewModel::goToPreviousPage,
                     onNextPage = settingsViewModel::goToNextPage,
                     onPageSizeChanged = settingsViewModel::updatePageSize,
@@ -388,74 +391,23 @@ private fun OverviewDashboard(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
-        maxItemsInEachRow = 4
+        maxItemsInEachRow = 3
     ) {
-        OverviewMetricCard(
-            label = "Version",
-            value = uiState.appVersionName.ifBlank { "--" },
-            modifier = Modifier.widthIn(min = 150.dp, max = 220.dp)
-        )
-        OverviewMetricCard(
-            label = "Access",
-            value = if (uiState.isAdmin) "Admin" else "Member",
-            modifier = Modifier.widthIn(min = 150.dp, max = 220.dp)
-        )
-        OverviewMetricCard(
-            label = "Device",
-            value = when (uiState.deviceIdMatches) {
-                true -> "Bound"
-                false -> "Mismatch"
-                null -> "Pending"
-            },
-            modifier = Modifier.widthIn(min = 150.dp, max = 220.dp)
-        )
-        OverviewMetricCard(
-            label = "Build",
-            value = uiState.buildTypeLabel.ifBlank { "--" },
-            modifier = Modifier.widthIn(min = 150.dp, max = 220.dp)
-        )
         AppOverviewCard(
             uiState = uiState,
-            modifier = Modifier.widthIn(min = 260.dp, max = 360.dp)
+            modifier = Modifier.widthIn(min = 240.dp, max = 320.dp)
         )
         AccountAccessCard(
             uiState = uiState,
-            modifier = Modifier.widthIn(min = 260.dp, max = 360.dp)
+            modifier = Modifier.widthIn(min = 240.dp, max = 320.dp)
         )
         DeviceDetailsCard(
             uiState = uiState,
-            modifier = Modifier.widthIn(min = 260.dp, max = 360.dp)
+            modifier = Modifier.widthIn(min = 240.dp, max = 320.dp)
         )
         DeviceIdentityCard(
             uiState = uiState,
-            modifier = Modifier.widthIn(min = 260.dp, max = 360.dp)
-        )
-    }
-}
-
-@Composable
-private fun OverviewMetricCard(
-    label: String,
-    value: String,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier
-            .background(DarkGunmetal, RoundedCornerShape(14.dp))
-            .border(1.dp, LightGunmetal, RoundedCornerShape(14.dp))
-            .padding(horizontal = 12.dp, vertical = 10.dp),
-        verticalArrangement = Arrangement.spacedBy(2.dp)
-    ) {
-        Text(
-            text = label,
-            color = Deselected,
-            fontSize = 10.sp
-        )
-        Text(
-            text = value,
-            color = TextPrimary,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.SemiBold
+            modifier = Modifier.widthIn(min = 240.dp, max = 320.dp)
         )
     }
 }
