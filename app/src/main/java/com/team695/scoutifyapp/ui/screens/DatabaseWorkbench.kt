@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -60,6 +62,7 @@ import com.team695.scoutifyapp.ui.theme.LightGunmetal
 import com.team695.scoutifyapp.ui.theme.TextFieldBackground
 import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.theme.TextSecondary
+import kotlin.math.min
 
 private enum class ColumnWidthMode {
     AUTO,
@@ -92,6 +95,9 @@ fun DatabaseWorkbenchPage(
 ) {
     var widthMode by rememberSaveable { mutableStateOf(ColumnWidthMode.AUTO.name) }
     val customColumnWidths = remember { mutableStateMapOf<String, Float>() }
+    var databaseExpanded by rememberSaveable { mutableStateOf(true) }
+    var schemaExpanded by rememberSaveable { mutableStateOf(true) }
+    var tablesExpanded by rememberSaveable { mutableStateOf(true) }
 
     BoxWithConstraints(modifier = modifier) {
         val useSidebarLayout = maxWidth >= 760.dp
@@ -112,6 +118,12 @@ fun DatabaseWorkbenchPage(
                         .fillMaxHeight(),
                     snapshot = snapshot,
                     selectedTableName = selectedTable?.name,
+                    databaseExpanded = databaseExpanded,
+                    schemaExpanded = schemaExpanded,
+                    tablesExpanded = tablesExpanded,
+                    onToggleDatabase = { databaseExpanded = !databaseExpanded },
+                    onToggleSchema = { schemaExpanded = !schemaExpanded },
+                    onToggleTables = { tablesExpanded = !tablesExpanded },
                     onOpenTable = onOpenTable
                 )
 
@@ -150,6 +162,12 @@ fun DatabaseWorkbenchPage(
                         .heightIn(min = 132.dp, max = 188.dp),
                     snapshot = snapshot,
                     selectedTableName = selectedTable?.name,
+                    databaseExpanded = databaseExpanded,
+                    schemaExpanded = schemaExpanded,
+                    tablesExpanded = tablesExpanded,
+                    onToggleDatabase = { databaseExpanded = !databaseExpanded },
+                    onToggleSchema = { schemaExpanded = !schemaExpanded },
+                    onToggleTables = { tablesExpanded = !tablesExpanded },
                     onOpenTable = onOpenTable
                 )
 
@@ -186,6 +204,12 @@ private fun DatabaseNavigatorPaneCompact(
     modifier: Modifier,
     snapshot: LocalDatabaseDebugSnapshot?,
     selectedTableName: String?,
+    databaseExpanded: Boolean,
+    schemaExpanded: Boolean,
+    tablesExpanded: Boolean,
+    onToggleDatabase: () -> Unit,
+    onToggleSchema: () -> Unit,
+    onToggleTables: () -> Unit,
     onOpenTable: (String) -> Unit,
 ) {
     Column(
@@ -210,13 +234,51 @@ private fun DatabaseNavigatorPaneCompact(
 
         HorizontalDivider(color = LightGunmetal)
 
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            TreeRootItem(label = "Database", childCount = snapshot?.tables?.size ?: 0)
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            item {
+                TreeGroupItem(
+                    level = 0,
+                    iconLabel = "DB",
+                    iconColor = Accent.copy(alpha = 0.9f),
+                    label = "scoutify_local",
+                    countLabel = "${snapshot?.tables?.size ?: 0}",
+                    expanded = databaseExpanded,
+                    onToggle = onToggleDatabase
+                )
+            }
 
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(3.dp)
-            ) {
+            if (databaseExpanded) {
+                item {
+                    TreeGroupItem(
+                        level = 1,
+                        iconLabel = "SC",
+                        iconColor = AccentSecondary.copy(alpha = 0.9f),
+                        label = "main",
+                        countLabel = "1",
+                        expanded = schemaExpanded,
+                        onToggle = onToggleSchema
+                    )
+                }
+            }
+
+            if (databaseExpanded && schemaExpanded) {
+                item {
+                    TreeGroupItem(
+                        level = 2,
+                        iconLabel = "TB",
+                        iconColor = Deselected.copy(alpha = 0.95f),
+                        label = "Tables",
+                        countLabel = "${snapshot?.tables?.size ?: 0}",
+                        expanded = tablesExpanded,
+                        onToggle = onToggleTables
+                    )
+                }
+            }
+
+            if (databaseExpanded && schemaExpanded && tablesExpanded) {
                 items(snapshot?.tables.orEmpty(), key = { it.name }) { table ->
                     CompactNavigatorItem(
                         table = table,
@@ -230,27 +292,84 @@ private fun DatabaseNavigatorPaneCompact(
 }
 
 @Composable
-private fun TreeRootItem(
+private fun TreeGroupItem(
+    level: Int,
+    iconLabel: String,
+    iconColor: Color,
     label: String,
-    childCount: Int,
+    countLabel: String,
+    expanded: Boolean,
+    onToggle: () -> Unit,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(start = (level * 12).dp)
             .background(Background, RoundedCornerShape(8.dp))
             .border(1.dp, LightGunmetal, RoundedCornerShape(8.dp))
-            .padding(horizontal = 8.dp, vertical = 6.dp),
+            .clickable { onToggle() }
+            .padding(horizontal = 8.dp, vertical = 5.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .width(12.dp)
+                    .height(18.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                if (level > 0) {
+                    Box(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .fillMaxHeight()
+                            .background(LightGunmetal.copy(alpha = 0.75f))
+                    )
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.CenterStart)
+                            .padding(start = 5.dp)
+                            .width(7.dp)
+                            .height(1.dp)
+                            .background(LightGunmetal.copy(alpha = 0.75f))
+                    )
+                }
+                Text(
+                    text = if (expanded) "v" else ">",
+                    color = Deselected,
+                    fontSize = 9.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Box(
+                modifier = Modifier
+                    .width(18.dp)
+                    .height(18.dp)
+                    .background(iconColor, RoundedCornerShape(5.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = iconLabel,
+                    color = DarkGunmetal,
+                    fontSize = 7.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Text(
+                text = label,
+                color = TextPrimary,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
         Text(
-            text = "▾ $label",
-            color = TextPrimary,
-            fontSize = 10.sp,
-            fontWeight = FontWeight.SemiBold
-        )
-        Text(
-            text = childCount.toString(),
+            text = countLabel,
             color = Deselected,
             fontSize = 9.sp
         )
@@ -269,32 +388,47 @@ private fun CompactNavigatorItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(start = 10.dp)
+            .padding(start = 34.dp)
             .clip(RoundedCornerShape(8.dp))
             .background(containerColor)
             .border(1.dp, borderColor, RoundedCornerShape(8.dp))
             .clickable { onClick() }
-            .padding(horizontal = 8.dp, vertical = 7.dp),
+            .padding(horizontal = 8.dp, vertical = 6.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
                 .width(10.dp)
-                .height(24.dp)
+                .height(22.dp)
         ) {
             Box(
                 modifier = Modifier
                     .width(1.dp)
                     .fillMaxHeight()
-                    .background(LightGunmetal)
+                    .background(LightGunmetal.copy(alpha = 0.75f))
             )
             Box(
                 modifier = Modifier
-                    .padding(top = 11.dp)
+                    .padding(top = 10.dp)
                     .width(8.dp)
                     .height(1.dp)
-                    .background(LightGunmetal)
+                    .background(LightGunmetal.copy(alpha = 0.75f))
+            )
+        }
+        Box(
+            modifier = Modifier
+                .padding(end = 7.dp)
+                .width(18.dp)
+                .height(18.dp)
+                .background(AccentSecondary.copy(alpha = 0.92f), RoundedCornerShape(5.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "T",
+                color = DarkGunmetal,
+                fontSize = 8.sp,
+                fontWeight = FontWeight.Bold
             )
         }
         Column(
@@ -302,7 +436,7 @@ private fun CompactNavigatorItem(
             verticalArrangement = Arrangement.spacedBy(1.dp)
         ) {
             Text(
-                text = "table  ${table.name}",
+                text = table.name,
                 color = TextPrimary,
                 fontSize = 10.sp,
                 fontWeight = FontWeight.SemiBold,
@@ -380,7 +514,12 @@ private fun DatabaseWorkspacePane(
             return
         }
 
-        DatabaseMiniStatusStrip(table = selectedTable, filteredRows = filteredRows)
+        DatabaseMiniStatusStrip(
+            table = selectedTable,
+            filteredRows = filteredRows,
+            pageIndex = pageIndex,
+            pageSize = pageSize
+        )
 
         if (isLoadingRows) {
             Box(
@@ -452,37 +591,45 @@ private fun DatabaseTabStrip(
         return
     }
 
-    LazyRow(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Background, RoundedCornerShape(8.dp))
+            .border(1.dp, LightGunmetal, RoundedCornerShape(8.dp))
     ) {
-        items(openTableTabs, key = { it }) { tableName ->
-            val selected = tableName == selectedTableName
-            val containerColor = if (selected) Accent.copy(alpha = 0.18f) else Background
-            val borderColor = if (selected) Accent else LightGunmetal
+        LazyRow(
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            items(openTableTabs, key = { it }) { tableName ->
+                val selected = tableName == selectedTableName
+                val containerColor = if (selected) Accent.copy(alpha = 0.18f) else DarkishGunmetal
+                val borderColor = if (selected) Accent else LightGunmetal
 
-            Row(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(containerColor)
-                    .border(1.dp, borderColor, RoundedCornerShape(8.dp))
-                    .clickable { onOpenTable(tableName) }
-                    .padding(start = 10.dp, end = 8.dp, top = 7.dp, bottom = 7.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = tableName,
-                    color = if (selected) Accent else TextPrimary,
-                    fontSize = 10.sp,
-                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
-                )
-                Text(
-                    text = "x",
-                    color = TextSecondary,
-                    fontSize = 10.sp,
-                    modifier = Modifier.clickable { onCloseTable(tableName) }
-                )
+                Row(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(containerColor)
+                        .border(1.dp, borderColor, RoundedCornerShape(8.dp))
+                        .clickable { onOpenTable(tableName) }
+                        .padding(start = 10.dp, end = 8.dp, top = 7.dp, bottom = 7.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = tableName,
+                        color = if (selected) Accent else TextPrimary,
+                        fontSize = 10.sp,
+                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
+                    )
+                    Text(
+                        text = "x",
+                        color = TextSecondary,
+                        fontSize = 10.sp,
+                        modifier = Modifier.clickable { onCloseTable(tableName) }
+                    )
+                }
             }
         }
     }
@@ -580,15 +727,62 @@ private fun DatabasePaginationStrip(
             .background(Background, RoundedCornerShape(8.dp))
             .border(1.dp, LightGunmetal, RoundedCornerShape(8.dp))
             .padding(horizontal = 8.dp, vertical = 7.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(
+            modifier = Modifier.weight(1f),
+            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             CompactActionChip(
                 label = "Prev",
                 highlighted = pageIndex > 0,
                 onClick = onPreviousPage
             )
+
+            Row(
+                modifier = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                buildVisiblePages(pageIndex, pageCount).forEach { indicator ->
+                    when (indicator) {
+                        is PaginationIndicator.Page -> {
+                            val selected = indicator.index == pageIndex
+                            Box(
+                                modifier = Modifier
+                                    .padding(horizontal = 2.dp)
+                                    .clip(RoundedCornerShape(6.dp))
+                                    .background(if (selected) Accent.copy(alpha = 0.18f) else Color.Transparent)
+                                    .border(
+                                        width = 1.dp,
+                                        color = if (selected) Accent else LightGunmetal,
+                                        shape = RoundedCornerShape(6.dp)
+                                    )
+                                    .clickable { onGoToPage(indicator.index) }
+                                    .padding(horizontal = 8.dp, vertical = 6.dp)
+                            ) {
+                                Text(
+                                    text = (indicator.index + 1).toString(),
+                                    color = if (selected) Accent else TextPrimary,
+                                    fontSize = 10.sp,
+                                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
+                                )
+                            }
+                        }
+
+                        PaginationIndicator.Ellipsis -> {
+                            Text(
+                                text = "...",
+                                color = Deselected,
+                                fontSize = 10.sp,
+                                modifier = Modifier.padding(horizontal = 4.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
             CompactActionChip(
                 label = "Next",
                 highlighted = pageIndex + 1 < pageCount,
@@ -596,36 +790,10 @@ private fun DatabasePaginationStrip(
             )
         }
 
-        LazyRow(
-            modifier = Modifier.weight(1f),
-            horizontalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            items(buildVisiblePages(pageIndex, pageCount), key = { it }) { page ->
-                val selected = page == pageIndex
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(6.dp))
-                        .background(if (selected) Accent.copy(alpha = 0.18f) else Color.Transparent)
-                        .border(
-                            width = 1.dp,
-                            color = if (selected) Accent else LightGunmetal,
-                            shape = RoundedCornerShape(6.dp)
-                        )
-                        .clickable { onGoToPage(page) }
-                        .padding(horizontal = 8.dp, vertical = 6.dp)
-                ) {
-                    Text(
-                        text = (page + 1).toString(),
-                        color = if (selected) Accent else TextPrimary,
-                        fontSize = 10.sp,
-                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
-                    )
-                }
-            }
-        }
+        Box(modifier = Modifier.width(8.dp))
 
         CompactActionChip(
-            label = "${pageSize} rows/page",
+            label = "${pageSize} / page",
             highlighted = true,
             onClick = {
                 onPageSizeChanged(
@@ -641,14 +809,43 @@ private fun DatabasePaginationStrip(
     }
 }
 
-private fun buildVisiblePages(pageIndex: Int, pageCount: Int): List<Int> {
+private sealed class PaginationIndicator {
+    data class Page(val index: Int) : PaginationIndicator()
+    object Ellipsis : PaginationIndicator()
+}
+
+private fun buildVisiblePages(pageIndex: Int, pageCount: Int): List<PaginationIndicator> {
     if (pageCount <= 1) {
-        return listOf(0)
+        return listOf(PaginationIndicator.Page(0))
     }
 
-    val start = (pageIndex - 2).coerceAtLeast(0)
-    val end = (pageIndex + 2).coerceAtMost(pageCount - 1)
-    return (start..end).toList()
+    val lastPage = pageCount - 1
+    val pages = linkedSetOf(0, lastPage)
+
+    if (pageCount <= 7) {
+        return (0..lastPage).map { PaginationIndicator.Page(it) }
+    }
+
+    if (pageIndex <= 3) {
+        (0..min(4, lastPage)).forEach { pages += it }
+    } else if (pageIndex >= lastPage - 3) {
+        ((lastPage - 4).coerceAtLeast(0)..lastPage).forEach { pages += it }
+    } else {
+        ((pageIndex - 2)..(pageIndex + 2)).forEach { pages += it }
+    }
+
+    val sortedPages = pages.toList().sorted()
+    val result = mutableListOf<PaginationIndicator>()
+
+    sortedPages.forEachIndexed { index, page ->
+        result += PaginationIndicator.Page(page)
+        val nextPage = sortedPages.getOrNull(index + 1) ?: return@forEachIndexed
+        if (nextPage - page > 1) {
+            result += PaginationIndicator.Ellipsis
+        }
+    }
+
+    return result
 }
 
 @Composable
@@ -722,6 +919,8 @@ private fun CompactActionChip(
 private fun DatabaseMiniStatusStrip(
     table: LocalDatabaseDebugTable,
     filteredRows: List<LocalDatabaseDebugRow>,
+    pageIndex: Int,
+    pageSize: Int,
 ) {
     Row(
         modifier = Modifier
@@ -733,9 +932,31 @@ private fun DatabaseMiniStatusStrip(
         verticalAlignment = Alignment.CenterVertically
     ) {
         StatusLabel(label = "Table", value = table.name)
-        StatusLabel(label = "Rows", value = "${filteredRows.size}/${table.rowCount}")
+        StatusLabel(
+            label = "Rows",
+            value = buildVisibleRowRangeText(
+                pageIndex = pageIndex,
+                pageSize = pageSize,
+                visibleRowCount = filteredRows.size,
+                totalRowCount = table.rowCount
+            )
+        )
         StatusLabel(label = "Columns", value = table.columns.size.toString())
     }
+}
+
+private fun buildVisibleRowRangeText(
+    pageIndex: Int,
+    pageSize: Int,
+    visibleRowCount: Int,
+    totalRowCount: Int,
+): String {
+    if (totalRowCount <= 0 || visibleRowCount <= 0) {
+        return "0 / $totalRowCount"
+    }
+    val startRow = (pageIndex * pageSize) + 1
+    val endRow = (startRow + visibleRowCount - 1).coerceAtMost(totalRowCount)
+    return "$startRow-$endRow / $totalRowCount"
 }
 
 @Composable
@@ -883,19 +1104,20 @@ private fun SpreadsheetHeaderCell(
 ) {
     Row(
         modifier = modifier
-            .height(42.dp)
+            .height(36.dp)
             .border(0.5.dp, LightGunmetal)
-            .padding(start = 6.dp, top = 4.dp, bottom = 4.dp, end = 2.dp),
+            .padding(start = 6.dp, top = 2.dp, bottom = 2.dp, end = 2.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(
             modifier = Modifier.weight(1f),
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.spacedBy(0.dp, Alignment.CenterVertically)
         ) {
             Text(
                 text = title,
                 color = TextPrimary,
-                fontSize = 10.sp,
+                fontSize = 9.sp,
+                lineHeight = 9.sp,
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -904,7 +1126,8 @@ private fun SpreadsheetHeaderCell(
                 Text(
                     text = subtitle,
                     color = Deselected,
-                    fontSize = 8.sp,
+                    fontSize = 7.sp,
+                    lineHeight = 7.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -926,7 +1149,7 @@ private fun SpreadsheetHeaderCell(
             Box(
                 modifier = Modifier
                     .width(2.dp)
-                    .height(22.dp)
+                    .height(18.dp)
                     .background(AccentSecondary.copy(alpha = 0.7f), RoundedCornerShape(999.dp))
             )
         }
