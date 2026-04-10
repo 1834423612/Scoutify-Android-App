@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
@@ -32,6 +33,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.TextStyle
@@ -40,7 +42,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.compose.foundation.text.selection.SelectionContainer
 import com.team695.scoutifyapp.data.repository.LocalDatabaseDebugRow
 import com.team695.scoutifyapp.data.repository.LocalDatabaseDebugTable
 import com.team695.scoutifyapp.ui.screens.data.TopbarWithButton
@@ -54,6 +55,7 @@ import com.team695.scoutifyapp.ui.theme.LightGunmetal
 import com.team695.scoutifyapp.ui.theme.TextFieldBackground
 import com.team695.scoutifyapp.ui.theme.TextPrimary
 import com.team695.scoutifyapp.ui.theme.TextSecondary
+import com.team695.scoutifyapp.ui.viewModels.SettingsUiState
 import com.team695.scoutifyapp.ui.viewModels.SettingsViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -69,6 +71,7 @@ fun FormScreen(
     settingsViewModel: SettingsViewModel,
 ) {
     var currentSection by rememberSaveable { androidx.compose.runtime.mutableStateOf(SettingsSection.HOME) }
+    var accessDeniedMessage by rememberSaveable { androidx.compose.runtime.mutableStateOf<String?>(null) }
     val uiState by settingsViewModel.uiState.collectAsStateWithLifecycle()
     val snapshot = uiState.snapshot
     val selectedTable = remember(snapshot, uiState.selectedTableName) {
@@ -92,15 +95,59 @@ fun FormScreen(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         if (currentSection == SettingsSection.HOME) {
-            SettingsHomeHeader()
-            SettingsCardsGrid(
-                onOpenLocalDatabase = {
-                    currentSection = SettingsSection.LOCAL_DATABASE
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                SettingsHeroCard(uiState = uiState)
+
+                accessDeniedMessage?.let { message ->
+                    InlineNoticeCard(
+                        message = message,
+                        actionLabel = "Dismiss",
+                        onAction = { accessDeniedMessage = null }
+                    )
                 }
-            )
+
+                SettingsSectionHeader(
+                    title = "Overview",
+                    subtitle = "Version, account binding, and device metadata all live here now."
+                )
+
+                ResponsiveTwoPane(
+                    first = { AppOverviewCard(uiState = uiState) },
+                    second = { AccountAccessCard(uiState = uiState) }
+                )
+
+                ResponsiveTwoPane(
+                    first = { DeviceDetailsCard(uiState = uiState) },
+                    second = { DeviceIdentityCard(uiState = uiState) }
+                )
+
+                SettingsSectionHeader(
+                    title = "Tools",
+                    subtitle = "Sensitive tools stay behind role-based access even though the Settings page is always visible."
+                )
+
+                SettingsCardsGrid(
+                    canManageLocalDatabase = uiState.canManageLocalDatabase,
+                    onOpenLocalDatabase = {
+                        if (uiState.canManageLocalDatabase) {
+                            accessDeniedMessage = null
+                            settingsViewModel.ensureDatabaseSnapshotLoaded()
+                            currentSection = SettingsSection.LOCAL_DATABASE
+                        } else {
+                            accessDeniedMessage =
+                                "Access denied. Administrator permission is required to open Local Database Management."
+                        }
+                    }
+                )
+            }
         } else {
             TopbarWithButton(
-                title = "Local Database",
+                title = "Local Database Management",
                 buttonLabel = "Back",
                 buttonColor = AccentSecondary,
                 onButtonPressed = {
@@ -190,89 +237,455 @@ fun FormScreen(
 }
 
 @Composable
-private fun SettingsHomeHeader() {
+private fun SettingsHeroCard(
+    uiState: SettingsUiState,
+) {
+    val accessLabel = if (uiState.isAdmin) "Administrator" else "Standard Member"
+    val accessColor = if (uiState.isAdmin) Accent else AccentSecondary
+    val signedInAs = uiState.displayName.ifBlank {
+        uiState.username.ifBlank { "Scoutify User" }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                brush = Brush.linearGradient(
+                    colors = listOf(
+                        Accent.copy(alpha = 0.18f),
+                        AccentSecondary.copy(alpha = 0.16f),
+                        DarkGunmetal
+                    )
+                ),
+                shape = RoundedCornerShape(18.dp)
+            )
+            .border(1.dp, LightGunmetal, RoundedCornerShape(18.dp))
+            .padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.Top
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(
+                    text = "Scoutify Settings",
+                    color = TextPrimary,
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Signed in as $signedInAs",
+                    color = TextSecondary,
+                    fontSize = 14.sp
+                )
+            }
+
+            StatusPill(
+                text = accessLabel,
+                containerColor = accessColor.copy(alpha = 0.14f),
+                contentColor = accessColor
+            )
+        }
+
+        Text(
+            text = "The settings page is back for every user. Sensitive utilities such as local database inspection are now gated by admin privileges instead of disappearing entirely.",
+            color = TextPrimary,
+            fontSize = 14.sp,
+            lineHeight = 21.sp
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            InfoPill(
+                modifier = Modifier.weight(1f),
+                label = "Version",
+                value = uiState.appVersionName.ifBlank { "--" }
+            )
+            InfoPill(
+                modifier = Modifier.weight(1f),
+                label = "Build",
+                value = uiState.buildTypeLabel.ifBlank { "--" }
+            )
+            InfoPill(
+                modifier = Modifier.weight(1f),
+                label = "Device Match",
+                value = when (uiState.deviceIdMatches) {
+                    true -> "Bound"
+                    false -> "Mismatch"
+                    null -> "Pending"
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun SettingsSectionHeader(
+    title: String,
+    subtitle: String,
+) {
     Column(
         modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         Text(
-            text = "Settings",
+            text = title,
             color = TextPrimary,
-            fontSize = 22.sp,
+            fontSize = 20.sp,
             fontWeight = FontWeight.Bold
         )
         Text(
-            text = "Choose a tool below. Database inspection lives here as a debug utility, but this page can keep growing with more settings later.",
+            text = subtitle,
             color = TextSecondary,
-            fontSize = 14.sp
+            fontSize = 13.sp,
+            lineHeight = 18.sp
         )
+    }
+}
+
+@Composable
+private fun ResponsiveTwoPane(
+    first: @Composable () -> Unit,
+    second: @Composable () -> Unit,
+) {
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        if (maxWidth >= 880.dp) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Box(modifier = Modifier.weight(1f)) { first() }
+                Box(modifier = Modifier.weight(1f)) { second() }
+            }
+        } else {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                first()
+                second()
+            }
+        }
+    }
+}
+
+@Composable
+private fun SettingsCard(
+    modifier: Modifier = Modifier,
+    title: String,
+    subtitle: String,
+    content: @Composable () -> Unit,
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(DarkGunmetal, RoundedCornerShape(16.dp))
+            .border(1.dp, LightGunmetal, RoundedCornerShape(16.dp))
+            .padding(18.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(
+                text = title,
+                color = TextPrimary,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = subtitle,
+                color = TextSecondary,
+                fontSize = 13.sp,
+                lineHeight = 18.sp
+            )
+        }
         HorizontalDivider(color = LightGunmetal)
+        content()
+    }
+}
+
+@Composable
+private fun AppOverviewCard(
+    uiState: SettingsUiState,
+) {
+    SettingsCard(
+        title = "App Overview",
+        subtitle = "Build metadata and package information for this installation."
+    ) {
+        MetadataRow(label = "Version Name", value = uiState.appVersionName)
+        MetadataRow(label = "Version Code", value = uiState.appVersionCode)
+        MetadataRow(label = "Build Type", value = uiState.buildTypeLabel)
+        MetadataRow(label = "Package", value = uiState.packageName, monospace = true)
+        MetadataRow(
+            label = "Local Debugging",
+            value = if (uiState.isDebugBuild) "Enabled for this build" else "Disabled in this build"
+        )
+    }
+}
+
+@Composable
+private fun AccountAccessCard(
+    uiState: SettingsUiState,
+) {
+    SettingsCard(
+        title = "Account Access",
+        subtitle = "Current login identity plus the role and permission claims used for access control."
+    ) {
+        MetadataRow(label = "Display Name", value = uiState.displayName)
+        MetadataRow(label = "Username", value = uiState.username, monospace = true)
+        MetadataRow(label = "Email", value = uiState.email, monospace = true)
+        MetadataRow(label = "Access Level", value = if (uiState.isAdmin) "Administrator" else "Standard Member")
+        MetadataRow(label = "Roles", value = uiState.roles.joinDisplayValue())
+        MetadataRow(label = "Groups", value = uiState.groups.joinDisplayValue())
+        MetadataRow(label = "Permissions", value = uiState.permissions.joinDisplayValue())
+    }
+}
+
+@Composable
+private fun DeviceDetailsCard(
+    uiState: SettingsUiState,
+) {
+    SettingsCard(
+        title = "Device Details",
+        subtitle = "Hardware and OS details for the currently running handset or tablet."
+    ) {
+        MetadataRow(label = "Device", value = uiState.deviceDisplayName)
+        MetadataRow(label = "Manufacturer", value = uiState.manufacturer)
+        MetadataRow(label = "Brand", value = uiState.brand)
+        MetadataRow(label = "Model", value = uiState.model)
+        MetadataRow(label = "Android", value = "${uiState.androidVersion.ifBlank { "--" }} (SDK ${uiState.sdkInt})")
+    }
+}
+
+@Composable
+private fun DeviceIdentityCard(
+    uiState: SettingsUiState,
+) {
+    SettingsCard(
+        title = "Device Identity",
+        subtitle = "Scoutify compares the local Android secure ID with the server-bound device ID stored for the account."
+    ) {
+        MetadataRow(label = "Local Device ID", value = uiState.localAndroidId, monospace = true)
+        MetadataRow(label = "Registered Device ID", value = uiState.registeredAndroidId, monospace = true)
+        MetadataRow(
+            label = "Binding Status",
+            value = when (uiState.deviceIdMatches) {
+                true -> "Local and registered IDs match"
+                false -> "IDs do not match"
+                null -> "Registered device ID not available yet"
+            }
+        )
+        Text(
+            text = "This value comes from Android's secure settings (`Settings.Secure.ANDROID_ID`) and is then compared against the device ID returned by your authenticated user profile.",
+            color = TextSecondary,
+            fontSize = 12.sp,
+            lineHeight = 18.sp
+        )
+    }
+}
+
+@Composable
+private fun MetadataRow(
+    label: String,
+    value: String,
+    monospace: Boolean = false,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(
+            text = label,
+            color = Deselected,
+            fontSize = 12.sp
+        )
+
+        if (monospace) {
+            SelectionContainer {
+                Text(
+                    text = value.ifBlank { "Not available" },
+                    color = TextPrimary,
+                    fontSize = 13.sp,
+                    lineHeight = 18.sp,
+                    fontFamily = FontFamily.Monospace
+                )
+            }
+        } else {
+            Text(
+                text = value.ifBlank { "Not available" },
+                color = TextPrimary,
+                fontSize = 14.sp,
+                lineHeight = 19.sp
+            )
+        }
+    }
+}
+
+@Composable
+private fun InlineNoticeCard(
+    message: String,
+    actionLabel: String,
+    onAction: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0x33F87171), RoundedCornerShape(14.dp))
+            .border(1.dp, Color(0x66F87171), RoundedCornerShape(14.dp))
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = message,
+            color = Color(0xFFFECACA),
+            fontSize = 13.sp,
+            modifier = Modifier.weight(1f)
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(
+            text = actionLabel,
+            color = Accent,
+            fontWeight = FontWeight.SemiBold,
+            modifier = Modifier.clickable { onAction() }
+        )
+    }
+}
+
+@Composable
+private fun StatusPill(
+    text: String,
+    containerColor: Color,
+    contentColor: Color,
+) {
+    Box(
+        modifier = Modifier
+            .background(containerColor, RoundedCornerShape(999.dp))
+            .border(1.dp, contentColor.copy(alpha = 0.35f), RoundedCornerShape(999.dp))
+            .padding(horizontal = 12.dp, vertical = 6.dp)
+    ) {
+        Text(
+            text = text,
+            color = contentColor,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+private fun InfoPill(
+    modifier: Modifier = Modifier,
+    label: String,
+    value: String,
+) {
+    Column(
+        modifier = modifier
+            .background(Background.copy(alpha = 0.5f), RoundedCornerShape(14.dp))
+            .border(1.dp, LightGunmetal, RoundedCornerShape(14.dp))
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Text(
+            text = label,
+            color = Deselected,
+            fontSize = 11.sp
+        )
+        Text(
+            text = value,
+            color = TextPrimary,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.SemiBold
+        )
     }
 }
 
 @Composable
 private fun SettingsCardsGrid(
+    canManageLocalDatabase: Boolean,
     onOpenLocalDatabase: () -> Unit,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        SettingsActionCard(
-            modifier = Modifier.weight(1f),
-            title = "Local Database Preview",
-            description = "Inspect every local table, row, and field currently stored on the device for offline-sync debugging.",
-            badge = "Debug",
-            onClick = onOpenLocalDatabase
-        )
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        if (maxWidth >= 880.dp) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                SettingsFeatureCard(
+                    modifier = Modifier.weight(1f),
+                    title = "Local Database Management",
+                    description = "Inspect local tables, rows, and fields on this device. This tool is now always listed here, but only administrators can open it.",
+                    badge = if (canManageLocalDatabase) "Admin Ready" else "Restricted",
+                    footer = if (canManageLocalDatabase) "Open management console" else "Tap to view access restriction",
+                    accentColor = if (canManageLocalDatabase) AccentSecondary else Color(0xFFFCA5A5),
+                    onClick = onOpenLocalDatabase
+                )
 
-        SettingsActionCard(
-            modifier = Modifier.weight(1f),
-            title = "More Settings Soon",
-            description = "This slot is intentionally left here so later members can add upload diagnostics, cache tools, or app preferences without reworking the page.",
-            badge = "Reserved",
-            enabled = false,
-            onClick = {}
-        )
+                SettingsFeatureCard(
+                    modifier = Modifier.weight(1f),
+                    title = "Device Binding Health",
+                    description = "Use the cards above to verify that this install is running on the same Android device ID that the backend has registered to the signed-in account.",
+                    badge = "Info",
+                    footer = "Identity details shown above",
+                    accentColor = Accent
+                )
+            }
+        } else {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                SettingsFeatureCard(
+                    title = "Local Database Management",
+                    description = "Inspect local tables, rows, and fields on this device. This tool is now always listed here, but only administrators can open it.",
+                    badge = if (canManageLocalDatabase) "Admin Ready" else "Restricted",
+                    footer = if (canManageLocalDatabase) "Open management console" else "Tap to view access restriction",
+                    accentColor = if (canManageLocalDatabase) AccentSecondary else Color(0xFFFCA5A5),
+                    onClick = onOpenLocalDatabase
+                )
+
+                SettingsFeatureCard(
+                    title = "Device Binding Health",
+                    description = "Use the cards above to verify that this install is running on the same Android device ID that the backend has registered to the signed-in account.",
+                    badge = "Info",
+                    footer = "Identity details shown above",
+                    accentColor = Accent
+                )
+            }
+        }
     }
 }
 
 @Composable
-private fun SettingsActionCard(
+private fun SettingsFeatureCard(
     modifier: Modifier = Modifier,
     title: String,
     description: String,
     badge: String,
-    enabled: Boolean = true,
-    onClick: () -> Unit,
+    footer: String,
+    accentColor: Color,
+    onClick: (() -> Unit)? = null,
 ) {
-    val backgroundColor = if (enabled) DarkGunmetal else DarkishGunmetal
-    val borderColor = if (enabled) LightGunmetal else LightGunmetal.copy(alpha = 0.5f)
-    val badgeColor = if (enabled) Accent else Deselected
+    val cardModifier = if (onClick != null) {
+        modifier.clickable { onClick() }
+    } else {
+        modifier
+    }
 
     Column(
-        modifier = modifier
+        modifier = cardModifier
             .height(220.dp)
-            .background(backgroundColor, RoundedCornerShape(14.dp))
-            .border(1.dp, borderColor, RoundedCornerShape(14.dp))
-            .clickable(enabled = enabled) { onClick() }
+            .background(DarkGunmetal, RoundedCornerShape(16.dp))
+            .border(1.dp, LightGunmetal, RoundedCornerShape(16.dp))
             .padding(18.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Box(
-                modifier = Modifier
-                    .background(Background, RoundedCornerShape(999.dp))
-                    .border(1.dp, borderColor, RoundedCornerShape(999.dp))
-                    .padding(horizontal = 10.dp, vertical = 4.dp)
-            ) {
-                Text(
-                    text = badge,
-                    color = badgeColor,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
+        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            StatusPill(
+                text = badge,
+                containerColor = accentColor.copy(alpha = 0.14f),
+                contentColor = accentColor
+            )
             Text(
                 text = title,
                 color = TextPrimary,
@@ -288,10 +701,10 @@ private fun SettingsActionCard(
         }
 
         Text(
-            text = if (enabled) "Open" else "Coming later",
-            color = if (enabled) AccentSecondary else Deselected,
-            fontWeight = FontWeight.SemiBold,
-            fontSize = 13.sp
+            text = footer,
+            color = accentColor,
+            fontSize = 13.sp,
+            fontWeight = FontWeight.SemiBold
         )
     }
 }
@@ -303,28 +716,53 @@ private fun DebugSummaryRow(
     totalRows: Int?,
     loadedAtMillis: Long?,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        SummaryCard(
-            modifier = Modifier.weight(1f),
-            title = "Schema",
-            value = schemaVersion?.toString() ?: "--",
-            subtitle = "SQLDelight version"
-        )
-        SummaryCard(
-            modifier = Modifier.weight(1f),
-            title = "Tables",
-            value = tableCount?.toString() ?: "--",
-            subtitle = "Loaded from sqlite_master"
-        )
-        SummaryCard(
-            modifier = Modifier.weight(1f),
-            title = "Rows",
-            value = totalRows?.toString() ?: "--",
-            subtitle = loadedAtMillis?.let { "Refreshed ${formatTimestamp(it)}" } ?: "No snapshot yet"
-        )
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        if (maxWidth >= 720.dp) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                SummaryCard(
+                    modifier = Modifier.weight(1f),
+                    title = "Schema",
+                    value = schemaVersion?.toString() ?: "--",
+                    subtitle = "SQLDelight version"
+                )
+                SummaryCard(
+                    modifier = Modifier.weight(1f),
+                    title = "Tables",
+                    value = tableCount?.toString() ?: "--",
+                    subtitle = "Loaded from sqlite_master"
+                )
+                SummaryCard(
+                    modifier = Modifier.weight(1f),
+                    title = "Rows",
+                    value = totalRows?.toString() ?: "--",
+                    subtitle = loadedAtMillis?.let { "Refreshed ${formatTimestamp(it)}" } ?: "No snapshot yet"
+                )
+            }
+        } else {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                SummaryCard(
+                    title = "Schema",
+                    value = schemaVersion?.toString() ?: "--",
+                    subtitle = "SQLDelight version"
+                )
+                SummaryCard(
+                    title = "Tables",
+                    value = tableCount?.toString() ?: "--",
+                    subtitle = "Loaded from sqlite_master"
+                )
+                SummaryCard(
+                    title = "Rows",
+                    value = totalRows?.toString() ?: "--",
+                    subtitle = loadedAtMillis?.let { "Refreshed ${formatTimestamp(it)}" } ?: "No snapshot yet"
+                )
+            }
+        }
     }
 }
 
@@ -379,7 +817,7 @@ private fun ErrorState(
         horizontalAlignment = Alignment.Start
     ) {
         Text(
-            text = "Database Debug Failed",
+            text = "Database Access Failed",
             color = TextPrimary,
             fontSize = 20.sp,
             fontWeight = FontWeight.Bold
@@ -736,6 +1174,10 @@ private fun TableRowCard(
             )
         }
     }
+}
+
+private fun List<String>.joinDisplayValue(): String {
+    return if (isEmpty()) "None detected" else joinToString(", ")
 }
 
 private fun formatTimestamp(timestamp: Long): String {

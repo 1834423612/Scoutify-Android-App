@@ -23,7 +23,6 @@ import com.team695.scoutifyapp.data.repository.UserRepository
 import com.team695.scoutifyapp.navigation.AppNav
 import com.team695.scoutifyapp.ui.components.NavRail
 import com.team695.scoutifyapp.ui.theme.Background
-import com.team695.scoutifyapp.config.DebugConfig
 
 @Composable
 fun Root(
@@ -55,7 +54,7 @@ fun Root(
                 onNavigateToUpload = { navController.navigate(route = "upload") },
                 onNavigateToSettings = { navController.navigate(route = "settings") },
                 onNavigateToLogin = { navController.navigate(route = "login") },
-                showSettings = DebugConfig.ENABLE_LOCAL_DATABASE_DEBUGGING,
+                showSettings = true,
                 userRepository = userRepository,
                 navController = navController
             )

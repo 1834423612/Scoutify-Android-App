@@ -2,9 +2,12 @@ package com.team695.scoutifyapp.data.repository
 
 import android.content.Context
 import android.util.Log
+import android.util.Base64
 import android.webkit.CookieManager
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToOneOrNull
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.team695.scoutifyapp.BuildConfig
 import com.team695.scoutifyapp.data.api.NetworkMonitorStatus
 import com.team695.scoutifyapp.data.api.client.ScoutifyClient
@@ -25,12 +28,21 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
+data class UserAccessProfile(
+    val groups: List<String> = emptyList(),
+    val roles: List<String> = emptyList(),
+    val permissions: List<String> = emptyList(),
+    val isAdmin: Boolean = false,
+    val canManageDatabase: Boolean = false,
+)
+
 class UserRepository(
     private val loginService: LoginService,
     private val userService: UserService,
     private val db: AppDatabase,
     private val context: Context,
 ) {
+    private val gson = Gson()
 
     var currentUser: Flow<User?> = db.userQueries.selectUser()
         .asFlow()
@@ -98,6 +110,28 @@ class UserRepository(
         )
     }
 
+    suspend fun getAccessProfile(): UserAccessProfile {
+        val claims = getTokenClaims()
+        val groups = normalizeClaimArray(claims["groups"])
+        val roles = normalizeClaimArray(claims["roles"])
+        val permissions = normalizeClaimArray(claims["permissions"])
+        val normalizedClaims = groups + roles + permissions
+
+        val isAdmin = claims["is_admin"].asBooleanFlag() ||
+            claims["admin"].asBooleanFlag() ||
+            normalizedClaims.any(::looksLikeAdminClaim)
+
+        val canManageDatabase = isAdmin || permissions.any(::looksLikeDatabasePermission)
+
+        return UserAccessProfile(
+            groups = groups,
+            roles = roles,
+            permissions = permissions,
+            isAdmin = isAdmin,
+            canManageDatabase = canManageDatabase
+        )
+    }
+
     suspend fun logout() {
         withContext(Dispatchers.IO) {
             NetworkMonitorStatus.currentNetworkJob?.let { activeJob ->
@@ -125,5 +159,63 @@ class UserRepository(
             CookieManager.getInstance().removeAllCookies(null)
             CookieManager.getInstance().flush()
         }
+    }
+
+    private suspend fun getTokenClaims(): Map<String, Any?> {
+        val token = ScoutifyClient.tokenManager.getToken().orEmpty()
+        val payload = token.split('.').getOrNull(1).orEmpty()
+        if (payload.isBlank()) {
+            return emptyMap()
+        }
+
+        return runCatching {
+            val normalizedPayload = payload.padEnd(payload.length + (4 - payload.length % 4) % 4, '=')
+            val decodedPayload = String(Base64.decode(normalizedPayload, Base64.URL_SAFE or Base64.NO_WRAP))
+            val type = object : TypeToken<Map<String, Any?>>() {}.type
+            gson.fromJson<Map<String, Any?>>(decodedPayload, type) ?: emptyMap()
+        }.getOrDefault(emptyMap())
+    }
+
+    private fun normalizeClaimArray(raw: Any?): List<String> {
+        return when (raw) {
+            is List<*> -> raw.mapNotNull { item -> item?.toString()?.trim() }.filter { it.isNotBlank() }
+            is Array<*> -> raw.mapNotNull { item -> item?.toString()?.trim() }.filter { it.isNotBlank() }
+            is String -> raw.split(',').map { it.trim() }.filter { it.isNotBlank() }
+            else -> emptyList()
+        }
+    }
+
+    private fun Any?.asBooleanFlag(): Boolean {
+        return when (this) {
+            is Boolean -> this
+            is Number -> this.toInt() != 0
+            is String -> this.equals("true", ignoreCase = true) || this == "1"
+            else -> false
+        }
+    }
+
+    private fun looksLikeAdminClaim(value: String): Boolean {
+        val normalized = value.trim().lowercase()
+        val adminKeywords = listOf("admin", "administrator", "superuser", "root")
+        return adminKeywords.any { keyword ->
+            normalized == keyword || normalized.contains(keyword)
+        }
+    }
+
+    private fun looksLikeDatabasePermission(value: String): Boolean {
+        val normalized = value.trim().lowercase()
+        val referencesDatabase = normalized.contains("database") ||
+            Regex("""(^|[:._-])db([:._-]|$)""").containsMatchIn(normalized)
+        val grantsDatabaseAccess = listOf(
+            "manage",
+            "admin",
+            "debug",
+            "inspect",
+            "view",
+            "read",
+            "write"
+        ).any(normalized::contains)
+
+        return referencesDatabase && grantsDatabaseAccess
     }
 }

@@ -34,12 +34,8 @@ import com.team695.scoutifyapp.ui.viewModels.LoginViewModel
 import com.team695.scoutifyapp.ui.viewModels.PitScoutingViewModel
 import com.team695.scoutifyapp.ui.viewModels.SettingsViewModel
 import com.team695.scoutifyapp.ui.viewModels.ViewModelFactory
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.material3.Text
 
 @Composable
 fun AppNav(
@@ -56,6 +52,7 @@ fun AppNav(
 ) {
     val owner: ViewModelStoreOwner = LocalViewModelStoreOwner.current
         ?: throw IllegalStateException("Root must be attached to a ViewModelStoreOwner")
+    val appContext = LocalContext.current.applicationContext
 
     val startDestination = if (DebugConfig.BYPASS_AUTH) "home" else "login"
 
@@ -179,25 +176,18 @@ fun AppNav(
                 navController = navController,
                 gameDetailRepository = gameDetailRepository
             ) {
-                if (DebugConfig.ENABLE_LOCAL_DATABASE_DEBUGGING) {
-                    val settingsViewModel: SettingsViewModel = viewModel(
-                        viewModelStoreOwner = owner,
-                        factory = ViewModelFactory {
-                            SettingsViewModel(
-                                localDatabaseDebugRepository = localDatabaseDebugRepository
-                            )
-                        }
-                    )
-
-                    FormScreen(settingsViewModel = settingsViewModel)
-                } else {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(text = "Settings debug tools are unavailable in release builds.")
+                val settingsViewModel: SettingsViewModel = viewModel(
+                    viewModelStoreOwner = owner,
+                    factory = ViewModelFactory {
+                        SettingsViewModel(
+                            localDatabaseDebugRepository = localDatabaseDebugRepository,
+                            userRepository = userRepository,
+                            appContext = appContext
+                        )
                     }
-                }
+                )
+
+                FormScreen(settingsViewModel = settingsViewModel)
             }
         }
 
