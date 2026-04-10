@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -16,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -27,6 +30,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -66,12 +70,14 @@ private enum class SettingsSection {
     LOCAL_DATABASE,
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun FormScreen(
     settingsViewModel: SettingsViewModel,
 ) {
     var currentSection by rememberSaveable { androidx.compose.runtime.mutableStateOf(SettingsSection.HOME) }
     var accessDeniedMessage by rememberSaveable { androidx.compose.runtime.mutableStateOf<String?>(null) }
+    var openTableTabs by rememberSaveable { androidx.compose.runtime.mutableStateOf(listOf<String>()) }
     val uiState by settingsViewModel.uiState.collectAsStateWithLifecycle()
     val snapshot = uiState.snapshot
     val selectedTable = remember(snapshot, uiState.selectedTableName) {
@@ -84,6 +90,42 @@ fun FormScreen(
         } else {
             uiState.loadedRows.filter {
                 it.searchableText.contains(searchQuery, ignoreCase = true)
+            }
+        }
+    }
+
+    LaunchedEffect(currentSection, snapshot, uiState.selectedTableName) {
+        val validTableNames = snapshot?.tables.orEmpty().map { it.name }.toSet()
+        openTableTabs = openTableTabs.filter { it in validTableNames }
+
+        val selectedName = uiState.selectedTableName
+        if (
+            currentSection == SettingsSection.LOCAL_DATABASE &&
+            !selectedName.isNullOrBlank() &&
+            selectedName in validTableNames &&
+            selectedName !in openTableTabs
+        ) {
+            openTableTabs = (openTableTabs + selectedName).takeLast(8)
+        }
+    }
+
+    fun openDatabaseTable(tableName: String) {
+        openTableTabs = (openTableTabs.filterNot { it == tableName } + tableName).takeLast(8)
+        settingsViewModel.selectTable(tableName)
+    }
+
+    fun closeDatabaseTab(tableName: String) {
+        val remainingTabs = openTableTabs.filterNot { it == tableName }
+        openTableTabs = remainingTabs
+
+        if (uiState.selectedTableName == tableName) {
+            val fallbackTableName = remainingTabs.lastOrNull()
+                ?: snapshot?.tables
+                    ?.firstOrNull { it.name != tableName }
+                    ?.name
+
+            if (!fallbackTableName.isNullOrBlank()) {
+                openDatabaseTable(fallbackTableName)
             }
         }
     }
@@ -116,15 +158,29 @@ fun FormScreen(
                     subtitle = "Version, account binding, and device metadata all live here now."
                 )
 
-                ResponsiveTwoPane(
-                    first = { AppOverviewCard(uiState = uiState) },
-                    second = { AccountAccessCard(uiState = uiState) }
-                )
-
-                ResponsiveTwoPane(
-                    first = { DeviceDetailsCard(uiState = uiState) },
-                    second = { DeviceIdentityCard(uiState = uiState) }
-                )
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                    maxItemsInEachRow = 3
+                ) {
+                    AppOverviewCard(
+                        uiState = uiState,
+                        modifier = Modifier.widthIn(min = 280.dp, max = 420.dp)
+                    )
+                    AccountAccessCard(
+                        uiState = uiState,
+                        modifier = Modifier.widthIn(min = 280.dp, max = 420.dp)
+                    )
+                    DeviceDetailsCard(
+                        uiState = uiState,
+                        modifier = Modifier.widthIn(min = 280.dp, max = 420.dp)
+                    )
+                    DeviceIdentityCard(
+                        uiState = uiState,
+                        modifier = Modifier.widthIn(min = 280.dp, max = 420.dp)
+                    )
+                }
 
                 SettingsSectionHeader(
                     title = "Tools",
@@ -175,61 +231,26 @@ fun FormScreen(
                 }
 
                 else -> {
-                    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-                        val useTwoPaneLayout = maxWidth >= 950.dp
-
-                        if (useTwoPaneLayout) {
-                            Row(
-                                modifier = Modifier.fillMaxSize(),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                DatabaseTablesPane(
-                                    modifier = Modifier.weight(0.32f),
-                                    tables = snapshot?.tables.orEmpty(),
-                                    selectedTableName = selectedTable?.name,
-                                    onTableSelected = settingsViewModel::selectTable
-                                )
-
-                                DatabaseTableDetailPane(
-                                    modifier = Modifier.weight(0.68f),
-                                    table = selectedTable,
-                                    filteredRows = filteredRows,
-                                    isLoadingRows = uiState.isLoadingRows,
-                                    rowSearchQuery = uiState.rowSearchQuery,
-                                    onRowSearchQueryChanged = settingsViewModel::updateRowSearchQuery,
-                                    errorMessage = uiState.errorMessage,
-                                    onRefreshRequested = settingsViewModel::refreshDatabaseSnapshot
-                                )
-                            }
-                        } else {
-                            Column(
-                                modifier = Modifier.fillMaxSize(),
-                                verticalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                DatabaseTablesPane(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .weight(0.4f),
-                                    tables = snapshot?.tables.orEmpty(),
-                                    selectedTableName = selectedTable?.name,
-                                    onTableSelected = settingsViewModel::selectTable
-                                )
-
-                                DatabaseTableDetailPane(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .weight(0.6f),
-                                    table = selectedTable,
-                                    filteredRows = filteredRows,
-                                    isLoadingRows = uiState.isLoadingRows,
-                                    rowSearchQuery = uiState.rowSearchQuery,
-                                    onRowSearchQueryChanged = settingsViewModel::updateRowSearchQuery,
-                                    errorMessage = uiState.errorMessage,
-                                    onRefreshRequested = settingsViewModel::refreshDatabaseSnapshot
-                                )
-                            }
-                        }
-                    }
+                    DatabaseWorkbenchPage(
+                        modifier = Modifier.fillMaxSize(),
+                        snapshot = snapshot,
+                        selectedTable = selectedTable,
+                        filteredRows = filteredRows,
+                    isLoadingRows = uiState.isLoadingRows,
+                    pageIndex = uiState.pageIndex,
+                    pageCount = uiState.pageCount,
+                    pageSize = uiState.pageSize,
+                    rowSearchQuery = uiState.rowSearchQuery,
+                    errorMessage = uiState.errorMessage,
+                    openTableTabs = openTableTabs,
+                    onOpenTable = ::openDatabaseTable,
+                    onCloseTable = ::closeDatabaseTab,
+                    onPreviousPage = settingsViewModel::goToPreviousPage,
+                    onNextPage = settingsViewModel::goToNextPage,
+                    onPageSizeChanged = settingsViewModel::updatePageSize,
+                    onRowSearchQueryChanged = settingsViewModel::updateRowSearchQuery,
+                    onRefreshRequested = settingsViewModel::refreshDatabaseSnapshot
+                )
                 }
             }
         }
@@ -348,32 +369,6 @@ private fun SettingsSectionHeader(
 }
 
 @Composable
-private fun ResponsiveTwoPane(
-    first: @Composable () -> Unit,
-    second: @Composable () -> Unit,
-) {
-    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-        if (maxWidth >= 880.dp) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Box(modifier = Modifier.weight(1f)) { first() }
-                Box(modifier = Modifier.weight(1f)) { second() }
-            }
-        } else {
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                first()
-                second()
-            }
-        }
-    }
-}
-
-@Composable
 private fun SettingsCard(
     modifier: Modifier = Modifier,
     title: String,
@@ -382,7 +377,6 @@ private fun SettingsCard(
 ) {
     Column(
         modifier = modifier
-            .fillMaxWidth()
             .background(DarkGunmetal, RoundedCornerShape(16.dp))
             .border(1.dp, LightGunmetal, RoundedCornerShape(16.dp))
             .padding(18.dp),
@@ -410,8 +404,10 @@ private fun SettingsCard(
 @Composable
 private fun AppOverviewCard(
     uiState: SettingsUiState,
+    modifier: Modifier = Modifier,
 ) {
     SettingsCard(
+        modifier = modifier,
         title = "App Overview",
         subtitle = "Build metadata and package information for this installation."
     ) {
@@ -429,8 +425,10 @@ private fun AppOverviewCard(
 @Composable
 private fun AccountAccessCard(
     uiState: SettingsUiState,
+    modifier: Modifier = Modifier,
 ) {
     SettingsCard(
+        modifier = modifier,
         title = "Account Access",
         subtitle = "Current login identity plus the role and permission claims used for access control."
     ) {
@@ -447,8 +445,10 @@ private fun AccountAccessCard(
 @Composable
 private fun DeviceDetailsCard(
     uiState: SettingsUiState,
+    modifier: Modifier = Modifier,
 ) {
     SettingsCard(
+        modifier = modifier,
         title = "Device Details",
         subtitle = "Hardware and OS details for the currently running handset or tablet."
     ) {
@@ -463,8 +463,10 @@ private fun DeviceDetailsCard(
 @Composable
 private fun DeviceIdentityCard(
     uiState: SettingsUiState,
+    modifier: Modifier = Modifier,
 ) {
     SettingsCard(
+        modifier = modifier,
         title = "Device Identity",
         subtitle = "Scoutify compares the local Android secure ID with the server-bound device ID stored for the account."
     ) {

@@ -27,6 +27,8 @@ data class SettingsUiState(
     val snapshot: LocalDatabaseDebugSnapshot? = null,
     val selectedTableName: String? = null,
     val loadedRows: List<LocalDatabaseDebugRow> = emptyList(),
+    val pageIndex: Int = 0,
+    val pageSize: Int = 100,
     val rowSearchQuery: String = "",
     val errorMessage: String? = null,
     val displayName: String = "",
@@ -58,6 +60,15 @@ data class SettingsUiState(
 
     val hasBoundDeviceId: Boolean
         get() = registeredAndroidId.isNotBlank()
+
+    val pageCount: Int
+        get() {
+            val totalRows = snapshot?.tables
+                ?.firstOrNull { it.name == selectedTableName }
+                ?.rowCount
+                ?: 0
+            return if (totalRows <= 0) 1 else ((totalRows - 1) / pageSize) + 1
+        }
 
     val deviceIdMatches: Boolean?
         get() {
@@ -124,6 +135,7 @@ class SettingsViewModel(
                         isLoading = false,
                         snapshot = snapshot,
                         selectedTableName = selectedTableName,
+                        pageIndex = 0,
                         loadedRows = emptyList(),
                         errorMessage = null
                     )
@@ -147,6 +159,7 @@ class SettingsViewModel(
         _uiState.update {
             it.copy(
                 selectedTableName = tableName,
+                pageIndex = 0,
                 loadedRows = emptyList()
             )
         }
@@ -157,6 +170,36 @@ class SettingsViewModel(
         _uiState.update {
             it.copy(rowSearchQuery = query)
         }
+    }
+
+    fun goToNextPage() {
+        val current = _uiState.value
+        if (current.pageIndex + 1 >= current.pageCount) {
+            return
+        }
+        _uiState.update { it.copy(pageIndex = it.pageIndex + 1, loadedRows = emptyList()) }
+        loadRowsForTable(_uiState.value.selectedTableName)
+    }
+
+    fun goToPreviousPage() {
+        val current = _uiState.value
+        if (current.pageIndex <= 0) {
+            return
+        }
+        _uiState.update { it.copy(pageIndex = (it.pageIndex - 1).coerceAtLeast(0), loadedRows = emptyList()) }
+        loadRowsForTable(_uiState.value.selectedTableName)
+    }
+
+    fun updatePageSize(pageSize: Int) {
+        val normalizedPageSize = pageSize.coerceIn(25, 500)
+        _uiState.update {
+            it.copy(
+                pageSize = normalizedPageSize,
+                pageIndex = 0,
+                loadedRows = emptyList()
+            )
+        }
+        loadRowsForTable(_uiState.value.selectedTableName)
     }
 
     private fun observeSettingsMetadata() {
@@ -216,7 +259,12 @@ class SettingsViewModel(
             }
 
             runCatching {
-                localDatabaseDebugRepository.loadRowsForTable(tableName = tableName)
+                val currentState = _uiState.value
+                localDatabaseDebugRepository.loadRowsForTable(
+                    tableName = tableName,
+                    limit = currentState.pageSize,
+                    offset = currentState.pageIndex * currentState.pageSize
+                )
             }.onSuccess { rows ->
                 _uiState.update { currentState ->
                     if (currentState.selectedTableName != tableName) {
